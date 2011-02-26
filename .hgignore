@@ -1,0 +1,14 @@
+syntax: glob
+gen/
+bin/
+.svn/
+classes/
+cache/
+
+.git*
+*.log*
+*.tmp
+*.db
+*.swp
+*.orig
+.DS_Store
