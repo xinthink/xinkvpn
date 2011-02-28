@@ -2,4 +2,5 @@
 <resources>
     <string name="hello">Hello World, VpnSettingView!</string>
     <string name="app_name">Xink VPN</string>
+    <string name="selectVpn">Choose Active VPN</string>
 </resources>
