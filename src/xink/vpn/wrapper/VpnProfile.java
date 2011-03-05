@@ -1,5 +1,9 @@
 package xink.vpn.wrapper;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import android.content.Context;
 
 public abstract class VpnProfile extends AbstractWrapper {
@@ -10,6 +14,19 @@ public abstract class VpnProfile extends AbstractWrapper {
 
     protected VpnProfile(final Context ctx, final String stubClass) {
         super(ctx, stubClass);
+    }
+
+    public static VpnProfile newInstance(final VpnType vpnType, final Context ctx) {
+        Class<? extends VpnProfile> profileClass = vpnType.getProfileClass();
+        if (profileClass == null) {
+            throw new IllegalArgumentException("profile class is null for " + vpnType);
+        }
+
+        try {
+            return profileClass.getConstructor(Context.class).newInstance(ctx);
+        } catch (Exception e) {
+            throw new WrapperException("failed to create instance for " + vpnType, e);
+        }
     }
 
     /**
@@ -95,4 +112,20 @@ public abstract class VpnProfile extends AbstractWrapper {
     }
 
     public abstract VpnType getType();
+
+    public void write(final ObjectOutputStream os) throws IOException {
+        os.writeObject(getStub());
+        os.writeObject(username);
+        os.writeObject(password);
+    }
+
+    public void read(final Object obj, final ObjectInputStream is) throws Exception {
+        setStub(obj);
+        username = (String) is.readObject();
+        password = (String) is.readObject();
+    }
+
+    public boolean isCompatible(final Object obj) {
+        return getStubClass().equals(obj.getClass());
+    }
 }

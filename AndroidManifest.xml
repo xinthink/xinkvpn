@@ -20,6 +20,7 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/vpn_appwidget_info"></meta-data>
         </receiver>
+        <activity android:name="VpnTypeSelection" android:label="@string/add_vpn"></activity>
 
     </application>
 </manifest>
