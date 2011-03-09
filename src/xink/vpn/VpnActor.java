@@ -29,6 +29,8 @@ public class VpnActor {
 
     private static VpnType activeVpnType = VpnType.L2TP;
 
+    private static VpnActor instance;
+
     private Context context;
     private VpnManager vpnMgr;
     private VpnService vpnSrv;
@@ -42,6 +44,11 @@ public class VpnActor {
         vpnSrv = new VpnService(ctx);
 
         profiles = new ArrayList<VpnProfile>();
+        instance = this;
+    }
+
+    public static VpnActor getInstance() {
+        return instance;
     }
 
     public void save() {
@@ -148,7 +155,7 @@ public class VpnActor {
         }
     }
 
-    protected VpnProfile getVpnProfileInstance(final Map<VpnType, VpnProfile> profileMap, final VpnType type) {
+    private VpnProfile getVpnProfileInstance(final Map<VpnType, VpnProfile> profileMap, final VpnType type) {
         VpnProfile p = profileMap.get(type);
         if (p == null) {
             p = VpnProfile.newInstance(type, context);
@@ -241,7 +248,7 @@ public class VpnActor {
             @Override
             public void onServiceConnected(final ComponentName className, final IBinder service) {
                 try {
-                    VpnProfile p = makeVpnProfile();
+                    VpnProfile p = getProfile(activeProfileId);
                     boolean success = vpnSrv.connect(service, p);
 
                     if (!success) {
@@ -287,5 +294,20 @@ public class VpnActor {
      */
     public List<VpnProfile> getAllVpnProfiles() {
         return Collections.unmodifiableList(profiles);
+    }
+
+    public void addVpnProfile(final VpnProfile p) {
+        p.setId("vpnprofile_" + (profiles.size() + 1));
+        profiles.add(p);
+    }
+
+    public VpnProfile getProfile(final String id) {
+
+        for (VpnProfile p : profiles) {
+            if (p.getId().equals(id)) {
+                return p;
+            }
+        }
+        return null;
     }
 }

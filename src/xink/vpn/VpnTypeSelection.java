@@ -44,8 +44,8 @@ public class VpnTypeSelection extends Activity {
                 VpnType vpnType = VpnType.values()[position];
                 Log.i("xink", vpnType + " picked");
 
-                Intent data = new Intent(VpnTypeSelection.this, VpnSettingView.class);
-                data.putExtra(Constants.VPN_TYPE, vpnType);
+                Intent data = new Intent(VpnTypeSelection.this, VpnSettings.class);
+                data.putExtra(Constants.KEY_VPN_TYPE, vpnType);
                 setResult(Constants.REQ_SELECT_VPN_TYPE, data);
                 finish();
             }

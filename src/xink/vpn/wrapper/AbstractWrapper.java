@@ -9,13 +9,11 @@ import dalvik.system.PathClassLoader;
 
 public abstract class AbstractWrapper {
 
-    private static final long serialVersionUID = 1L;
-
     private static final String STUB_PACK = "com.android.settings";
 
     private static PathClassLoader stubClassLoader;
 
-    private Context context;
+    private transient Context context;
 
     private String stubClassName;
 

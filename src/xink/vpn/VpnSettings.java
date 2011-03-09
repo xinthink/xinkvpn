@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import xink.vpn.editor.EditAction;
+import xink.vpn.editor.PptpProfileEditor;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnType;
 import android.app.Activity;
@@ -22,7 +24,7 @@ import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 
-public class VpnSettingView extends Activity {
+public class VpnSettings extends Activity {
 
     private static final String TAG = "xink";
     private static final String[] VPN_VIEW_KEYS = new String[] { "vpn" };
@@ -66,13 +68,21 @@ public class VpnSettingView extends Activity {
         List<VpnProfile> allVpnProfiles = vpnActor.getAllVpnProfiles();
 
         for (VpnProfile vpnProfile : allVpnProfiles) {
-            VpnViewItem item = makeVpnViewItem(activeProfileId, vpnProfile);
-
-            Map<String, Object> row = new HashMap<String, Object>();
-            row.put("vpn", item);
-
-            vpnListViewContent.add(row);
+            addToProfileListView(activeProfileId, vpnProfile);
         }
+    }
+
+    private void addToProfileListView(final String activeProfileId, final VpnProfile vpnProfile) {
+        if (vpnProfile == null) {
+            return;
+        }
+
+        VpnViewItem item = makeVpnViewItem(activeProfileId, vpnProfile);
+
+        Map<String, Object> row = new HashMap<String, Object>();
+        row.put("vpn", item);
+
+        vpnListViewContent.add(row);
     }
 
     private VpnViewItem makeVpnViewItem(final String activeProfileId, final VpnProfile vpnProfile) {
@@ -113,18 +123,42 @@ public class VpnSettingView extends Activity {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if (Constants.REQ_SELECT_VPN_TYPE == requestCode) {
-            if (data == null) {
-                return;
-            }
-
-            VpnType pickedVpnType = (VpnType) data.getExtras().get(Constants.VPN_TYPE);
-            addVpn(pickedVpnType);
+        if (data == null) {
+            return;
         }
+
+        switch (requestCode) {
+        case Constants.REQ_SELECT_VPN_TYPE:
+            onVpnTypePicked(data);
+            break;
+        case Constants.REQ_ADD_VPN:
+            onVpnProfileAdded(data);
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void onVpnTypePicked(final Intent data) {
+        VpnType pickedVpnType = (VpnType) data.getExtras().get(Constants.KEY_VPN_TYPE);
+        addVpn(pickedVpnType);
     }
 
     private void addVpn(final VpnType vpnType) {
         Log.i(TAG, "add vpn " + vpnType);
+        Intent intent = new Intent(this, PptpProfileEditor.class);
+        intent.setAction(EditAction.CREATE.toString());
+        startActivityForResult(intent, Constants.REQ_ADD_VPN);
+    }
+
+    private void onVpnProfileAdded(final Intent data) {
+        Log.i(TAG, "new vpn profile created");
+
+        String newProfileId = data.getStringExtra(Constants.KEY_VPN_PROFILE);
+        VpnProfile profile = vpnActor.getProfile(newProfileId);
+
+        addToProfileListView(vpnActor.getActiveProfileId(), profile);
+        updateProfileListView();
     }
 
     @Override
@@ -137,7 +171,7 @@ public class VpnSettingView extends Activity {
         vpnActor.save();
     }
 
-    protected void connectVpn() {
+    private void connectVpn() {
         try {
             VpnActor vpnMgrWrapper = new VpnActor(this);
             vpnMgrWrapper.connect();
@@ -146,7 +180,7 @@ public class VpnSettingView extends Activity {
         }
     }
 
-    protected void vpnItemActivated(final VpnViewItem activatedItem) {
+    private void vpnItemActivated(final VpnViewItem activatedItem) {
         if (activeVpnItem == activatedItem) {
             return;
         }
@@ -157,7 +191,11 @@ public class VpnSettingView extends Activity {
 
         activeVpnItem = activatedItem;
         vpnActor.setActiveProfile(activeVpnItem.profile);
+        updateProfileListView();
+        vpnActor.connect();
+    }
 
+    private void updateProfileListView() {
         runOnUiThread(new Runnable() {
 
             @Override
@@ -165,7 +203,6 @@ public class VpnSettingView extends Activity {
                 vpnListAdapter.notifyDataSetChanged();
             }
         });
-
     }
 
     static final class VpnViewBinder implements ViewBinder {

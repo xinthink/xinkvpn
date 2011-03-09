@@ -7,8 +7,6 @@ import android.content.ServiceConnection;
 
 public class VpnManager extends AbstractWrapper {
 
-    private static final String ACTION_VPN_SERVICE = "android.net.vpn.SERVICE";
-
     public VpnManager(final Context ctx) {
         super(ctx, "android.net.vpn.VpnManager");
     }

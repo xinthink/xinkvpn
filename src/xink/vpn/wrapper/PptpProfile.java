@@ -21,7 +21,7 @@ public class PptpProfile extends VpnProfile {
      */
     public void setEncryptionEnabled(final boolean enabled) {
         try {
-            Method m = findMethod(getStubClass(), "setEncryptionEnabled", boolean.class);
+            Method m = getStubClass().getMethod("setEncryptionEnabled", boolean.class);
             m.invoke(getStub(), enabled);
         } catch (Throwable e) {
             throw new AppException("setEncryptionEnabled failed", e);
