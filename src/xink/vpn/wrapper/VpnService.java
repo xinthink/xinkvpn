@@ -23,6 +23,17 @@ public class VpnService extends AbstractWrapper {
         return (Boolean) m.invoke(getStub(), profile.getStub(), profile.getUsername(), profile.getPassword());
     }
 
+    public void disconnect(final IBinder service) throws Exception {
+        asInterface(service);
+        invokeStubMethod("disconnect");
+    }
+
+    public void checkStatus(final IBinder service, final VpnProfile p) throws Exception {
+        asInterface(service);
+        Method m = getStubClass().getMethod("checkStatus", p.getGenericProfileClass());
+        m.invoke(getStub(), p.getStub());
+    }
+
     private void asInterface(final IBinder service) throws Exception {
         Method method = getStubClass().getMethod("asInterface", IBinder.class);
         setStub(method.invoke(null, service));

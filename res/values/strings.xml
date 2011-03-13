@@ -6,10 +6,11 @@
     <string name="add_vpn">Add VPN</string>
     <string name="del">Delete</string>
     <string name="add">Add</string>
-    <string name="vpn_pptp">VPN&quot;PPTP&quot;</string>
-    <string name="vpn_l2tp">VPN&quot;L2TP&quot;</string>
-    <string name="vpn_l2tp_psk">VPN&quot;L2TP/IPSec PSK&quot;</string>
+    <string name="vpn_pptp">VPN\&quot;PPTP\&quot;</string>
+    <string name="vpn_l2tp">VPN\&quot;L2TP\&quot;</string>
+    <string name="vpn_l2tp_psk">VPN\&quot;L2TP/IPSec PSK\&quot;</string>
     <string name="vpn_pptp_info">Point to Point tunnel protocol</string>
     <string name="vpn_l2tp_info">Layer 2 tunnel protocol</string>
     <string name="vpn_l2tp_psk_info">Private shared key based layer 2 tunnel protocol</string>
+    <string name="err_empty_name">VPN name is empty.</string><string name="err_duplicated_profile_name">VPN name \'%s\' has already been taken.</string>
 </resources>

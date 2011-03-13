@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider
-  xmlns:android="http://schemas.android.com/apk/res/android">
+  android:updatePeriodMillis="0" xmlns:android="http://schemas.android.com/apk/res/android" android:initialLayout="@layout/vpn_widget_disconnected" android:minHeight="64dip" android:minWidth="64dip">
 </appwidget-provider>

@@ -1,0 +1,40 @@
+package xink.vpn.wrapper;
+
+import xink.vpn.AppException;
+
+public class InvalidProfileException extends AppException {
+
+    private static final long serialVersionUID = 1L;
+
+    private int messageResourceId;
+
+    private Object[] messageArgs;
+
+    public InvalidProfileException(final String detailMessage, final int messageResourceId, final Object... messageArgs) {
+        super(detailMessage);
+        setMessageResourceId(messageResourceId);
+        setMessageArgs(messageArgs);
+    }
+
+    public InvalidProfileException(final String detailMessage, final Throwable throwable, final int messageResourceId, final Object... messageArgs) {
+        super(detailMessage, throwable);
+        setMessageResourceId(messageResourceId);
+        setMessageArgs(messageArgs);
+    }
+
+    public void setMessageResourceId(final int messageResourceId) {
+        this.messageResourceId = messageResourceId;
+    }
+
+    public int getMessageResourceId() {
+        return messageResourceId;
+    }
+
+    public Object[] getMessageArgs() {
+        return messageArgs;
+    }
+
+    public void setMessageArgs(final Object... messageArgs) {
+        this.messageArgs = messageArgs;
+    }
+}

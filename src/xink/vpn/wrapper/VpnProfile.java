@@ -114,6 +114,7 @@ public abstract class VpnProfile extends AbstractWrapper {
     public abstract VpnType getType();
 
     public void write(final ObjectOutputStream os) throws IOException {
+        os.writeObject(getType());
         os.writeObject(getStub());
         os.writeObject(username);
         os.writeObject(password);
@@ -127,5 +128,10 @@ public abstract class VpnProfile extends AbstractWrapper {
 
     public boolean isCompatible(final Object obj) {
         return getStubClass().equals(obj.getClass());
+    }
+
+    @Override
+    public String toString() {
+        return getId() + "#" + getName();
     }
 }

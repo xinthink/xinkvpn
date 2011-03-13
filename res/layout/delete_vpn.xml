@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_height="fill_parent"
+  android:layout_width="fill_parent">
+  <LinearLayout android:layout_width="fill_parent" android:layout_height="wrap_content" android:layout_gravity="fill" android:id="@+id/pnlDelCandidates" android:orientation="vertical">
+  </LinearLayout>
+  <LinearLayout android:layout_height="match_parent" android:layout_width="wrap_content" android:layout_gravity="bottom|center_horizontal">
+    <Button android:layout_width="wrap_content" android:layout_height="wrap_content"
+      android:layout_gravity="bottom" android:id="@+id/btnDel" android:text="@string/del"></Button>
+  </LinearLayout>
+</FrameLayout>

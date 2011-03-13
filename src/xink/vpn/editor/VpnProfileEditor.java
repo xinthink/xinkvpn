@@ -1,10 +1,13 @@
 package xink.vpn.editor;
 
 import xink.vpn.Constants;
-import xink.vpn.VpnActor;
+import xink.vpn.VpnProfileRepository;
 import xink.vpn.VpnSettings;
+import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
@@ -120,25 +123,47 @@ public abstract class VpnProfileEditor extends Activity {
         });
     }
 
-    protected void onSave() {
-        profile.setName(txtVpnName.getText().toString().trim());
-        profile.setServerName(txtServer.getText().toString().trim());
-        profile.setDomainSuffices(txtDnsSuffices.getText().toString().trim());
-        profile.setUsername(txtUserName.getText().toString().trim());
-        profile.setPassword(txtPassword.getText().toString().trim());
-        populate();
+    @Override
+    protected void onPrepareDialog(final int id, final Dialog dialog, final Bundle args) {
+        Object[] msgArgs = (Object[]) args.getSerializable("messageArgs");
+        ((AlertDialog) dialog).setMessage(getString(id, msgArgs));
+    }
 
-        VpnActor.getInstance().addVpnProfile(profile);
-        Intent intent = new Intent(this, VpnSettings.class);
-        intent.putExtra(Constants.KEY_VPN_PROFILE, profile.getId());
-        setResult(Constants.REQ_ADD_VPN, intent);
-        finish();
+    @Override
+    protected Dialog onCreateDialog(final int id) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true).setMessage("xxx");
+        return builder.create();
+    }
+
+    protected void onSave() {
+        VpnProfileRepository actor = VpnProfileRepository.getInstance(getApplicationContext());
+
+        try {
+            String name = txtVpnName.getText().toString().trim();
+            profile.setName(name);
+            profile.setServerName(txtServer.getText().toString().trim());
+            profile.setDomainSuffices(txtDnsSuffices.getText().toString().trim());
+            profile.setUsername(txtUserName.getText().toString().trim());
+            profile.setPassword(txtPassword.getText().toString().trim());
+            populate();
+
+            actor.addVpnProfile(profile);
+            Intent intent = new Intent(this, VpnSettings.class);
+            intent.putExtra(Constants.KEY_VPN_PROFILE, profile.getId());
+            setResult(Constants.REQ_ADD_VPN, intent);
+            finish();
+
+        } catch (InvalidProfileException e) {
+            Bundle args = new Bundle();
+            args.putSerializable("messageArgs", e.getMessageArgs());
+            showDialog(e.getMessageResourceId(), args);
+        }
     }
 
     protected abstract void populate();
 
     protected void onCancel() {
-        // TODO Auto-generated method stub
         finish();
     }
 

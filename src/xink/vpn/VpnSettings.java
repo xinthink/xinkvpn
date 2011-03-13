@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import xink.vpn.editor.EditAction;
-import xink.vpn.editor.PptpProfileEditor;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnType;
 import android.app.Activity;
@@ -17,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ListView;
@@ -30,7 +30,7 @@ public class VpnSettings extends Activity {
     private static final String[] VPN_VIEW_KEYS = new String[] { "vpn" };
     private static final int[] VPN_VIEWS = new int[] { R.id.radioActive };
 
-    private VpnActor vpnActor;
+    private VpnProfileRepository vpnActor;
     private ListView vpnListView;
     private List<Map<String, ?>> vpnListViewContent;
     private VpnViewBinder vpnViewBinder = new VpnViewBinder();
@@ -46,7 +46,7 @@ public class VpnSettings extends Activity {
         setContentView(R.layout.vpn_list);
 
         vpnListViewContent = new ArrayList<Map<String, ?>>();
-        vpnActor = new VpnActor(this.getApplicationContext());
+        vpnActor = VpnProfileRepository.getInstance(getApplicationContext());
         vpnListView = (ListView) findViewById(R.id.listVpns);
 
         refreshVpnList();
@@ -62,7 +62,8 @@ public class VpnSettings extends Activity {
     }
 
     private void loadContent() {
-        vpnActor.load();
+        vpnListViewContent.clear();
+        activeVpnItem = null;
 
         String activeProfileId = vpnActor.getActiveProfileId();
         List<VpnProfile> allVpnProfiles = vpnActor.getAllVpnProfiles();
@@ -113,12 +114,19 @@ public class VpnSettings extends Activity {
         case R.id.menu_add_vpn:
             onAddVpn();
             break;
+        case R.id.menu_del_vpn:
+            onDeleteVpn();
+            break;
         }
         return true;
     }
 
     private void onAddVpn() {
         startActivityForResult(new Intent(this, VpnTypeSelection.class), Constants.REQ_SELECT_VPN_TYPE);
+    }
+
+    private void onDeleteVpn() {
+        startActivityForResult(new Intent(this, DeleteVpn.class), Constants.REQ_DELETE_VPN);
     }
 
     @Override
@@ -134,6 +142,9 @@ public class VpnSettings extends Activity {
         case Constants.REQ_ADD_VPN:
             onVpnProfileAdded(data);
             break;
+        case Constants.REQ_DELETE_VPN:
+            onVpnProfileDeleted(data);
+            break;
         default:
             break;
         }
@@ -146,7 +157,7 @@ public class VpnSettings extends Activity {
 
     private void addVpn(final VpnType vpnType) {
         Log.i(TAG, "add vpn " + vpnType);
-        Intent intent = new Intent(this, PptpProfileEditor.class);
+        Intent intent = new Intent(this, vpnType.getEditorClass());
         intent.setAction(EditAction.CREATE.toString());
         startActivityForResult(intent, Constants.REQ_ADD_VPN);
     }
@@ -161,6 +172,10 @@ public class VpnSettings extends Activity {
         updateProfileListView();
     }
 
+    private void onVpnProfileDeleted(final Intent data) {
+        refreshVpnList();
+    }
+
     @Override
     protected void onStop() {
         save();
@@ -169,15 +184,6 @@ public class VpnSettings extends Activity {
 
     private void save() {
         vpnActor.save();
-    }
-
-    private void connectVpn() {
-        try {
-            VpnActor vpnMgrWrapper = new VpnActor(this);
-            vpnMgrWrapper.connect();
-        } catch (Throwable e) {
-            Log.e(TAG, "vpnMgrWrapper failed", e);
-        }
     }
 
     private void vpnItemActivated(final VpnViewItem activatedItem) {
@@ -192,7 +198,6 @@ public class VpnSettings extends Activity {
         activeVpnItem = activatedItem;
         vpnActor.setActiveProfile(activeVpnItem.profile);
         updateProfileListView();
-        vpnActor.connect();
     }
 
     private void updateProfileListView() {
@@ -228,12 +233,15 @@ public class VpnSettings extends Activity {
             view.setText(item.profile.getName());
 
             view.setOnCheckedChangeListener(null);
+            view.setOnLongClickListener(null);
+
             view.setChecked(item.isActive);
             view.setOnCheckedChangeListener(item);
+            view.setOnLongClickListener(item);
         }
     }
 
-    final class VpnViewItem implements OnCheckedChangeListener {
+    final class VpnViewItem implements OnCheckedChangeListener, OnLongClickListener {
         VpnProfile profile;
         boolean isActive;
 
@@ -248,6 +256,15 @@ public class VpnSettings extends Activity {
             if (isActive) {
                 vpnItemActivated(this);
             }
+        }
+
+        @Override
+        public boolean onLongClick(final View view) {
+            // isActive = true;
+            // vpnItemActivated(this);
+            // new VpnConnector(getApplicationContext()).connect();
+            // return true;
+            return false;
         }
 
         @Override
