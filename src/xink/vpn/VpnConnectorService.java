@@ -292,6 +292,6 @@ public class VpnConnectorService extends Service {
     private void updateButtons(final RemoteViews views) {
         Intent intent = new Intent(Constants.ACT_TOGGLE_VPN_CONN);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
-        views.setOnClickPendingIntent(R.id.btnToggleVpnStatus, pendingIntent);
+        views.setOnClickPendingIntent(R.id.frmToggleVpnStatue, pendingIntent);
     }
 }

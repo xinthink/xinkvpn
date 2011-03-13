@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent">
-    <Button android:layout_gravity="fill" android:id="@+id/btnToggleVpnStatus" android:layout_width="fill_parent" android:layout_height="fill_parent" android:background="@drawable/vpn_on" style="@style/VpnOnWidgetTextStyle" android:text="VPN"></Button>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+  android:layout_height="match_parent" android:clickable="true" android:focusable="true" android:background="@drawable/vpnwidget_states"
+  android:id="@+id/frmToggleVpnStatue">
+  <TextView android:background="@drawable/vpn_on" style="@style/VpnOnWidgetTextStyle" android:layout_height="match_parent"
+    android:text="VPN" android:layout_width="match_parent" android:layout_gravity="fill" android:gravity="center"></TextView>
 </FrameLayout>
