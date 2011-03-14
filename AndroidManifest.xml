@@ -20,13 +20,14 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/vpn_appwidget_info"></meta-data>
         </receiver>
         <activity android:name="VpnTypeSelection" android:label="@string/add_vpn"></activity>
-        <activity android:name=".editor.PptpProfileEditor"></activity>
-        <activity android:name="DeleteVpn"></activity>
         <service android:name="VpnConnectorService">
             <intent-filter>
                 <action android:name="xink.toggleVpnConnectionAction"></action>
             </intent-filter>
-        </service>
+        </service><activity android:name=".editor.PptpProfileEditor"></activity>
+        
+        <activity android:name=".editor.L2tpProfileEditor"></activity>
+        <activity android:name=".editor.L2tpIpsecPskProfileEditor"></activity>
 
     </application>
 </manifest>

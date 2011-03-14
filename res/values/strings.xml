@@ -12,5 +12,9 @@
     <string name="vpn_pptp_info">Point to Point tunnel protocol</string>
     <string name="vpn_l2tp_info">Layer 2 tunnel protocol</string>
     <string name="vpn_l2tp_psk_info">Private shared key based layer 2 tunnel protocol</string>
-    <string name="err_empty_name">VPN name is empty.</string><string name="err_duplicated_profile_name">VPN name \'%s\' has already been taken.</string>
+    <string name="err_empty_name">VPN name is empty.</string>
+    <string name="err_duplicated_profile_name">VPN name \'%s\' has already been taken.</string>
+    <string name="vpn_list_desc">VPNs (long presse to show options)</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>

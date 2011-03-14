@@ -1,13 +1,15 @@
 package xink.vpn.wrapper;
 
 import xink.vpn.R;
+import xink.vpn.editor.L2tpIpsecPskProfileEditor;
+import xink.vpn.editor.L2tpProfileEditor;
 import xink.vpn.editor.PptpProfileEditor;
 import xink.vpn.editor.VpnProfileEditor;
 
 public enum VpnType {
     PPTP("PPTP", R.string.vpn_pptp, R.string.vpn_pptp_info, PptpProfile.class, PptpProfileEditor.class),
-    L2TP("L2TP", R.string.vpn_l2tp, R.string.vpn_l2tp_info, L2tpProfile.class, null),
-    L2TP_IPSEC_PSK("L2TP/IPSec PSK", R.string.vpn_l2tp_psk, R.string.vpn_l2tp_psk_info, L2tpIpsecPskProfile.class, null),
+    L2TP("L2TP", R.string.vpn_l2tp, R.string.vpn_l2tp_info, L2tpProfile.class, L2tpProfileEditor.class),
+    L2TP_IPSEC_PSK("L2TP/IPSec PSK", R.string.vpn_l2tp_psk, R.string.vpn_l2tp_psk_info, L2tpIpsecPskProfile.class, L2tpIpsecPskProfileEditor.class),
     // L2TP_IPSEC("L2TP/IPSec CRT", null)
     ;
 

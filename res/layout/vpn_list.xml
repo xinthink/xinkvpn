@@ -4,5 +4,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+    <TextView android:layout_height="wrap_content" android:layout_gravity="fill_horizontal" android:layout_width="match_parent" android:clickable="true" android:focusable="true" style="@style/ClickableTextStyle" android:text="@string/add_vpn" android:id="@+id/btnAddVpn" android:background="@drawable/vpnwidget_states" android:paddingLeft="15dip" android:paddingRight="15dip" android:paddingTop="10dip" android:paddingBottom="10dip"></TextView>
+    <TextView android:layout_height="wrap_content" android:text="@string/vpn_list_desc" android:background="#333333" android:layout_width="match_parent" android:gravity="left" android:padding="5dip"></TextView>
 <ListView android:layout_height="wrap_content" android:layout_width="match_parent" android:id="@+id/listVpns"></ListView>
 </LinearLayout>

@@ -1,6 +1,7 @@
 package xink.vpn.editor;
 
 import xink.vpn.Constants;
+import xink.vpn.R;
 import xink.vpn.VpnProfileRepository;
 import xink.vpn.VpnSettings;
 import xink.vpn.wrapper.InvalidProfileException;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 public abstract class VpnProfileEditor extends Activity {
@@ -33,16 +35,16 @@ public abstract class VpnProfileEditor extends Activity {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("VPN Editor");
+        setContentView(R.layout.vpn_profile_editor);
 
         Intent intent = getIntent();
         editAction = EditAction.valueOf(intent.getAction());
         initProfile(intent);
 
+        ScrollView scrollView = (ScrollView) findViewById(R.id.editorScrollView);
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        setContentView(content);
-
+        scrollView.addView(content);
         initWidgets(content);
     }
 
@@ -52,6 +54,8 @@ public abstract class VpnProfileEditor extends Activity {
         } else {
             profile = (VpnProfile) intent.getExtras().get(Constants.KEY_VPN_PROFILE);
         }
+
+        setTitle(profile.getType().getNameRid());
     }
 
     private void initWidgets(final ViewGroup content) {
@@ -99,12 +103,7 @@ public abstract class VpnProfileEditor extends Activity {
         txtPassword.setTransformationMethod(new PasswordTransformationMethod());
         content.addView(txtPassword);
 
-        LinearLayout ctrlPnl = new LinearLayout(this);
-        content.addView(ctrlPnl);
-
-        Button btnSave = new Button(this);
-        btnSave.setText("Save");
-        ctrlPnl.addView(btnSave);
+        Button btnSave = (Button) findViewById(R.id.btnSave);
         btnSave.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -112,9 +111,7 @@ public abstract class VpnProfileEditor extends Activity {
             }
         });
 
-        Button btnCancel = new Button(this);
-        btnCancel.setText("Cancel");
-        ctrlPnl.addView(btnCancel);
+        Button btnCancel = (Button) findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(final View arg0) {

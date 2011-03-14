@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="fill_parent" android:layout_height="fill_parent">
+  <LinearLayout android:orientation="vertical" android:layout_height="fill_parent" android:layout_width="fill_parent">
+    <ScrollView android:id="@+id/editorScrollView" android:layout_height="wrap_content" android:layout_width="fill_parent" android:layout_margin="10dip">
+    </ScrollView>
+    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent"
+      android:background="#555555" android:gravity="center_vertical" android:layout_gravity="center_horizontal">
+      <Button android:layout_height="wrap_content" android:id="@+id/btnSave" android:text="@string/save"
+        android:layout_width="fill_parent" android:layout_weight="1" android:layout_marginLeft="10dip" android:layout_marginTop="10dip" android:layout_marginBottom="10dip" android:layout_gravity="center_vertical"></Button>
+      <Button android:layout_height="wrap_content" android:id="@+id/btnCancel" android:text="@string/cancel"
+        android:layout_width="fill_parent" android:layout_weight="1" android:layout_marginRight="10dip" android:layout_marginTop="10dip" android:layout_marginBottom="10dip" android:layout_gravity="center_vertical" android:layout_marginLeft="5dip"></Button>
+    </LinearLayout>
+  </LinearLayout>
+</ScrollView>

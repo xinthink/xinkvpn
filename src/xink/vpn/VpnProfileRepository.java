@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -199,21 +197,14 @@ public class VpnProfileRepository {
         }
     }
 
-    public void deleteVpnProfiles(final Collection<String> profileIds) {
-        for (Iterator<VpnProfile> it = profiles.iterator(); it.hasNext();) {
-            VpnProfile p = it.next();
-            String id = p.getId();
+    public void deleteVpnProfile(final VpnProfile profile) {
+        String id = profile.getId();
+        boolean removed = profiles.remove(profile);
+        Log.d(TAG, "delete vpn: " + profile + ", removed=" + removed);
 
-            if (profileIds.contains(id)) {
-                it.remove();
-
-                if (id.equals(activeProfileId)) {
-                    activeProfileId = null;
-                    Log.d(TAG, "deactivate vpn: " + id);
-                }
-
-                Log.d(TAG, "delete vpn: " + id);
-            }
+        if (id.equals(activeProfileId)) {
+            activeProfileId = null;
+            Log.d(TAG, "deactivate vpn: " + profile);
         }
     }
 }

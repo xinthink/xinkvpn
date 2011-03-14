@@ -2,19 +2,12 @@ package xink.vpn.editor;
 
 import xink.vpn.wrapper.PptpProfile;
 import xink.vpn.wrapper.VpnProfile;
-import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 
 public class PptpProfileEditor extends VpnProfileEditor {
 
     private CheckBox chkEncrypt;
-
-    @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setTitle("PPTP VPN");
-    }
 
     @Override
     protected void initSpecificWidgets(final ViewGroup content) {
