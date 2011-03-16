@@ -30,11 +30,18 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
     }
 
     @Override
-    protected void populate() {
+    protected void doPopulateProfile() {
         L2tpIpsecPskProfile profile = getProfile();
         profile.setPresharedKey(txtKey.getText().toString().trim());
 
-        super.populate();
+        super.doPopulateProfile();
     }
 
+    @Override
+    protected void doBindToViews() {
+        L2tpIpsecPskProfile profile = getProfile();
+        txtKey.setText(profile.getPresharedKey());
+
+        super.doBindToViews();
+    }
 }

@@ -31,8 +31,14 @@ public class PptpProfileEditor extends VpnProfileEditor {
     }
 
     @Override
-    protected void populate() {
+    protected void doPopulateProfile() {
         PptpProfile profile = getProfile();
         profile.setEncryptionEnabled(chkEncrypt.isChecked());
+    }
+
+    @Override
+    protected void doBindToViews() {
+        PptpProfile profile = getProfile();
+        chkEncrypt.setChecked(profile.isEncryptionEnabled());
     }
 }

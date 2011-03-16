@@ -29,6 +29,6 @@ public class PptpProfile extends VpnProfile {
     }
 
     public boolean isEncryptionEnabled() {
-        return invokeStubMethod("getEncryptionEnabled");
+        return invokeStubMethod("isEncryptionEnabled");
     }
 }

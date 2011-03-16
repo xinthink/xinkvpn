@@ -5,15 +5,21 @@ public class Constants {
 
     public static final int REQ_ADD_VPN = 2;
 
+    public static final int REQ_EDIT_VPN = 3;
+
     public static final String ACT_ADD_VPN = "xink.addVpnAction";
 
     public static final String ACT_TOGGLE_VPN_CONN = "xink.toggleVpnConnectionAction";
 
+    public static final String ACT_VPN_SETTINGS = "android.net.vpn.SETTINGS";
+
+    public static final String CAT_DEFAULT = "android.intent.category.DEFAULT";
+
     public static final String KEY_VPN_TYPE = "vpnType";
 
-    public static final String KEY_VPN_PROFILE = "vpnProfile";
+    public static final String KEY_VPN_PROFILE_ID = "vpnProfileId";
 
-    public static final String KEY_DELETED_COUNT = "deletedItemCount";
+    public static final String KEY_VPN_PROFILE_NAME = "vpnProfileName";
 
     public static final int DLG_VPN_PROFILE_ALERT = 1;
 

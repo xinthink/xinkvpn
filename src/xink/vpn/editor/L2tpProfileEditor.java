@@ -47,12 +47,22 @@ public class L2tpProfileEditor extends VpnProfileEditor {
     }
 
     @Override
-    protected void populate() {
+    protected void doPopulateProfile() {
         L2tpProfile profile = getProfile();
         profile.setSecretEnabled(chkSecretEnabled.isChecked());
 
         if (profile.isSecretEnabled()) {
             profile.setSecretString(txtSecret.getText().toString().trim());
+        }
+    }
+
+    @Override
+    protected void doBindToViews() {
+        L2tpProfile profile = getProfile();
+        chkSecretEnabled.setChecked(profile.isSecretEnabled());
+
+        if (profile.isSecretEnabled()) {
+            txtSecret.setText(profile.getSecretString());
         }
     }
 

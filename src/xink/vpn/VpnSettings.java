@@ -1,5 +1,7 @@
 package xink.vpn;
 
+import static xink.vpn.Constants.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +38,7 @@ public class VpnSettings extends Activity {
     private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY };
     private static final int[] VPN_VIEWS = new int[] { R.id.radioActive };
 
-    private VpnProfileRepository vpnActor;
+    private VpnProfileRepository repository;
     private ListView vpnListView;
     private List<Map<String, VpnViewItem>> vpnListViewContent;
     private VpnViewBinder vpnViewBinder = new VpnViewBinder();
@@ -60,7 +62,7 @@ public class VpnSettings extends Activity {
         });
 
         vpnListViewContent = new ArrayList<Map<String, VpnViewItem>>();
-        vpnActor = VpnProfileRepository.getInstance(getApplicationContext());
+        repository = VpnProfileRepository.getInstance(getApplicationContext());
         vpnListView = (ListView) findViewById(R.id.listVpns);
 
         refreshVpnList();
@@ -79,8 +81,8 @@ public class VpnSettings extends Activity {
         vpnListViewContent.clear();
         activeVpnItem = null;
 
-        String activeProfileId = vpnActor.getActiveProfileId();
-        List<VpnProfile> allVpnProfiles = vpnActor.getAllVpnProfiles();
+        String activeProfileId = repository.getActiveProfileId();
+        List<VpnProfile> allVpnProfiles = repository.getAllVpnProfiles();
 
         for (VpnProfile vpnProfile : allVpnProfiles) {
             addToProfileListView(activeProfileId, vpnProfile);
@@ -133,10 +135,15 @@ public class VpnSettings extends Activity {
         boolean consumed = false;
         int itemId = item.getItemId();
         AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+        VpnViewItem vpnItem = getVpnViewItemAt(info.position);
 
         switch (itemId) {
         case R.id.menu_del_vpn:
-            onDeleteVpn(info.position);
+            onDeleteVpn(vpnItem);
+            consumed = true;
+            break;
+        case R.id.menu_edit_vpn:
+            onEditVpn(vpnItem);
             consumed = true;
             break;
         default:
@@ -148,13 +155,34 @@ public class VpnSettings extends Activity {
     }
 
     private void onAddVpn() {
-        startActivityForResult(new Intent(this, VpnTypeSelection.class), Constants.REQ_SELECT_VPN_TYPE);
+        startActivityForResult(new Intent(this, VpnTypeSelection.class), REQ_SELECT_VPN_TYPE);
     }
 
-    private void onDeleteVpn(final int position) {
-        VpnViewItem vpnItem = getVpnViewItemAt(position);
-        vpnActor.deleteVpnProfile(vpnItem.profile);
+    private void onDeleteVpn(final VpnViewItem vpnItem) {
+        repository.deleteVpnProfile(vpnItem.profile);
         refreshVpnList();
+    }
+
+    private void onEditVpn(final VpnViewItem vpnItem) {
+        Log.d(TAG, "onEditVpn");
+
+        VpnProfile p = vpnItem.profile;
+        editVpn(p);
+    }
+
+    private void editVpn(final VpnProfile p) {
+        VpnType type = p.getType();
+
+        Class<? extends VpnProfileEditor> editorClass = type.getEditorClass();
+        if (editorClass == null) {
+            Log.d(TAG, "editor class is null for " + type);
+            return;
+        }
+
+        Intent intent = new Intent(this, editorClass);
+        intent.setAction(EditAction.EDIT.toString());
+        intent.putExtra(KEY_VPN_PROFILE_NAME, p.getName());
+        startActivityForResult(intent, REQ_EDIT_VPN);
     }
 
     @Override
@@ -189,19 +217,23 @@ public class VpnSettings extends Activity {
         }
 
         switch (requestCode) {
-        case Constants.REQ_SELECT_VPN_TYPE:
+        case REQ_SELECT_VPN_TYPE:
             onVpnTypePicked(data);
             break;
-        case Constants.REQ_ADD_VPN:
+        case REQ_ADD_VPN:
             onVpnProfileAdded(data);
             break;
+        case REQ_EDIT_VPN:
+            onVpnProfileEdited(data);
+            break;
         default:
+            Log.w(TAG, "onActivityResult, unknown reqeustCode " + requestCode + ", result=" + resultCode + ", data=" + data);
             break;
         }
     }
 
     private void onVpnTypePicked(final Intent data) {
-        VpnType pickedVpnType = (VpnType) data.getExtras().get(Constants.KEY_VPN_TYPE);
+        VpnType pickedVpnType = (VpnType) data.getExtras().get(KEY_VPN_TYPE);
         addVpn(pickedVpnType);
     }
 
@@ -216,16 +248,21 @@ public class VpnSettings extends Activity {
 
         Intent intent = new Intent(this, editorClass);
         intent.setAction(EditAction.CREATE.toString());
-        startActivityForResult(intent, Constants.REQ_ADD_VPN);
+        startActivityForResult(intent, REQ_ADD_VPN);
     }
 
     private void onVpnProfileAdded(final Intent data) {
         Log.i(TAG, "new vpn profile created");
 
-        String newProfileId = data.getStringExtra(Constants.KEY_VPN_PROFILE);
-        VpnProfile profile = vpnActor.getProfile(newProfileId);
+        String name = data.getStringExtra(KEY_VPN_PROFILE_NAME);
+        VpnProfile profile = repository.getProfileByName(name);
 
-        addToProfileListView(vpnActor.getActiveProfileId(), profile);
+        addToProfileListView(repository.getActiveProfileId(), profile);
+        updateProfileListView();
+    }
+
+    private void onVpnProfileEdited(final Intent data) {
+        Log.i(TAG, "vpn profile modified");
         updateProfileListView();
     }
 
@@ -236,7 +273,7 @@ public class VpnSettings extends Activity {
     }
 
     private void save() {
-        vpnActor.save();
+        repository.save();
     }
 
     private void vpnItemActivated(final VpnViewItem activatedItem) {
@@ -249,7 +286,7 @@ public class VpnSettings extends Activity {
         }
 
         activeVpnItem = activatedItem;
-        vpnActor.setActiveProfile(activeVpnItem.profile);
+        repository.setActiveProfile(activeVpnItem.profile);
         updateProfileListView();
     }
 

@@ -160,12 +160,21 @@ public class VpnProfileRepository {
             return null;
         }
 
-        return getProfile(activeProfileId);
+        return getProfileById(activeProfileId);
     }
 
-    public VpnProfile getProfile(final String id) {
+    private VpnProfile getProfileById(final String id) {
         for (VpnProfile p : profiles) {
             if (p.getId().equals(id)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public VpnProfile getProfileByName(final String name) {
+        for (VpnProfile p : profiles) {
+            if (p.getName().equals(name)) {
                 return p;
             }
         }
@@ -180,19 +189,21 @@ public class VpnProfileRepository {
     }
 
     public void addVpnProfile(final VpnProfile p) {
-        checkProfileName(p.getName());
+        checkProfile(p);
         p.setId(UUID.randomUUID().toString());
         profiles.add(p);
     }
 
-    private void checkProfileName(final String name) {
-        if (TextUtils.isEmpty(name)) {
+    public void checkProfile(final VpnProfile newProfile) {
+        String newName = newProfile.getName();
+
+        if (TextUtils.isEmpty(newName)) {
             throw new InvalidProfileException("profile name is empty.", R.string.err_empty_name);
         }
 
         for (VpnProfile p : profiles) {
-            if (name.equals(p.getName())) {
-                throw new InvalidProfileException("duplicated profile name '" + name + "'.", R.string.err_duplicated_profile_name, name);
+            if (newProfile != p && newName.equals(p.getName())) {
+                throw new InvalidProfileException("duplicated profile name '" + newName + "'.", R.string.err_duplicated_profile_name, newName);
             }
         }
     }
