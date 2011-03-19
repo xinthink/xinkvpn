@@ -10,33 +10,50 @@ import java.util.Map;
 import xink.vpn.editor.EditAction;
 import xink.vpn.editor.VpnProfileEditor;
 import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.wrapper.VpnState;
 import xink.vpn.wrapper.VpnType;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 public class VpnSettings extends Activity {
 
-    private static final String ROWITEM_KEY = "vpn";
-    private static final String TAG = "xink";
-    private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY };
-    private static final int[] VPN_VIEWS = new int[] { R.id.radioActive };
+    private static final String ROWITEM_KEY = "vpn"; //$NON-NLS-1$
+    private static final String TAG = "xink"; //$NON-NLS-1$
+
+    // 同一行的所有控件绑定同一份数据
+    private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY, ROWITEM_KEY, ROWITEM_KEY };
+    private static final int[] VPN_VIEWS = new int[] { R.id.radioActive, R.id.tgbtnConn, R.id.txtStateMsg };
 
     private VpnProfileRepository repository;
     private ListView vpnListView;
@@ -44,11 +61,16 @@ public class VpnSettings extends Activity {
     private VpnViewBinder vpnViewBinder = new VpnViewBinder();
     private VpnViewItem activeVpnItem;
     private SimpleAdapter vpnListAdapter;
+    private VpnActor actor;
+    private BroadcastReceiver stateBroadcastReceiver;
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        repository = VpnProfileRepository.getInstance(getApplicationContext());
+        actor = new VpnActor(getApplicationContext());
 
         setTitle(R.string.selectVpn);
         setContentView(R.layout.vpn_list);
@@ -62,13 +84,23 @@ public class VpnSettings extends Activity {
         });
 
         vpnListViewContent = new ArrayList<Map<String, VpnViewItem>>();
-        repository = VpnProfileRepository.getInstance(getApplicationContext());
         vpnListView = (ListView) findViewById(R.id.listVpns);
+        buildVpnListView();
 
-        refreshVpnList();
+        registerReceivers();
+        checkAllVpnStatus();
     }
 
-    private void refreshVpnList() {
+    private void checkAllVpnStatus() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                actor.checkAllStatus();
+            }
+        }, "vpn-state-checker").start(); //$NON-NLS-1$
+    }
+
+    private void buildVpnListView() {
         loadContent();
 
         vpnListAdapter = new SimpleAdapter(this, vpnListViewContent, R.layout.vpn_profile, VPN_VIEW_KEYS, VPN_VIEWS);
@@ -85,11 +117,11 @@ public class VpnSettings extends Activity {
         List<VpnProfile> allVpnProfiles = repository.getAllVpnProfiles();
 
         for (VpnProfile vpnProfile : allVpnProfiles) {
-            addToProfileListView(activeProfileId, vpnProfile);
+            addToVpnListView(activeProfileId, vpnProfile);
         }
     }
 
-    private void addToProfileListView(final String activeProfileId, final VpnProfile vpnProfile) {
+    private void addToVpnListView(final String activeProfileId, final VpnProfile vpnProfile) {
         if (vpnProfile == null) {
             return;
         }
@@ -159,12 +191,21 @@ public class VpnSettings extends Activity {
     }
 
     private void onDeleteVpn(final VpnViewItem vpnItem) {
-        repository.deleteVpnProfile(vpnItem.profile);
-        refreshVpnList();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(android.R.string.dialog_alert_title).setMessage(R.string.del_vpn_confirm);
+        builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(final DialogInterface dialog, final int which) {
+                repository.deleteVpnProfile(vpnItem.profile);
+                buildVpnListView();
+            }
+
+        }).setNegativeButton(android.R.string.no, null).show();
     }
 
     private void onEditVpn(final VpnViewItem vpnItem) {
-        Log.d(TAG, "onEditVpn");
+        Log.d(TAG, "onEditVpn"); //$NON-NLS-1$
 
         VpnProfile p = vpnItem.profile;
         editVpn(p);
@@ -175,7 +216,7 @@ public class VpnSettings extends Activity {
 
         Class<? extends VpnProfileEditor> editorClass = type.getEditorClass();
         if (editorClass == null) {
-            Log.d(TAG, "editor class is null for " + type);
+            Log.d(TAG, "editor class is null for " + type); //$NON-NLS-1$
             return;
         }
 
@@ -190,6 +231,9 @@ public class VpnSettings extends Activity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.vpn_list_menu, menu);
 
+        menu.findItem(R.id.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
+        menu.findItem(R.id.menu_help).setIcon(android.R.drawable.ic_menu_help);
+
         return true;
     }
 
@@ -198,16 +242,26 @@ public class VpnSettings extends Activity {
      */
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
-        boolean consumed = false;
+        boolean consumed = true;
         int itemId = item.getItemId();
 
         switch (itemId) {
+        case R.id.menu_about:
+            showDialog(DLG_ABOUT);
+            break;
+        case R.id.menu_help:
+            openWikiHome();
+            break;
         default:
             consumed = super.onContextItemSelected(item);
             break;
         }
 
         return consumed;
+    }
+
+    private void openWikiHome() {
+        openUrl(getString(R.string.url_wiki_home));
     }
 
     @Override
@@ -227,7 +281,7 @@ public class VpnSettings extends Activity {
             onVpnProfileEdited(data);
             break;
         default:
-            Log.w(TAG, "onActivityResult, unknown reqeustCode " + requestCode + ", result=" + resultCode + ", data=" + data);
+            Log.w(TAG, "onActivityResult, unknown reqeustCode " + requestCode + ", result=" + resultCode + ", data=" + data); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             break;
         }
     }
@@ -238,11 +292,11 @@ public class VpnSettings extends Activity {
     }
 
     private void addVpn(final VpnType vpnType) {
-        Log.i(TAG, "add vpn " + vpnType);
+        Log.i(TAG, "add vpn " + vpnType); //$NON-NLS-1$
         Class<? extends VpnProfileEditor> editorClass = vpnType.getEditorClass();
 
         if (editorClass == null) {
-            Log.d(TAG, "editor class is null for " + vpnType);
+            Log.d(TAG, "editor class is null for " + vpnType); //$NON-NLS-1$
             return;
         }
 
@@ -252,28 +306,92 @@ public class VpnSettings extends Activity {
     }
 
     private void onVpnProfileAdded(final Intent data) {
-        Log.i(TAG, "new vpn profile created");
+        Log.i(TAG, "new vpn profile created"); //$NON-NLS-1$
 
         String name = data.getStringExtra(KEY_VPN_PROFILE_NAME);
         VpnProfile profile = repository.getProfileByName(name);
 
-        addToProfileListView(repository.getActiveProfileId(), profile);
-        updateProfileListView();
+        addToVpnListView(repository.getActiveProfileId(), profile);
+        refreshVpnListView();
     }
 
     private void onVpnProfileEdited(final Intent data) {
-        Log.i(TAG, "vpn profile modified");
-        updateProfileListView();
+        Log.i(TAG, "vpn profile modified"); //$NON-NLS-1$
+        refreshVpnListView();
+    }
+
+    private void registerReceivers() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(ACTION_VPN_CONNECTIVITY);
+        filter.addAction(ACT_TOGGLE_VPN_CONN);
+        stateBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(final Context context, final Intent intent) {
+                String action = intent.getAction();
+
+                if (ACT_TOGGLE_VPN_CONN.equals(action)) {
+                } else if (ACTION_VPN_CONNECTIVITY.equals(action)) {
+                    onStateChanged(intent);
+                } else {
+                    Log.w(TAG, "VpnStateReceiver ignores unknown intent:" + intent); //$NON-NLS-1$
+                }
+            }
+        };
+        registerReceiver(stateBroadcastReceiver, filter);
+    }
+
+    private void onStateChanged(final Intent intent) {
+        Log.d(TAG, "onStateChanged: " + intent); //$NON-NLS-1$
+
+        final String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
+        final VpnState state = VpnActor.extractVpnState(intent);
+        final int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                stateChanged(profileName, state, err);
+            }
+        });
+    }
+
+    private void stateChanged(final String profileName, final VpnState state, final int errCode) {
+        Log.d(TAG, "stateChanged, '" + profileName + "', state: " + state + ", errCode=" + errCode); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        VpnProfile p = repository.getProfileByName(profileName);
+
+        if (p == null) {
+            Log.w(TAG, profileName + " NOT found"); //$NON-NLS-1$
+            return;
+        }
+
+        p.setState(state);
+        refreshVpnListView();
     }
 
     @Override
-    protected void onStop() {
+    protected void onDestroy() {
+        Log.d(TAG, "VpnSettings onDestroy"); //$NON-NLS-1$
+        unregisterReceivers();
+
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "VpnSettings onPause"); //$NON-NLS-1$
         save();
-        super.onStop();
+
+        super.onPause();
     }
 
     private void save() {
         repository.save();
+    }
+
+    private void unregisterReceivers() {
+        if (stateBroadcastReceiver != null) {
+            unregisterReceiver(stateBroadcastReceiver);
+        }
     }
 
     private void vpnItemActivated(final VpnViewItem activatedItem) {
@@ -287,10 +405,10 @@ public class VpnSettings extends Activity {
 
         activeVpnItem = activatedItem;
         repository.setActiveProfile(activeVpnItem.profile);
-        updateProfileListView();
+        refreshVpnListView();
     }
 
-    private void updateProfileListView() {
+    private void refreshVpnListView() {
         runOnUiThread(new Runnable() {
 
             @Override
@@ -300,7 +418,55 @@ public class VpnSettings extends Activity {
         });
     }
 
-    static final class VpnViewBinder implements ViewBinder {
+    @Override
+    protected Dialog onCreateDialog(final int id) {
+        switch (id) {
+        case DLG_ABOUT:
+            return createAboutDialog();
+        default:
+            break;
+        }
+        return null;
+    }
+
+    private Dialog createAboutDialog() {
+        AlertDialog.Builder builder;
+
+        LayoutInflater inflater = getLayoutInflater();
+        View layout = inflater.inflate(R.layout.about, (ViewGroup) findViewById(R.id.aboutRoot));
+
+        builder = new AlertDialog.Builder(this);
+        builder.setView(layout).setTitle(getString(R.string.about));
+
+        bindPackInfo(layout);
+
+        ImageView imgPaypal = (ImageView) layout.findViewById(R.id.imgPaypalDonate);
+        imgPaypal.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                openUrl(getString(R.string.url_paypal_donate));
+            }
+        });
+
+        return builder.create();
+    }
+
+    private void bindPackInfo(final View layout) {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            TextView txtVer = (TextView) layout.findViewById(R.id.txtVersion);
+            txtVer.setText(getString(R.string.pack_ver, getString(R.string.app_name), info.versionName));
+        } catch (NameNotFoundException e) {
+            Log.e(TAG, "get pack info failed", e); //$NON-NLS-1$
+        }
+    }
+
+    private void openUrl(final String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
+    }
+
+    final class VpnViewBinder implements ViewBinder {
 
         @Override
         public boolean setViewValue(final View view, final Object data, final String textRepresentation) {
@@ -309,24 +475,60 @@ public class VpnSettings extends Activity {
             }
 
             VpnViewItem item = (VpnViewItem) data;
-            boolean bound = false;
+            boolean bound = true;
 
             if (view instanceof RadioButton) {
                 bindVpnItem((RadioButton) view, item);
-                bound = true;
+            } else if (view instanceof ToggleButton) {
+                bindVpnState((ToggleButton) view, item);
+            } else if (view instanceof TextView) {
+                bindVpnStateMsg(((TextView) view), item);
+            } else {
+                bound = false;
+                Log.d(TAG, "unknown view, not bound: v=" + view + ", data=" + textRepresentation); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             return bound;
         }
 
         private void bindVpnItem(final RadioButton view, final VpnViewItem item) {
-            view.setText(item.profile.getName());
-
             view.setOnCheckedChangeListener(null);
-            view.setOnLongClickListener(null);
 
+            view.setText(item.profile.getName());
             view.setChecked(item.isActive);
+
             view.setOnCheckedChangeListener(item);
+        }
+
+        private void bindVpnState(final ToggleButton view, final VpnViewItem item) {
+            view.setOnCheckedChangeListener(null);
+
+            VpnState state = item.profile.getState();
+            view.setChecked(state == VpnState.CONNECTED);
+            view.setEnabled(VpnActor.isInStableState(item.profile));
+
+            view.setOnCheckedChangeListener(item);
+        }
+
+        private void bindVpnStateMsg(final TextView textView, final VpnViewItem item) {
+            VpnState state = item.profile.getState();
+            String txt = getStateText(state);
+            textView.setVisibility(TextUtils.isEmpty(txt) ? View.INVISIBLE : View.VISIBLE);
+            textView.setText(txt);
+        }
+
+        private String getStateText(final VpnState state) {
+            String txt = ""; //$NON-NLS-1$
+            switch (state) {
+            case CONNECTING:
+                txt = getString(R.string.connecting);
+                break;
+            case DISCONNECTING:
+                txt = getString(R.string.disconnecting);
+                break;
+            }
+
+            return txt;
         }
     }
 
@@ -336,6 +538,15 @@ public class VpnSettings extends Activity {
 
         @Override
         public void onCheckedChanged(final CompoundButton button, final boolean isChecked) {
+
+            if (button instanceof RadioButton) {
+                onActivationChanged(isChecked);
+            } else if (button instanceof ToggleButton) {
+                toggleState(isChecked);
+            }
+        }
+
+        private void onActivationChanged(final boolean isChecked) {
             if (isActive == isChecked) {
                 return;
             }
@@ -344,6 +555,14 @@ public class VpnSettings extends Activity {
 
             if (isActive) {
                 vpnItemActivated(this);
+            }
+        }
+
+        private void toggleState(final boolean isChecked) {
+            if (isChecked) {
+                actor.connect(profile);
+            } else {
+                actor.disconnect();
             }
         }
 

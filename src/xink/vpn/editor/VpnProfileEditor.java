@@ -7,6 +7,7 @@ import xink.vpn.VpnProfileRepository;
 import xink.vpn.VpnSettings;
 import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,7 +26,7 @@ import android.widget.TextView;
 
 public abstract class VpnProfileEditor extends Activity {
 
-    private static final String MSG_ARGS = "messageArgs";
+    private static final String MSG_ARGS = "messageArgs"; //$NON-NLS-1$
 
     private EditAction editAction;
     private VpnProfile profile;
@@ -56,14 +57,14 @@ public abstract class VpnProfileEditor extends Activity {
 
     private void initWidgets(final ViewGroup content) {
         TextView lblVpnName = new TextView(this);
-        lblVpnName.setText("Name");
+        lblVpnName.setText(getString(R.string.vpnname)); //$NON-NLS-1$
         content.addView(lblVpnName);
 
         txtVpnName = new EditText(this);
         content.addView(txtVpnName);
 
         TextView lblServer = new TextView(this);
-        lblServer.setText("Server");
+        lblServer.setText(getString(R.string.server)); //$NON-NLS-1$
         content.addView(lblServer);
 
         txtServer = new EditText(this);
@@ -72,11 +73,11 @@ public abstract class VpnProfileEditor extends Activity {
         initSpecificWidgets(content);
 
         TextView lblDnsSuffices = new TextView(this);
-        lblDnsSuffices.setText("DNS Suffices");
+        lblDnsSuffices.setText(getString(R.string.dns_suffices)); //$NON-NLS-1$
         content.addView(lblDnsSuffices);
 
         TextView lblDnsSufficesDesc = new TextView(this);
-        lblDnsSufficesDesc.setText("comma separated");
+        lblDnsSufficesDesc.setText(getString(R.string.comma_sep)); //$NON-NLS-1$
         lblDnsSufficesDesc.setTextColor(0xFF999999);
         lblDnsSufficesDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         content.addView(lblDnsSufficesDesc);
@@ -85,14 +86,14 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(txtDnsSuffices);
 
         TextView lblUserName = new TextView(this);
-        lblUserName.setText("User Name");
+        lblUserName.setText(getString(R.string.username)); //$NON-NLS-1$
         content.addView(lblUserName);
 
         txtUserName = new EditText(this);
         content.addView(txtUserName);
 
         TextView lblPassword = new TextView(this);
-        lblPassword.setText("Password");
+        lblPassword.setText(getString(R.string.password)); //$NON-NLS-1$
         content.addView(lblPassword);
 
         txtPassword = new EditText(this);
@@ -133,7 +134,7 @@ public abstract class VpnProfileEditor extends Activity {
             initViewBinding();
             break;
         default:
-            throw new AppException("failed to init VpnProfileEditor, unknown editAction: " + editAction);
+            throw new AppException("failed to init VpnProfileEditor, unknown editAction: " + editAction); //$NON-NLS-1$
         }
 
         setTitle(profile.getType().getNameRid());
@@ -153,7 +154,7 @@ public abstract class VpnProfileEditor extends Activity {
     @Override
     protected Dialog onCreateDialog(final int id) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true).setMessage("");
+        builder.setCancelable(true).setMessage(""); //$NON-NLS-1$
         return builder.create();
     }
 
@@ -161,6 +162,28 @@ public abstract class VpnProfileEditor extends Activity {
     protected void onPrepareDialog(final int id, final Dialog dialog, final Bundle args) {
         Object[] msgArgs = (Object[]) args.getSerializable(MSG_ARGS);
         ((AlertDialog) dialog).setMessage(getString(id, msgArgs));
+    }
+
+    @Override
+    protected void onRestoreInstanceState(final Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            return;
+        }
+
+        txtVpnName.setText(savedInstanceState.getCharSequence("name")); //$NON-NLS-1$
+        txtServer.setText(savedInstanceState.getCharSequence("server")); //$NON-NLS-1$
+        txtDnsSuffices.setText(savedInstanceState.getCharSequence("dns")); //$NON-NLS-1$
+        txtUserName.setText(savedInstanceState.getCharSequence("user")); //$NON-NLS-1$
+        txtPassword.setText(savedInstanceState.getCharSequence("password")); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void onSaveInstanceState(final Bundle outState) {
+        outState.putCharSequence("name", txtVpnName.getText()); //$NON-NLS-1$
+        outState.putCharSequence("server", txtServer.getText()); //$NON-NLS-1$
+        outState.putCharSequence("dns", txtDnsSuffices.getText()); //$NON-NLS-1$
+        outState.putCharSequence("user", txtUserName.getText()); //$NON-NLS-1$
+        outState.putCharSequence("password", txtPassword.getText()); //$NON-NLS-1$
     }
 
     protected void onSave() {
@@ -192,6 +215,7 @@ public abstract class VpnProfileEditor extends Activity {
         profile.setDomainSuffices(txtDnsSuffices.getText().toString().trim());
         profile.setUsername(txtUserName.getText().toString().trim());
         profile.setPassword(txtPassword.getText().toString().trim());
+        profile.setState(VpnState.IDLE);
         doPopulateProfile();
     }
 

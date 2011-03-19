@@ -12,6 +12,8 @@ public abstract class VpnProfile extends AbstractWrapper {
 
     private String password;
 
+    private VpnState state = VpnState.UNKNOWN;
+
     protected VpnProfile(final Context ctx, final String stubClass) {
         super(ctx, stubClass);
     }
@@ -109,6 +111,14 @@ public abstract class VpnProfile extends AbstractWrapper {
 
     public Class<?> getGenericProfileClass() {
         return loadClass("android.net.vpn.VpnProfile");
+    }
+
+    public VpnState getState() {
+        return state;
+    }
+
+    public void setState(final VpnState state) {
+        this.state = state;
     }
 
     public abstract VpnType getType();

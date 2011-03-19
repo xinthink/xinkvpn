@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="match_parent" android:layout_height="match_parent" android:baselineAligned="true">
-    <RadioButton android:id="@+id/radioActive" android:layout_height="wrap_content" android:text="VPN profile" android:layout_marginLeft="10dip" android:layout_marginRight="10dip" android:longClickable="true" android:layout_width="match_parent" android:layout_gravity="left|center_vertical" android:layout_marginTop="8dip" android:layout_marginBottom="8dip"></RadioButton>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:baselineAligned="true"
+  android:layout_height="fill_parent" android:layout_width="fill_parent" android:paddingTop="8dip" android:paddingLeft="10dip" android:paddingRight="10dip" android:orientation="vertical" android:paddingBottom="1dip">
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+    <RadioButton android:id="@+id/radioActive" android:layout_gravity="left|center_vertical"
+      android:layout_width="match_parent" android:text="VPN profile"
+      android:layout_weight="1" android:layout_height="wrap_content"
+      android:longClickable="true" android:layout_marginRight="1dip"></RadioButton>
+    <ToggleButton android:text="ToggleButton" android:layout_gravity="right|center_vertical"
+      android:layout_width="match_parent" android:id="@+id/tgbtnConn" android:layout_weight="4" android:layout_height="wrap_content"></ToggleButton>
+  </LinearLayout>
+  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingLeft="20dip">
+      <TextView android:text="message" android:id="@+id/txtStateMsg" style="@style/VpnTypeDescStyle" android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="wrap_content" android:layout_gravity="left|center_vertical" android:layout_marginLeft="1dip"></TextView>
+  </LinearLayout>
 </LinearLayout>

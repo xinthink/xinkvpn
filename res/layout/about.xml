@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent" android:id="@+id/aboutRoot" android:orientation="vertical">
+    <ImageView android:src="@drawable/icon" android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_gravity="center"></ImageView>
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:id="@+id/txtVersion" android:text="XinkVPN 1.0.Beta"></TextView>
+    <LinearLayout android:layout_width="match_parent" android:layout_gravity="center_horizontal" android:gravity="bottom" android:layout_marginLeft="10dip" android:layout_marginRight="10dip" android:layout_marginTop="20dip" android:layout_height="match_parent" android:orientation="vertical" android:layout_marginBottom="10dip">
+        <LinearLayout android:orientation="horizontal" android:layout_height="wrap_content" android:layout_width="match_parent">
+            <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_marginRight="2dip" android:text="@string/lbl_report_bug"></TextView>
+            <TextView android:layout_height="wrap_content" android:autoLink="web" android:ellipsize="middle" android:layout_width="match_parent" android:lines="1" android:text="@string/url_issues" android:gravity="right"></TextView>
+        </LinearLayout>
+        <LinearLayout android:layout_gravity="center_horizontal" android:layout_height="wrap_content" android:layout_width="match_parent" android:gravity="bottom" android:orientation="horizontal" android:layout_marginTop="2dip">
+            <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_marginRight="2dip" android:autoLink="email" android:text="@string/lbl_email"></TextView>
+            <TextView android:layout_height="wrap_content" android:text="yingxinwu.g@gmail.com" android:autoLink="email" android:layout_width="match_parent" android:gravity="right" android:ellipsize="middle"></TextView>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="2dip">
+            <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="true" android:background="@drawable/vpnwidget_states" android:layout_gravity="left|center_vertical" android:src="@drawable/paypal_donate_48" android:id="@+id/imgPaypalDonate"></ImageView>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

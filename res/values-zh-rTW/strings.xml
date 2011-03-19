@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">XinkVPN</string>
+    <string name="selectVpn">選取活動VPN</string>
+    <string name="add_vpn">新增VPN</string>
+    <string name="del">刪除</string>
+    <string name="add">新增</string>
+    <string name="vpn_pptp">VPN\&quot;PPTP\&quot;</string>
+    <string name="vpn_l2tp">VPN\&quot;L2TP\&quot;</string>
+    <string name="vpn_l2tp_psk">VPN\&quot;L2TP/IPSec PSK\&quot;</string>
+    <string name="vpn_pptp_info">點對點通道通訊協定</string>
+    <string name="vpn_l2tp_info">第二層通道通訊協定</string>
+    <string name="vpn_l2tp_psk_info">採用預先共用金鑰的L2TP/IPSec VPN</string>
+    <string name="err_empty_name">請輸入VPN名稱。</string>
+    <string name="err_duplicated_profile_name">VPN名稱\'%s\'已經存在。</string>
+    <string name="vpn_list_desc">VPN</string>
+    <string name="save">儲存</string>
+    <string name="cancel">取消</string>
+    <string name="edit">編輯</string>
+    <string name="about">關於</string>
+    <string name="url_issues">http://goo.gl/hSG8Z</string>
+    <string name="pack_ver">%1$s %2$s</string>
+    <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
+    <string name="lbl_email">郵箱:</string>
+    <string name="lbl_report_bug">反饋缺陷:</string>
+    <string name="del_vpn_confirm">確定要刪除此VPN嗎？</string>
+    <string name="connecting">連線中...</string>
+    <string name="disconnecting">中斷連線中...</string>
+    <string name="vpnname">VPN名稱</string>
+    <string name="password">密碼</string>
+    <string name="username">使用者名稱</string>
+    <string name="comma_sep">逗號分隔</string>
+    <string name="dns_suffices">DNS搜尋網域</string>
+    <string name="server">VPN伺服器</string>
+    <string name="encrypt_enabled">啟用加密</string>
+    <string name="l2tp_secret_enabled">啟用L2TP密碼</string>
+    <string name="l2tp_secret">L2TP密碼</string>
+    <string name="psk">IPSec預先共用金鑰</string>
+    <string name="help">幫助</string>
+    <string name="url_wiki_home">http://goo.gl/ggnKa</string>
+</resources>

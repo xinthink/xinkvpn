@@ -1,12 +1,6 @@
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
-
-import java.io.Serializable;
-
-import xink.vpn.wrapper.VpnManager;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnService;
 import xink.vpn.wrapper.VpnState;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -16,8 +10,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.os.ConditionVariable;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -45,12 +37,10 @@ public class VpnConnectorService extends Service {
 
     private static final ComponentName THIS_APPWIDGET = new ComponentName("xink.vpn", "xink.vpn.VpnAppWidgetProvider");
 
-    private VpnProfileRepository repository;
-    private VpnManager vpnMgr;
-    private VpnService vpnSrv;
     private Context context;
     private VpnStateReceiver receiver;
     private VpnState state = VpnState.IDLE;
+    private VpnActor actor;
 
     @Override
     public void onCreate() {
@@ -58,8 +48,10 @@ public class VpnConnectorService extends Service {
 
         Log.i(TAG, "VpnConnectorService created");
         context = getApplicationContext();
+        actor = new VpnActor(context);
+
         registerReceivers();
-        checkStatus();
+        actor.checkStatus();
     }
 
     private void registerReceivers() {
@@ -93,10 +85,10 @@ public class VpnConnectorService extends Service {
     public void toggleVpnState(final Intent intent) {
         switch (state) {
         case IDLE:
-            connect();
+            actor.connect();
             break;
         case CONNECTED:
-            disconnect();
+            actor.disconnect();
             break;
         default:
             Log.i(TAG, "toggleVpnState intent not handled, currentState=" + state + ", intent=" + intent);
@@ -104,157 +96,14 @@ public class VpnConnectorService extends Service {
         }
     }
 
-    private void connect() {
-        final VpnProfile p = getRepository().getActiveProfile();
-        if (p == null) {
-            return;
-        }
-
-        Log.i(TAG, "connect active vpn: " + p);
-
-        getVpnMgr().startVpnService();
-
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(final ComponentName className, final IBinder service) {
-                try {
-                    boolean success = getVpnSrv().connect(service, p);
-
-                    if (!success) {
-                        Log.d(TAG, "~~~~~~ connect() failed!");
-                    } else {
-                        Log.d(TAG, "~~~~~~ connect() succeeded!");
-                    }
-                } catch (Throwable e) {
-                    Log.e(TAG, "connect()", e);
-                    stateChanged(p.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                Log.e(TAG, "onServiceDisconnected");
-                checkStatus();
-            }
-        };
-
-        if (!getVpnMgr().bindVpnService(c)) {
-            Log.e(TAG, "bind service failed");
-            stateChanged(p.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
-        }
-    }
-
-    private void disconnect() {
-        Log.i(TAG, "disconnect active vpn");
-
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(final ComponentName className, final IBinder service) {
-                try {
-                    getVpnSrv().disconnect(service);
-                } catch (Exception e) {
-                    Log.e(TAG, "disconnect()", e);
-                    checkStatus();
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                Log.e(TAG, "onServiceDisconnected");
-                checkStatus();
-            }
-        };
-        if (!getVpnMgr().bindVpnService(c)) {
-            Log.e(TAG, "bind service failed");
-            checkStatus();
-        }
-    }
-
-    private void checkStatus() {
-        final VpnProfile p = getRepository().getActiveProfile();
-        if (p == null) {
-            return;
-        }
-
-        Log.i(TAG, "check status of vpn: " + p);
-
-        final ConditionVariable cv = new ConditionVariable();
-        cv.close();
-
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public synchronized void onServiceConnected(final ComponentName className, final IBinder service) {
-                cv.open();
-                try {
-                    getVpnSrv().checkStatus(service, p);
-                } catch (Exception e) {
-                    Log.e(TAG, "checkStatus()", e);
-                    stateChanged(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                cv.open();
-                stateChanged(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-                context.unbindService(this);
-            }
-        };
-        if (getVpnMgr().bindVpnService(c)) {
-            // wait for a second, let status propagate
-            if (!cv.block(1000)) {
-                stateChanged(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-            }
-        }
-    }
-
-    private VpnProfileRepository getRepository() {
-        if (repository == null) {
-            repository = VpnProfileRepository.getInstance(context);
-        }
-
-        return repository;
-    }
-
-    private VpnManager getVpnMgr() {
-        if (vpnMgr == null) {
-            vpnMgr = new VpnManager(context);
-        }
-        return vpnMgr;
-    }
-
-    private VpnService getVpnSrv() {
-
-        if (vpnSrv == null) {
-            vpnSrv = new VpnService(context);
-        }
-        return vpnSrv;
-    }
-
     public void onStateChanged(final Intent intent) {
-        Log.i(TAG, "stateChanged: " + intent);
+        Log.d(TAG, "onStateChanged: " + intent);
 
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
-        VpnState state = getVpnState(intent);
+        VpnState state = VpnActor.extractVpnState(intent);
         int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
 
         stateChanged(profileName, state, err);
-    }
-
-    private VpnState getVpnState(final Intent intent) {
-        Serializable obj = intent.getSerializableExtra(BROADCAST_CONNECTION_STATE);
-        VpnState state = VpnState.IDLE;
-
-        if (obj != null) {
-            state = VpnState.valueOf(obj.toString());
-        }
-        return state;
     }
 
     private void stateChanged(final String profileName, final VpnState newState, final int errCode) {

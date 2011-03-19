@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, VpnSettingView!</string>
-    <string name="app_name">Xink VPN</string>
+    <string name="app_name">XinkVPN</string>
     <string name="selectVpn">Choose Active VPN</string>
     <string name="add_vpn">Add VPN</string>
     <string name="del">Delete</string>
@@ -9,13 +8,34 @@
     <string name="vpn_pptp">VPN\&quot;PPTP\&quot;</string>
     <string name="vpn_l2tp">VPN\&quot;L2TP\&quot;</string>
     <string name="vpn_l2tp_psk">VPN\&quot;L2TP/IPSec PSK\&quot;</string>
-    <string name="vpn_pptp_info">Point to Point tunnel protocol</string>
-    <string name="vpn_l2tp_info">Layer 2 tunnel protocol</string>
-    <string name="vpn_l2tp_psk_info">Private shared key based layer 2 tunnel protocol</string>
-    <string name="err_empty_name">VPN name is empty.</string>
-    <string name="err_duplicated_profile_name">VPN name \'%s\' has already been taken.</string>
-    <string name="vpn_list_desc">VPNs (long presse to show options)</string>
+    <string name="vpn_pptp_info">Point-to-Point Tunneling Protocol</string>
+    <string name="vpn_l2tp_info">Layer 2 Tunneling Protocol</string>
+    <string name="vpn_l2tp_psk_info">Pre-shared key based L2TP/IPSec VPN</string>
+    <string name="err_empty_name">Please enter a VPN name.</string>
+    <string name="err_duplicated_profile_name">The VPN name \'%s\' already exists.</string>
+    <string name="vpn_list_desc">VPNs</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="edit">Edit</string>
+    <string name="about">About</string>
+    <string name="url_issues">http://goo.gl/hSG8Z</string>
+    <string name="pack_ver">%1$s %2$s</string>
+    <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
+    <string name="lbl_email">Email:</string>
+    <string name="lbl_report_bug">Report bugs:</string>
+    <string name="del_vpn_confirm">Are you sure to delete this VPN?</string>
+    <string name="connecting">Connecting...</string>
+    <string name="disconnecting">Disconnecting...</string>
+    <string name="vpnname">VPN name</string>
+    <string name="password">Password</string>
+    <string name="username">Username</string>
+    <string name="comma_sep">comma separated</string>
+    <string name="dns_suffices">DNS search domains</string>
+    <string name="server">VPN server</string>
+    <string name="encrypt_enabled">Enable encryption</string>
+    <string name="l2tp_secret_enabled">Enable L2TP secret</string>
+    <string name="l2tp_secret">L2TP secret</string>
+    <string name="psk">IPSec pre-shared key</string>
+    <string name="help">Help</string>
+    <string name="url_wiki_home">http://goo.gl/ggnKa</string>
 </resources>

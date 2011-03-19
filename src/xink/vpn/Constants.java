@@ -23,6 +23,8 @@ public class Constants {
 
     public static final int DLG_VPN_PROFILE_ALERT = 1;
 
+    public static final int DLG_ABOUT = 2;
+
     // Action for broadcasting a connectivity state.
     public static final String ACTION_VPN_CONNECTIVITY = "vpn.connectivity";
     /** Key to the profile name of a connectivity broadcast event. */

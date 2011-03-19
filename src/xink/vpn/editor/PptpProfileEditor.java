@@ -1,7 +1,9 @@
 package xink.vpn.editor;
 
+import xink.vpn.R;
 import xink.vpn.wrapper.PptpProfile;
 import xink.vpn.wrapper.VpnProfile;
+import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 
@@ -11,18 +13,26 @@ public class PptpProfileEditor extends VpnProfileEditor {
 
     @Override
     protected void initSpecificWidgets(final ViewGroup content) {
-        // ListView row = new ListView(this);
-        // content.addView(row);
-        //
-        // CheckedTextView txtEncrypt = new CheckedTextView(this);
-        // txtEncrypt.setText("Encryption Enabled");
-        //
-        // row.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        // row.addView(txtEncrypt);
-
         chkEncrypt = new CheckBox(this);
-        chkEncrypt.setText("Encryption Enabled");
+        chkEncrypt.setText(getString(R.string.encrypt_enabled)); //$NON-NLS-1$
         content.addView(chkEncrypt);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(final Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            return;
+        }
+        super.onRestoreInstanceState(savedInstanceState);
+
+        chkEncrypt.setChecked(savedInstanceState.getBoolean("encrypt")); //$NON-NLS-1$
+    }
+
+    @Override
+    protected void onSaveInstanceState(final Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean("encrypt", chkEncrypt.isChecked()); //$NON-NLS-1$
     }
 
     @Override

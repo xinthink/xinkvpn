@@ -4,6 +4,7 @@ bin/
 .svn/
 classes/
 cache/
+dist/
 
 .git*
 *.log*
@@ -12,3 +13,6 @@ cache/
 *.swp
 *.orig
 .DS_Store
+*.apk
+*.bak
+~*
