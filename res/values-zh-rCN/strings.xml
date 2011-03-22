@@ -37,5 +37,6 @@
     <string name="l2tp_secret">L2TP密钥</string>
     <string name="psk">IPSec预共享密钥</string>
     <string name="help">帮助</string>
-    <string name="url_wiki_home">http://goo.gl/ggnKa</string>
+    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
+    <string name="err_no_active_vpn">尚未指定默认VPN。</string>
 </resources>

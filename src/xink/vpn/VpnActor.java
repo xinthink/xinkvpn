@@ -34,7 +34,7 @@ public class VpnActor {
     public void connect() {
         final VpnProfile p = getRepository().getActiveProfile();
         if (p == null) {
-            return;
+            throw new NoActiveVpnException("connect failed, no active vpn");
         }
 
         connect(p);
@@ -177,6 +177,11 @@ public class VpnActor {
             vpnSrv = new VpnService(context);
         }
         return vpnSrv;
+    }
+
+    public void activate(final VpnProfile p) {
+        getRepository().setActiveProfile(p);
+        broadcastConnectivity(p.getName(), p.getState(), VPN_ERROR_NO_ERROR);
     }
 
     public void broadcastConnectivity(final String profileName, final VpnState s, final int error) {

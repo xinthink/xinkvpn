@@ -149,12 +149,20 @@ public class VpnSettings extends Activity {
     public void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
 
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        VpnViewItem selectedVpnItem = getVpnViewItemAt(info.position);
-        menu.setHeaderTitle(selectedVpnItem.profile.getName());
-
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.vpn_list_context_menu, menu);
+
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
+        VpnViewItem selectedVpnItem = getVpnViewItemAt(info.position);
+        VpnProfile p = selectedVpnItem.profile;
+
+        menu.setHeaderTitle(p.getName());
+
+        if (p.getState() == VpnState.CONNECTED) {
+            // 已经连通的VPN不允许修改
+            menu.findItem(R.id.menu_edit_vpn).setEnabled(false);
+            menu.findItem(R.id.menu_del_vpn).setEnabled(false);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -404,7 +412,7 @@ public class VpnSettings extends Activity {
         }
 
         activeVpnItem = activatedItem;
-        repository.setActiveProfile(activeVpnItem.profile);
+        actor.activate(activeVpnItem.profile);
         refreshVpnListView();
     }
 

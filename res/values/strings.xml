@@ -37,5 +37,6 @@
     <string name="l2tp_secret">L2TP secret</string>
     <string name="psk">IPSec pre-shared key</string>
     <string name="help">Help</string>
-    <string name="url_wiki_home">http://goo.gl/ggnKa</string>
+    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
+    <string name="err_no_active_vpn">There is no active VPN.</string>
 </resources>

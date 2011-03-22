@@ -1,6 +1,7 @@
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
+import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -13,6 +14,7 @@ import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 public class VpnConnectorService extends Service {
 
@@ -33,7 +35,7 @@ public class VpnConnectorService extends Service {
 
     }
 
-    private static final String TAG = "xink";
+    private static final String TAG = VpnConnectorService.class.getName();
 
     private static final ComponentName THIS_APPWIDGET = new ComponentName("xink.vpn", "xink.vpn.VpnAppWidgetProvider");
 
@@ -50,6 +52,7 @@ public class VpnConnectorService extends Service {
         context = getApplicationContext();
         actor = new VpnActor(context);
 
+        updateViews();
         registerReceivers();
         actor.checkStatus();
     }
@@ -85,7 +88,7 @@ public class VpnConnectorService extends Service {
     public void toggleVpnState(final Intent intent) {
         switch (state) {
         case IDLE:
-            actor.connect();
+            connect();
             break;
         case CONNECTED:
             actor.disconnect();
@@ -96,14 +99,34 @@ public class VpnConnectorService extends Service {
         }
     }
 
+    private void connect() {
+        try {
+            actor.connect();
+        } catch (NoActiveVpnException e) {
+            Toast.makeText(this, getString(R.string.err_no_active_vpn), Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "connect failed, no active vpn");
+        }
+    }
+
     public void onStateChanged(final Intent intent) {
         Log.d(TAG, "onStateChanged: " + intent);
 
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
-        VpnState state = VpnActor.extractVpnState(intent);
-        int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
 
-        stateChanged(profileName, state, err);
+        if (profileName.equals(getActvieProfileName())) {
+            VpnState state = VpnActor.extractVpnState(intent);
+            int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
+
+            stateChanged(profileName, state, err);
+        } else {
+            Log.d(TAG, "ignores non-active profile event for " + profileName);
+        }
+    }
+
+    private String getActvieProfileName() {
+        VpnProfileRepository repository = VpnProfileRepository.getInstance(context);
+        VpnProfile activeProfile = repository.getActiveProfile();
+        return activeProfile != null ? activeProfile.getName() : null;
     }
 
     private void stateChanged(final String profileName, final VpnState newState, final int errCode) {
