@@ -7,7 +7,6 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
@@ -190,7 +189,7 @@ public class VpnProfileRepository {
 
     public void addVpnProfile(final VpnProfile p) {
         checkProfile(p);
-        p.setId(UUID.randomUUID().toString());
+        p.postConstruct();
         profiles.add(p);
     }
 
@@ -206,6 +205,8 @@ public class VpnProfileRepository {
                 throw new InvalidProfileException("duplicated profile name '" + newName + "'.", R.string.err_duplicated_profile_name, newName);
             }
         }
+
+        newProfile.validate();
     }
 
     public void deleteVpnProfile(final VpnProfile profile) {

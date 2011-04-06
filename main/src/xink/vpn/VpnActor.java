@@ -5,6 +5,8 @@ import static xink.vpn.Constants.*;
 import java.io.Serializable;
 import java.util.List;
 
+import xink.vpn.wrapper.KeyStore;
+import xink.vpn.wrapper.L2tpIpsecPskProfile;
 import xink.vpn.wrapper.VpnManager;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnService;
@@ -42,6 +44,19 @@ public class VpnActor {
 
     public void connect(final VpnProfile p) {
         Log.i(TAG, "connect to: " + p);
+
+        if (p instanceof L2tpIpsecPskProfile) {
+            L2tpIpsecPskProfile pskp = (L2tpIpsecPskProfile) p;
+
+            System.out.println("server='" + pskp.getServerName() + '\'');
+            System.out.println("psk='" + pskp.getPresharedKey() + '\'');
+            System.out.println("user='" + pskp.getUsername() + '\'');
+            System.out.println("password='" + pskp.getPassword() + '\'');
+        }
+
+        Log.i(TAG, "unlocked? " + new KeyStore(context).isUnlocked());
+        Log.i(TAG, "contains key? " + new KeyStore(context).contains(p));
+
         getVpnMgr().startVpnService();
 
         ServiceConnection c = new ServiceConnection() {

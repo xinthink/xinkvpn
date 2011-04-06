@@ -3,7 +3,9 @@ package xink.vpn.wrapper;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.UUID;
 
+import android.app.Activity;
 import android.content.Context;
 
 public abstract class VpnProfile extends AbstractWrapper {
@@ -29,6 +31,18 @@ public abstract class VpnProfile extends AbstractWrapper {
         } catch (Exception e) {
             throw new WrapperException("failed to create instance for " + vpnType, e);
         }
+    }
+
+    public void postConstruct() {
+        setId(UUID.randomUUID().toString());
+    }
+
+    public void validate() {
+
+    }
+
+    public void preConnect(final Activity activity) {
+
     }
 
     /**

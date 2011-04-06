@@ -9,6 +9,7 @@ import java.util.Map;
 
 import xink.vpn.editor.EditAction;
 import xink.vpn.editor.VpnProfileEditor;
+import xink.vpn.wrapper.KeyStore;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import xink.vpn.wrapper.VpnType;
@@ -283,9 +284,11 @@ public class VpnSettings extends Activity {
             onVpnTypePicked(data);
             break;
         case REQ_ADD_VPN:
+            Log.i(TAG, "unlocked? " + new KeyStore(this).isUnlocked());
             onVpnProfileAdded(data);
             break;
         case REQ_EDIT_VPN:
+            new KeyStore(this).isUnlocked();
             onVpnProfileEdited(data);
             break;
         default:
@@ -318,6 +321,8 @@ public class VpnSettings extends Activity {
 
         String name = data.getStringExtra(KEY_VPN_PROFILE_NAME);
         VpnProfile profile = repository.getProfileByName(name);
+
+        Log.i(TAG, "contains key? " + new KeyStore(this).contains(profile));
 
         addToVpnListView(repository.getActiveProfileId(), profile);
         refreshVpnListView();
