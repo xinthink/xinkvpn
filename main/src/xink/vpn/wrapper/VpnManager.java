@@ -7,7 +7,11 @@ import android.content.ServiceConnection;
 
 public class VpnManager extends AbstractWrapper {
 
-    public VpnManager(final Context ctx) {
+    public static final String METHOD_BIND_VPN_SERVICE = "bindVpnService";
+	public static final String METHOD_STOP_VPN_SERVICE = "stopVpnService";
+	public static final String METHOD_START_VPN_SERVICE = "startVpnService";
+
+	public VpnManager(final Context ctx) {
         super(ctx, "android.net.vpn.VpnManager");
     }
 
@@ -20,14 +24,14 @@ public class VpnManager extends AbstractWrapper {
      * Starts the VPN service to establish VPN connection.
      */
     public void startVpnService() {
-        invokeStubMethod("startVpnService");
+        invokeStubMethod(METHOD_START_VPN_SERVICE);
     }
 
     /**
      * Stops the VPN service.
      */
     public void stopVpnService() {
-        invokeStubMethod("stopVpnService");
+        invokeStubMethod(METHOD_STOP_VPN_SERVICE);
     }
 
     /**
@@ -35,7 +39,7 @@ public class VpnManager extends AbstractWrapper {
      */
     public boolean bindVpnService(final ServiceConnection c) {
         try {
-            Method m = getStubClass().getMethod("bindVpnService", ServiceConnection.class);
+            Method m = getStubClass().getMethod(METHOD_BIND_VPN_SERVICE, ServiceConnection.class);
             return (Boolean) m.invoke(getStub(), c);
         } catch (Throwable e) {
             throw new WrapperException("bindVpnService failed", e);
