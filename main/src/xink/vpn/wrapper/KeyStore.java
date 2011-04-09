@@ -2,6 +2,7 @@ package xink.vpn.wrapper;
 
 import java.lang.reflect.Method;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -45,10 +46,10 @@ public class KeyStore extends AbstractWrapper {
         return invokeStubMethod("contains", key);
     }
 
-    public void unlock() {
+    public void unlock(final Activity ctx) {
         try {
             Intent intent = new Intent(UNLOCK_ACTION);
-            getContext().startActivity(intent);
+            ctx.startActivity(intent);
         } catch (ActivityNotFoundException e) {
             Log.w("xink", "unlock credentials failed", e);
         }

@@ -64,6 +64,8 @@ public class VpnSettings extends Activity {
     private SimpleAdapter vpnListAdapter;
     private VpnActor actor;
     private BroadcastReceiver stateBroadcastReceiver;
+    private KeyStore keyStore;
+    private Runnable resumeAction;
 
     /** Called when the activity is first created. */
     @Override
@@ -72,6 +74,7 @@ public class VpnSettings extends Activity {
 
         repository = VpnProfileRepository.getInstance(getApplicationContext());
         actor = new VpnActor(getApplicationContext());
+        keyStore = new KeyStore(getApplicationContext());
 
         setTitle(R.string.selectVpn);
         setContentView(R.layout.vpn_list);
@@ -284,8 +287,21 @@ public class VpnSettings extends Activity {
             onVpnTypePicked(data);
             break;
         case REQ_ADD_VPN:
-            Log.i(TAG, "unlocked? " + new KeyStore(this).isUnlocked());
-            onVpnProfileAdded(data);
+            if (!keyStore.isUnlocked()) {
+                resumeAction = new Runnable() {
+                    @Override
+                    public void run() {
+                        // redo this after unlock activity return
+                        onActivityResult(requestCode, resultCode, data);
+                    }
+                };
+
+                Log.i(TAG, "keystore is unlocked, unlock it now");
+                keyStore.unlock(this);
+            } else {
+                onVpnProfileAdded(data);
+            }
+
             break;
         case REQ_EDIT_VPN:
             new KeyStore(this).isUnlocked();
@@ -387,6 +403,18 @@ public class VpnSettings extends Activity {
         unregisterReceivers();
 
         super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "VpnSettings onResume, check and run resume action");
+        if (resumeAction != null) {
+            Runnable action = resumeAction;
+            resumeAction = null;
+            runOnUiThread(action);
+        }
     }
 
     @Override

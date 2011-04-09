@@ -6,6 +6,7 @@ import xink.vpn.R;
 import xink.vpn.VpnProfileRepository;
 import xink.vpn.VpnSettings;
 import xink.vpn.wrapper.InvalidProfileException;
+import xink.vpn.wrapper.KeyStore;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
@@ -14,6 +15,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +38,8 @@ public abstract class VpnProfileEditor extends Activity {
     private EditText txtUserName;
     private EditText txtPassword;
     private VpnProfileRepository repository;
+    private KeyStore keyStore;
+    private Runnable resumeAction;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -43,6 +47,7 @@ public abstract class VpnProfileEditor extends Activity {
         setContentView(R.layout.vpn_profile_editor);
 
         repository = VpnProfileRepository.getInstance(getApplicationContext());
+        keyStore = new KeyStore(getApplicationContext());
 
         LinearLayout contentView = new LinearLayout(this);
         contentView.setOrientation(LinearLayout.VERTICAL);
@@ -186,12 +191,37 @@ public abstract class VpnProfileEditor extends Activity {
         outState.putCharSequence("password", txtPassword.getText()); //$NON-NLS-1$
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d("xink", "VpnSettings onResume, check and run resume action");
+        if (resumeAction != null) {
+            Runnable action = resumeAction;
+            resumeAction = null;
+            runOnUiThread(action);
+        }
+    }
+
     protected void onSave() {
         try {
             populateProfile();
 
             if (editAction == EditAction.CREATE) {
-                repository.addVpnProfile(profile);
+                if (!keyStore.isUnlocked()) {
+                    resumeAction = new Runnable() {
+                        @Override
+                        public void run() {
+                            // redo this after unlock activity return
+                            onSave();
+                        }
+                    };
+
+                    Log.i("xink", "keystore is locked, unlock it now");
+                    keyStore.unlock(this);
+                } else {
+                    repository.addVpnProfile(profile);
+                }
             } else {
                 repository.checkProfile(profile);
             }

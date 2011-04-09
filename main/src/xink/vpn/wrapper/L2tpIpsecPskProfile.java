@@ -42,11 +42,13 @@ public class L2tpIpsecPskProfile extends L2tpProfile {
         super.postConstruct();
 
         String psk = getPresharedKey();
-        new KeyStore(getContext()).put(KEY_PREFIX_IPSEC_PSK + getId(), psk);
+        String key = KEY_PREFIX_IPSEC_PSK + getId();
+        new KeyStore(getContext()).put(key, psk);
+        setPresharedKey(key);
     }
 
     @Override
     public void preConnect(final Activity activity) {
-        new KeyStore(activity).unlock();
+        new KeyStore(getContext()).unlock(activity);
     }
 }
