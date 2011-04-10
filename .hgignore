@@ -6,6 +6,7 @@ classes/
 cache/
 dist/
 
+*.jar
 .git*
 *.log*
 log.txt

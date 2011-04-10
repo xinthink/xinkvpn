@@ -18,9 +18,7 @@
     <string name="cancel">取消</string>
     <string name="edit">編輯</string>
     <string name="about">關於</string>
-    <string name="url_issues">http://goo.gl/hSG8Z</string>
     <string name="pack_ver">%1$s %2$s</string>
-    <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
     <string name="lbl_email">郵箱:</string>
     <string name="lbl_report_bug">反饋缺陷:</string>
     <string name="del_vpn_confirm">確定要刪除此VPN嗎？</string>
@@ -39,4 +37,14 @@
     <string name="help">幫助</string>
     <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
     <string name="err_no_active_vpn">尚未設定活動VPN。</string>
+    <string name="export">備份</string>
+    <string name="err_exp_write_storage_failed">無法訪問外部記憶體。</string>
+    <string name="err_exp_failed">備份失敗。</string>
+    <string name="i_exp_done">備份成功。</string>
+    <string name="i_exp">資料將備份至\'%1$s\'，原有資料將被覆蓋。</string>
+    <string name="imp">還原</string>
+    <string name="err_imp_nodata">沒有在外部記憶體中找到備份資料。</string>
+    <string name="err_imp_failed">還原失敗。</string>
+    <string name="i_imp_done">還原成功。</string>
+    <string name="i_imp">資料將會還原，%1$s之後的改變將會丟失。</string>
 </resources>
