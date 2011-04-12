@@ -3,6 +3,7 @@ package xink.vpn;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,10 @@ import android.util.Log;
 public class VpnProfileRepository {
 
     private static final String TAG = "xink";
+
+    private static final String FILE_PROFILES = "profiles";
+
+    private static final String FILE_ACT_ID = "active_profile_id";
 
     private static VpnProfileRepository instance;
 
@@ -62,7 +67,7 @@ public class VpnProfileRepository {
         ObjectOutputStream os = null;
 
         try {
-            os = new ObjectOutputStream(context.openFileOutput("active_profile_id", Context.MODE_PRIVATE));
+            os = new ObjectOutputStream(openPrivateFileOutput(FILE_ACT_ID));
             os.writeObject(activeProfileId);
         } finally {
             if (os != null) {
@@ -75,7 +80,7 @@ public class VpnProfileRepository {
         ObjectOutputStream os = null;
 
         try {
-            os = new ObjectOutputStream(context.openFileOutput("profiles", Context.MODE_PRIVATE));
+            os = new ObjectOutputStream(openPrivateFileOutput(FILE_PROFILES));
             for (VpnProfile p : profiles) {
                 p.write(os);
             }
@@ -84,6 +89,10 @@ public class VpnProfileRepository {
                 os.close();
             }
         }
+    }
+
+    private FileOutputStream openPrivateFileOutput(final String fileName) throws FileNotFoundException {
+        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
     }
 
     private void load() {
@@ -101,7 +110,7 @@ public class VpnProfileRepository {
         ObjectInputStream is = null;
 
         try {
-            is = new ObjectInputStream(context.openFileInput("active_profile_id"));
+            is = new ObjectInputStream(context.openFileInput(FILE_ACT_ID));
             activeProfileId = (String) is.readObject();
         } catch (Exception e) {
             Log.w(TAG, "loadActiveProfileId failed", e);
@@ -116,7 +125,7 @@ public class VpnProfileRepository {
         ObjectInputStream is = null;
 
         try {
-            is = new ObjectInputStream(context.openFileInput("profiles"));
+            is = new ObjectInputStream(context.openFileInput(FILE_PROFILES));
             loadProfilesFrom(is);
         } finally {
             if (is != null) {
@@ -236,8 +245,8 @@ public class VpnProfileRepository {
         File dir = ensureDir(path);
 
         try {
-            doBackup(dir, "active_profile_id");
-            doBackup(dir, "profiles");
+            doBackup(dir, FILE_ACT_ID);
+            doBackup(dir, FILE_PROFILES);
         } catch (Throwable e) {
             throw new AppException("backup failed", e, R.string.err_exp_failed);
         }
@@ -267,8 +276,8 @@ public class VpnProfileRepository {
         checkExternalData(dir);
 
         try {
-            doRestore(dir, "active_profile_id");
-            doRestore(dir, "profiles");
+            doRestore(dir, FILE_ACT_ID);
+            doRestore(dir, FILE_PROFILES);
 
             clean();
             load();
@@ -284,7 +293,7 @@ public class VpnProfileRepository {
 
     private void doRestore(final String dir, final String name) throws Exception {
         InputStream is = new FileInputStream(new File(dir, name));
-        OutputStream os = context.openFileOutput(name, Context.MODE_PRIVATE);
+        OutputStream os = openPrivateFileOutput(name);
         StreamCrypto.decrypt(is, os);
     }
 
@@ -292,8 +301,8 @@ public class VpnProfileRepository {
      * verify data files in external storage.
      */
     private void checkExternalData(final String path) {
-        File id = new File(path, "active_profile_id");
-        File profiles = new File(path, "profiles");
+        File id = new File(path, FILE_ACT_ID);
+        File profiles = new File(path, FILE_PROFILES);
 
         if (!(verifyDataFile(id) && verifyDataFile(profiles))) {
             throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
@@ -306,11 +315,11 @@ public class VpnProfileRepository {
 
     /**
      * Check last backup time.
-     * 
+     *
      * @return timestamp of last backup, null for no backup.
      */
     public Date checkLastBackup(final String path) {
-        File id = new File(path, "active_profile_id");
+        File id = new File(path, FILE_ACT_ID);
 
         if (!verifyDataFile(id)) {
             return null;
