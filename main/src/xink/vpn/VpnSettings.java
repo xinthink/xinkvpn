@@ -287,24 +287,9 @@ public class VpnSettings extends Activity {
             onVpnTypePicked(data);
             break;
         case REQ_ADD_VPN:
-            if (!keyStore.isUnlocked()) {
-                resumeAction = new Runnable() {
-                    @Override
-                    public void run() {
-                        // redo this after unlock activity return
-                        onActivityResult(requestCode, resultCode, data);
-                    }
-                };
-
-                Log.i(TAG, "keystore is unlocked, unlock it now");
-                keyStore.unlock(this);
-            } else {
-                onVpnProfileAdded(data);
-            }
-
+            onVpnProfileAdded(data);
             break;
         case REQ_EDIT_VPN:
-            new KeyStore(this).isUnlocked();
             onVpnProfileEdited(data);
             break;
         default:
@@ -336,11 +321,8 @@ public class VpnSettings extends Activity {
         Log.i(TAG, "new vpn profile created"); //$NON-NLS-1$
 
         String name = data.getStringExtra(KEY_VPN_PROFILE_NAME);
-        VpnProfile profile = repository.getProfileByName(name);
-
-        Log.i(TAG, "contains key? " + new KeyStore(this).contains(profile));
-
-        addToVpnListView(repository.getActiveProfileId(), profile);
+        VpnProfile p = repository.getProfileByName(name);
+        addToVpnListView(repository.getActiveProfileId(), p);
         refreshVpnListView();
     }
 
@@ -403,18 +385,6 @@ public class VpnSettings extends Activity {
         unregisterReceivers();
 
         super.onDestroy();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        Log.d(TAG, "VpnSettings onResume, check and run resume action");
-        if (resumeAction != null) {
-            Runnable action = resumeAction;
-            resumeAction = null;
-            runOnUiThread(action);
-        }
     }
 
     @Override
@@ -505,6 +475,47 @@ public class VpnSettings extends Activity {
     private void openUrl(final String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "onResume, check and run resume action");
+        if (resumeAction != null) {
+            Runnable action = resumeAction;
+            resumeAction = null;
+            runOnUiThread(action);
+        }
+    }
+
+    private void connect(final VpnProfile p) {
+        if (unlockKeyStoreIfNeeded(p)) {
+            actor.connect(p);
+        }
+    }
+
+    private boolean unlockKeyStoreIfNeeded(final VpnProfile p) {
+        if (!p.needKeyStoreToConnect() || keyStore.isUnlocked()) {
+            return true;
+        }
+
+        Log.i(TAG, "keystore is locked, unlock it now and reconnect later.");
+        resumeAction = new Runnable() {
+            @Override
+            public void run() {
+                // redo this after unlock activity return
+                connect(p);
+            }
+        };
+
+        keyStore.unlock(this);
+        return false;
+    }
+
+    private void disconnect() {
+        Log.e(TAG, "disconnect ...");
+        actor.disconnect();
     }
 
     final class VpnViewBinder implements ViewBinder {
@@ -601,9 +612,9 @@ public class VpnSettings extends Activity {
 
         private void toggleState(final boolean isChecked) {
             if (isChecked) {
-                actor.connect(profile);
+                connect(profile);
             } else {
-                actor.disconnect();
+                disconnect();
             }
         }
 

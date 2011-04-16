@@ -6,6 +6,7 @@ import xink.vpn.wrapper.VpnProfile;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
@@ -28,6 +29,7 @@ public class L2tpProfileEditor extends VpnProfileEditor {
         content.addView(lblSecret);
 
         txtSecret = new EditText(this);
+        txtSecret.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         txtSecret.setTransformationMethod(new PasswordTransformationMethod());
         content.addView(txtSecret);
 
@@ -69,21 +71,21 @@ public class L2tpProfileEditor extends VpnProfileEditor {
 
     @Override
     protected void doPopulateProfile() {
-        L2tpProfile profile = getProfile();
-        profile.setSecretEnabled(chkSecretEnabled.isChecked());
+        L2tpProfile p = getProfile();
+        p.setSecretEnabled(chkSecretEnabled.isChecked());
 
-        if (profile.isSecretEnabled()) {
-            profile.setSecretString(txtSecret.getText().toString().trim());
+        if (p.isSecretEnabled()) {
+            p.setSecretString(txtSecret.getText().toString().trim());
         }
     }
 
     @Override
     protected void doBindToViews() {
-        L2tpProfile profile = getProfile();
-        chkSecretEnabled.setChecked(profile.isSecretEnabled());
+        L2tpProfile p = getProfile();
+        chkSecretEnabled.setChecked(p.isSecretEnabled());
 
-        if (profile.isSecretEnabled()) {
-            txtSecret.setText(profile.getSecretString());
+        if (p.isSecretEnabled()) {
+            txtSecret.setText(p.getSecretString());
         }
     }
 

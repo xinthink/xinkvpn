@@ -46,7 +46,7 @@ public class VpnTypeSelection extends Activity {
 
                 Intent data = new Intent(VpnTypeSelection.this, VpnSettings.class);
                 data.putExtra(Constants.KEY_VPN_TYPE, vpnType);
-                setResult(0, data);
+                setResult(RESULT_OK, data);
                 finish();
             }
         });

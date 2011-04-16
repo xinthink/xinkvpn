@@ -1,9 +1,9 @@
 package xink.vpn.wrapper;
 
 import xink.vpn.R;
-import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 public class L2tpIpsecPskProfile extends L2tpProfile {
 
@@ -31,24 +31,41 @@ public class L2tpIpsecPskProfile extends L2tpProfile {
     public void validate() {
         super.validate();
 
-        String psk = getPresharedKey();
-        if (TextUtils.isEmpty(psk)) {
+        if (TextUtils.isEmpty(getPresharedKey())) {
             throw new InvalidProfileException("presharedKey is empty", R.string.err_empty_psk);
         }
     }
 
     @Override
-    public void postConstruct() {
-        super.postConstruct();
+    protected void processSecret() {
+        super.processSecret();
 
         String psk = getPresharedKey();
-        String key = KEY_PREFIX_IPSEC_PSK + getId();
-        new KeyStore(getContext()).put(key, psk);
-        setPresharedKey(key);
+        String key = makeKey();
+        if (!getKeyStore().put(key, psk)) {
+            Log.e("xink", "keystore write failed: key=" + key);
+        }
+    }
+
+    private String makeKey() {
+        return KEY_PREFIX_IPSEC_PSK + getId();
     }
 
     @Override
-    public void preConnect(final Activity activity) {
-        new KeyStore(getContext()).unlock(activity);
+    public boolean needKeyStoreToSave() {
+        return super.needKeyStoreToSave() || !TextUtils.isEmpty(getPresharedKey());
+    }
+
+    @Override
+    public boolean needKeyStoreToConnect() {
+        return true;
+    }
+
+    @Override
+    public L2tpIpsecPskProfile dulicateToConnect() {
+        L2tpIpsecPskProfile p = (L2tpIpsecPskProfile) super.dulicateToConnect();
+        p.setPresharedKey(makeKey());
+
+        return p;
     }
 }

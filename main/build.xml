@@ -1,9 +1,10 @@
 <project name="signapk" default="signAsSystem">
-  <property name="keystore.dir" location="/macdroid/a/build/target/product/security" />
+  <property name="android.source" location="/macdroid/a" />
+  <property name="keystore.dir" location="${android.source}/build/target/product/security" />
   <property name="system.pem" value="platform.x509.pem" />
   <property name="system.pk8" value="platform.pk8" />
   <property name="dist.dir" value="../dist" />
-  <property name="signapk.jar.dir" location="/macdroid/a/out/host/darwin-x86/framework" />
+  <property name="signapk.jar.dir" location="${android.source}/out/host/darwin-x86/framework" />
   <property name="apk.name" value="XinkVpn.apk" />
 
   <target name="clean">

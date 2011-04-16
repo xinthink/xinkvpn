@@ -39,4 +39,6 @@
     <string name="help">幫助</string>
     <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
     <string name="err_no_active_vpn">尚未設定活動VPN。</string>
+    <string name="err_empty_psk">請輸入IPSec預先共用金鑰。</string>
+    <string name="err_empty_secret">請輸入L2TP密碼。</string>
 </resources>

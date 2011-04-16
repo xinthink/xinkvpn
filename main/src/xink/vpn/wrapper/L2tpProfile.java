@@ -3,9 +3,17 @@ package xink.vpn.wrapper;
 import java.lang.reflect.Method;
 
 import xink.vpn.AppException;
+import xink.vpn.R;
 import android.content.Context;
+import android.text.TextUtils;
+import android.util.Log;
 
 public class L2tpProfile extends VpnProfile {
+
+    /** Key prefix for L2TP VPN. */
+    public static final String KEY_PREFIX_L2TP_SECRET = "VPN_l";
+
+    private KeyStore keyStore;
 
     protected L2tpProfile(final Context ctx, final String stubClass) {
         super(ctx, stubClass);
@@ -42,5 +50,82 @@ public class L2tpProfile extends VpnProfile {
 
     public String getSecretString() {
         return invokeStubMethod("getSecretString");
+    }
+
+    @Override
+    public void validate() {
+        super.validate();
+
+        if (isSecretEnabled() && TextUtils.isEmpty(getSecretString())) {
+            throw new InvalidProfileException("secret is empty", R.string.err_empty_secret);
+        }
+    }
+
+    @Override
+    public void postConstruct() {
+        super.postConstruct();
+
+        processSecret();
+    }
+
+    @Override
+    public void postUpdate() {
+        super.postUpdate();
+
+        processSecret();
+    }
+
+    @Override
+    public void preConnect() {
+        super.preConnect();
+
+        processSecret();
+    }
+
+    protected void processSecret() {
+        String key = makeKey();
+
+        if (isSecretEnabled()) {
+            String secret = getSecretString();
+
+            if (!getKeyStore().put(key, secret)) {
+                Log.e("xink", "keystore write failed: key=" + key);
+            }
+        } else {
+            getKeyStore().delete(key);
+        }
+    }
+
+    private String makeKey() {
+        return KEY_PREFIX_L2TP_SECRET + getId();
+    }
+
+    @Override
+    public boolean needKeyStoreToSave() {
+        return isSecretEnabled() && !TextUtils.isEmpty(getSecretString());
+    }
+
+    @Override
+    public boolean needKeyStoreToConnect() {
+        return isSecretEnabled();
+    }
+
+    protected KeyStore getKeyStore() {
+        if (keyStore == null) {
+            keyStore = new KeyStore(getContext());
+        }
+        return keyStore;
+    }
+
+    @Override
+    public L2tpProfile dulicateToConnect() {
+        L2tpProfile p = (L2tpProfile) super.dulicateToConnect();
+        boolean secretEnabled = isSecretEnabled();
+        p.setSecretEnabled(secretEnabled);
+        if (secretEnabled) {
+            p.setSecretString(makeKey());
+        }
+
+        return p;
     }
 }

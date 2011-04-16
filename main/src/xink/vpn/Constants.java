@@ -21,6 +21,8 @@ public class Constants {
 
     public static final String KEY_VPN_PROFILE_NAME = "vpnProfileName";
 
+    public static final String KEY_VPN_STATE = "activeVpnState";
+
     public static final int DLG_VPN_PROFILE_ALERT = 1;
 
     public static final int DLG_ABOUT = 2;
@@ -53,4 +55,5 @@ public class Constants {
     public static final int VPN_ERROR_LARGEST = 200;
     /** Error code to indicate a successful connection. */
     public static final int VPN_ERROR_NO_ERROR = 0;
+
 }

@@ -20,6 +20,7 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -27,9 +28,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public abstract class VpnProfileEditor extends Activity {
-
-    private static final String MSG_ARGS = "messageArgs"; //$NON-NLS-1$
-
     private EditAction editAction;
     private VpnProfile profile;
     private EditText txtVpnName;
@@ -40,6 +38,7 @@ public abstract class VpnProfileEditor extends Activity {
     private VpnProfileRepository repository;
     private KeyStore keyStore;
     private Runnable resumeAction;
+    private Object[] errMsgArgs; // prompt error message
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -66,6 +65,7 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(lblVpnName);
 
         txtVpnName = new EditText(this);
+        txtVpnName.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtVpnName);
 
         TextView lblServer = new TextView(this);
@@ -73,6 +73,7 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(lblServer);
 
         txtServer = new EditText(this);
+        txtServer.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtServer);
 
         initSpecificWidgets(content);
@@ -88,6 +89,7 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(lblDnsSufficesDesc);
 
         txtDnsSuffices = new EditText(this);
+        txtDnsSuffices.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtDnsSuffices);
 
         TextView lblUserName = new TextView(this);
@@ -95,6 +97,7 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(lblUserName);
 
         txtUserName = new EditText(this);
+        txtUserName.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtUserName);
 
         TextView lblPassword = new TextView(this);
@@ -102,6 +105,7 @@ public abstract class VpnProfileEditor extends Activity {
         content.addView(lblPassword);
 
         txtPassword = new EditText(this);
+        txtPassword.setImeOptions(EditorInfo.IME_ACTION_DONE);
         txtPassword.setTransformationMethod(new PasswordTransformationMethod());
         content.addView(txtPassword);
 
@@ -164,9 +168,10 @@ public abstract class VpnProfileEditor extends Activity {
     }
 
     @Override
-    protected void onPrepareDialog(final int id, final Dialog dialog, final Bundle args) {
-        Object[] msgArgs = (Object[]) args.getSerializable(MSG_ARGS);
-        ((AlertDialog) dialog).setMessage(getString(id, msgArgs));
+    protected void onPrepareDialog(final int id, final Dialog dialog) {
+        Object[] args = errMsgArgs;
+        errMsgArgs = null;
+        ((AlertDialog) dialog).setMessage(getString(id, args));
     }
 
     @Override
@@ -195,7 +200,7 @@ public abstract class VpnProfileEditor extends Activity {
     protected void onResume() {
         super.onResume();
 
-        Log.d("xink", "VpnSettings onResume, check and run resume action");
+        Log.d("xink", "VpnProfileEditor.onResume, check and run resume action");
         if (resumeAction != null) {
             Runnable action = resumeAction;
             resumeAction = null;
@@ -203,38 +208,14 @@ public abstract class VpnProfileEditor extends Activity {
         }
     }
 
-    protected void onSave() {
+    protected abstract void doPopulateProfile();
+
+    private void onSave() {
         try {
             populateProfile();
-
-            if (editAction == EditAction.CREATE) {
-                if (!keyStore.isUnlocked()) {
-                    resumeAction = new Runnable() {
-                        @Override
-                        public void run() {
-                            // redo this after unlock activity return
-                            onSave();
-                        }
-                    };
-
-                    Log.i("xink", "keystore is locked, unlock it now");
-                    keyStore.unlock(this);
-                } else {
-                    repository.addVpnProfile(profile);
-                }
-            } else {
-                repository.checkProfile(profile);
-            }
-
-            Intent intent = new Intent(this, VpnSettings.class);
-            intent.putExtra(Constants.KEY_VPN_PROFILE_NAME, profile.getName());
-            setResult(0, intent);
-            finish();
-
+            saveProfile();
         } catch (InvalidProfileException e) {
-            Bundle args = new Bundle();
-            args.putSerializable(MSG_ARGS, e.getMessageArgs());
-            showDialog(e.getMessageResourceId(), args);
+            promptInvalidProfile(e);
         }
     }
 
@@ -247,11 +228,53 @@ public abstract class VpnProfileEditor extends Activity {
         profile.setPassword(txtPassword.getText().toString().trim());
         profile.setState(VpnState.IDLE);
         doPopulateProfile();
+
+        repository.checkProfile(profile);
     }
 
-    protected abstract void doPopulateProfile();
+    private void saveProfile() {
+        if (unlockKeyStoreIfNeeded()) {
+            if (editAction == EditAction.CREATE) {
+                repository.addVpnProfile(profile);
+            } else {
+                profile.postUpdate();
+            }
 
-    protected void onCancel() {
+            prepareResult();
+            finish();
+        }
+    }
+
+    private boolean unlockKeyStoreIfNeeded() {
+        if (!profile.needKeyStoreToSave() || keyStore.isUnlocked()) {
+            return true;
+        }
+
+        Log.i("xink", "keystore is locked, unlock it now and redo saving later.");
+        resumeAction = new Runnable() {
+            @Override
+            public void run() {
+                // redo this after unlock activity return
+                saveProfile();
+            }
+        };
+
+        keyStore.unlock(this);
+        return false;
+    }
+
+    private void prepareResult() {
+        Intent intent = new Intent(this, VpnSettings.class);
+        intent.putExtra(Constants.KEY_VPN_PROFILE_NAME, profile.getName());
+        setResult(RESULT_OK, intent);
+    }
+
+    private void promptInvalidProfile(final InvalidProfileException e) {
+        errMsgArgs = e.getMessageArgs();
+        showDialog(e.getMessageResourceId());
+    }
+
+    private void onCancel() {
         finish();
     }
 

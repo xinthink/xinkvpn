@@ -5,7 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.UUID;
 
-import android.app.Activity;
 import android.content.Context;
 
 public abstract class VpnProfile extends AbstractWrapper {
@@ -37,11 +36,15 @@ public abstract class VpnProfile extends AbstractWrapper {
         setId(UUID.randomUUID().toString());
     }
 
+    public void postUpdate() {
+
+    }
+
     public void validate() {
 
     }
 
-    public void preConnect(final Activity activity) {
+    public void preConnect() {
 
     }
 
@@ -157,5 +160,27 @@ public abstract class VpnProfile extends AbstractWrapper {
     @Override
     public String toString() {
         return getId() + "#" + getName();
+    }
+
+    public boolean needKeyStoreToSave() {
+        return false;
+    }
+
+    public boolean needKeyStoreToConnect() {
+        return false;
+    }
+
+    @Override
+    protected VpnProfile clone() {
+        VpnProfile c = (VpnProfile) super.clone();
+        c.setId(getId());
+        c.setName(getName());
+        c.setServerName(getServerName());
+        c.setDomainSuffices(getDomainSuffices());
+        return c;
+    }
+
+    public VpnProfile dulicateToConnect() {
+        return clone();
     }
 }

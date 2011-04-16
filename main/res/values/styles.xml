@@ -22,4 +22,12 @@
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">24sp</item>
     </style>
+    <style name="HiddenActivity" parent="@android:style/Theme.Dialog">
+        <item name="android:height">0dip</item>
+        <item name="android:width">0dip</item>
+        <item name="android:minHeight">0dip</item>
+        <item name="android:minWidth">0dip</item>
+        <item name="android:maxHeight">0dip</item>
+        <item name="android:maxWidth">0dip</item>
+    </style>
 </resources>

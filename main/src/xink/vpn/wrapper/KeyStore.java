@@ -46,18 +46,22 @@ public class KeyStore extends AbstractWrapper {
         return invokeStubMethod("contains", key);
     }
 
+    public boolean delete(final String key) {
+        return invokeStubMethod("delete", key);
+    }
+
     public void unlock(final Activity ctx) {
         try {
             Intent intent = new Intent(UNLOCK_ACTION);
             ctx.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Log.w("xink", "unlock credentials failed", e);
+            Log.e("xink", "unlock credentials failed", e);
         }
     }
 
     public boolean isUnlocked() {
         int err = invokeStubMethod("test");
-        Log.i("xink", "KeyStore.test result is: " + err);
+        Log.d("xink", "KeyStore.test result is: " + err);
         return err == NO_ERROR;
     }
 }

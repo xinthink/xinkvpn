@@ -6,6 +6,7 @@ import xink.vpn.wrapper.VpnProfile;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
         content.addView(lblKey);
 
         txtKey = new EditText(this);
+        txtKey.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         txtKey.setTransformationMethod(new PasswordTransformationMethod());
         content.addView(txtKey);
 
@@ -50,16 +52,16 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
 
     @Override
     protected void doPopulateProfile() {
-        L2tpIpsecPskProfile profile = getProfile();
-        profile.setPresharedKey(txtKey.getText().toString().trim());
+        L2tpIpsecPskProfile p = getProfile();
+        p.setPresharedKey(txtKey.getText().toString().trim());
 
         super.doPopulateProfile();
     }
 
     @Override
     protected void doBindToViews() {
-        L2tpIpsecPskProfile profile = getProfile();
-        txtKey.setText(profile.getPresharedKey());
+        L2tpIpsecPskProfile p = getProfile();
+        txtKey.setText(p.getPresharedKey());
 
         super.doBindToViews();
     }

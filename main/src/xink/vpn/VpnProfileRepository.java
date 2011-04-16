@@ -188,7 +188,6 @@ public class VpnProfileRepository {
     }
 
     public void addVpnProfile(final VpnProfile p) {
-        checkProfile(p);
         p.postConstruct();
         profiles.add(p);
     }

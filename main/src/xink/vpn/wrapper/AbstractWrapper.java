@@ -5,9 +5,10 @@ import java.lang.reflect.Method;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.util.Log;
 import dalvik.system.PathClassLoader;
 
-public abstract class AbstractWrapper {
+public abstract class AbstractWrapper implements Cloneable {
 
     private static final String STUB_PACK = "com.android.settings";
 
@@ -105,5 +106,17 @@ public abstract class AbstractWrapper {
 
         Method method = clazz.getMethod(methodName, argTypes);
         return method;
+    }
+
+    @Override
+    protected AbstractWrapper clone() {
+        AbstractWrapper c = null;
+        try {
+            c = (AbstractWrapper) super.clone();
+            c.init();
+        } catch (CloneNotSupportedException e) {
+            Log.e("xink", "clone failed", e);
+        }
+        return c;
     }
 }

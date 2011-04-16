@@ -5,8 +5,6 @@ import static xink.vpn.Constants.*;
 import java.io.Serializable;
 import java.util.List;
 
-import xink.vpn.wrapper.KeyStore;
-import xink.vpn.wrapper.L2tpIpsecPskProfile;
 import xink.vpn.wrapper.VpnManager;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnService;
@@ -45,35 +43,25 @@ public class VpnActor {
     public void connect(final VpnProfile p) {
         Log.i(TAG, "connect to: " + p);
 
-        if (p instanceof L2tpIpsecPskProfile) {
-            L2tpIpsecPskProfile pskp = (L2tpIpsecPskProfile) p;
-
-            System.out.println("server='" + pskp.getServerName() + '\'');
-            System.out.println("psk='" + pskp.getPresharedKey() + '\'');
-            System.out.println("user='" + pskp.getUsername() + '\'');
-            System.out.println("password='" + pskp.getPassword() + '\'');
-        }
-
-        Log.i(TAG, "unlocked? " + new KeyStore(context).isUnlocked());
-        Log.i(TAG, "contains key? " + new KeyStore(context).contains(p));
+        p.preConnect();
+        final VpnProfile cp = p.dulicateToConnect(); // connect using a clone, so the secret key can be replace
 
         getVpnMgr().startVpnService();
-
         ServiceConnection c = new ServiceConnection() {
             @Override
             public void onServiceConnected(final ComponentName className, final IBinder service) {
                 try {
-                    boolean success = getVpnSrv().connect(service, p);
+                    boolean success = getVpnSrv().connect(service, cp);
 
                     if (!success) {
                         Log.d(TAG, "~~~~~~ connect() failed!");
-                        broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
+                        broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
                     } else {
                         Log.d(TAG, "~~~~~~ connect() succeeded!");
                     }
                 } catch (Throwable e) {
                     Log.e(TAG, "connect()", e);
-                    broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
+                    broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
                 } finally {
                     context.unbindService(this);
                 }
@@ -88,7 +76,7 @@ public class VpnActor {
 
         if (!getVpnMgr().bindVpnService(c)) {
             Log.e(TAG, "bind service failed");
-            broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
+            broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
         }
     }
 
