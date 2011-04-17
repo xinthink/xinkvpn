@@ -11,7 +11,7 @@ public class VpnManager extends AbstractWrapper {
     public static final String METHOD_STOP_VPN_SERVICE = "stopVpnService";
     public static final String METHOD_START_VPN_SERVICE = "startVpnService";
 
-    public VpnManager(final Context ctx) {
+	public VpnManager(final Context ctx) {
         super(ctx, "android.net.vpn.VpnManager");
     }
 

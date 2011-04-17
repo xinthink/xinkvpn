@@ -5,7 +5,7 @@ import java.util.List;
 import xink.vpn.R;
 import xink.vpn.VpnProfileRepository;
 import xink.vpn.VpnSettings;
-import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.test.helper.RepositoryHelper;
 import android.test.ActivityInstrumentationTestCase2;
 import android.widget.ListView;
 
@@ -13,6 +13,7 @@ public class VpnSettingsTest extends ActivityInstrumentationTestCase2<VpnSetting
 
     private VpnSettings settings;
     private VpnProfileRepository repository;
+    private RepositoryHelper helper;
 
     public VpnSettingsTest() {
         super("xink.vpn", VpnSettings.class);
@@ -22,12 +23,14 @@ public class VpnSettingsTest extends ActivityInstrumentationTestCase2<VpnSetting
     protected void setUp() throws Exception {
         super.setUp();
         this.settings = getActivity();
-        repository = VpnProfileRepository.getInstance(settings.getApplicationContext());
+        repository = VpnProfileRepository.getInstance(settings);
+        helper = new RepositoryHelper(settings);
+        helper.clearRepository();
     }
 
     @Override
     protected void tearDown() throws Exception {
-        List<VpnProfile> profileList = repository.getAllVpnProfiles();
+        helper.clearRepository();
 
         if (!profileList.isEmpty()) {
             VpnProfile[] ps = profileList.toArray(new VpnProfile[0]);

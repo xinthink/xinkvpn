@@ -18,9 +18,7 @@
     <string name="cancel">取消</string>
     <string name="edit">修改</string>
     <string name="about">关于</string>
-    <string name="url_issues">http://goo.gl/hSG8Z</string>
     <string name="pack_ver">%1$s %2$s</string>
-    <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
     <string name="lbl_email">邮箱:</string>
     <string name="lbl_report_bug">反馈缺陷:</string>
     <string name="del_vpn_confirm">确定要删除此VPN吗？</string>
@@ -39,6 +37,16 @@
     <string name="help">帮助</string>
     <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
     <string name="err_no_active_vpn">尚未指定默认VPN。</string>
+    <string name="export">备份</string>
+    <string name="err_exp_write_storage_failed">无法访问外部存储。</string>
+    <string name="err_exp_failed">备份失败。</string>
+    <string name="i_exp_done">备份成功。</string>
+    <string name="i_exp">数据将备份至\'%1$s\'，原有数据将被覆盖。</string>
+    <string name="imp">恢复</string>
+    <string name="err_imp_nodata">没有在外部存储中找到备份数据。</string>
+    <string name="err_imp_failed">恢复失败。</string>
+    <string name="i_imp_done">恢复成功。</string>
+    <string name="i_imp">数据将会恢复，%1$s之后的修改将会丢失。</string>
     <string name="err_empty_psk">请输入IPSec预共享密钥。</string>
     <string name="err_empty_secret">请输入L2TP密钥。</string>
 </resources>

@@ -1,13 +1,21 @@
 package xink.vpn;
 
 import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
+import xink.crypto.StreamCrypto;
 import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnType;
@@ -18,6 +26,10 @@ import android.util.Log;
 public class VpnProfileRepository {
 
     private static final String TAG = "xink";
+
+    private static final String FILE_PROFILES = "profiles";
+
+    private static final String FILE_ACT_ID = "active_profile_id";
 
     private static VpnProfileRepository instance;
 
@@ -54,7 +66,7 @@ public class VpnProfileRepository {
         ObjectOutputStream os = null;
 
         try {
-            os = new ObjectOutputStream(context.openFileOutput("active_profile_id", Context.MODE_PRIVATE));
+            os = new ObjectOutputStream(openPrivateFileOutput(FILE_ACT_ID));
             os.writeObject(activeProfileId);
         } finally {
             if (os != null) {
@@ -67,7 +79,7 @@ public class VpnProfileRepository {
         ObjectOutputStream os = null;
 
         try {
-            os = new ObjectOutputStream(context.openFileOutput("profiles", Context.MODE_PRIVATE));
+            os = new ObjectOutputStream(openPrivateFileOutput(FILE_PROFILES));
             for (VpnProfile p : profiles) {
                 p.write(os);
             }
@@ -76,6 +88,10 @@ public class VpnProfileRepository {
                 os.close();
             }
         }
+    }
+
+    private FileOutputStream openPrivateFileOutput(final String fileName) throws FileNotFoundException {
+        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
     }
 
     private void load() {
@@ -93,7 +109,7 @@ public class VpnProfileRepository {
         ObjectInputStream is = null;
 
         try {
-            is = new ObjectInputStream(context.openFileInput("active_profile_id"));
+            is = new ObjectInputStream(context.openFileInput(FILE_ACT_ID));
             activeProfileId = (String) is.readObject();
         } catch (Exception e) {
             Log.w(TAG, "loadActiveProfileId failed", e);
@@ -108,7 +124,7 @@ public class VpnProfileRepository {
         ObjectInputStream is = null;
 
         try {
-            is = new ObjectInputStream(context.openFileInput("profiles"));
+            is = new ObjectInputStream(context.openFileInput(FILE_PROFILES));
             loadProfilesFrom(is);
         } finally {
             if (is != null) {
@@ -217,5 +233,98 @@ public class VpnProfileRepository {
             activeProfileId = null;
             Log.d(TAG, "deactivate vpn: " + profile);
         }
+    }
+
+    public void backup(final String path) {
+        if (profiles.isEmpty()) {
+            Log.i(TAG, "profile list is empty, will not export");
+            return;
+        }
+
+        save();
+        File dir = ensureDir(path);
+
+        try {
+            doBackup(dir, FILE_ACT_ID);
+            doBackup(dir, FILE_PROFILES);
+        } catch (Throwable e) {
+            throw new AppException("backup failed", e, R.string.err_exp_failed);
+        }
+    }
+
+    private File ensureDir(final String path) {
+        File dir = new File(path);
+
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        if (!dir.exists()) {
+            throw new AppException("failed to mkdir: " + path, R.string.err_exp_write_storage_failed);
+        }
+
+        return dir;
+    }
+
+    private void doBackup(final File dir, final String name) throws Exception {
+        InputStream is = context.openFileInput(name);
+        OutputStream os = new FileOutputStream(new File(dir, name));
+        StreamCrypto.encrypt(is, os);
+    }
+
+    public void restore(final String dir) {
+        checkExternalData(dir);
+
+        try {
+            doRestore(dir, FILE_ACT_ID);
+            doRestore(dir, FILE_PROFILES);
+
+            clean();
+            load();
+        } catch (Throwable e) {
+            throw new AppException("restore failed", e, R.string.err_imp_failed);
+        }
+    }
+
+    private void clean() {
+        activeProfileId = null;
+        profiles.clear();
+    }
+
+    private void doRestore(final String dir, final String name) throws Exception {
+        InputStream is = new FileInputStream(new File(dir, name));
+        OutputStream os = openPrivateFileOutput(name);
+        StreamCrypto.decrypt(is, os);
+    }
+
+    /*
+     * verify data files in external storage.
+     */
+    private void checkExternalData(final String path) {
+        File id = new File(path, FILE_ACT_ID);
+        File profiles = new File(path, FILE_PROFILES);
+
+        if (!(verifyDataFile(id) && verifyDataFile(profiles))) {
+            throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
+        }
+    }
+
+    private boolean verifyDataFile(final File file) {
+        return file.exists() && file.isFile() && file.length() > 0;
+    }
+
+    /**
+     * Check last backup time.
+     *
+     * @return timestamp of last backup, null for no backup.
+     */
+    public Date checkLastBackup(final String path) {
+        File id = new File(path, FILE_ACT_ID);
+
+        if (!verifyDataFile(id)) {
+            return null;
+        }
+
+        return new Date(id.lastModified());
     }
 }

@@ -3,17 +3,18 @@
   <property name="keystore.dir" location="${android.source}/build/target/product/security" />
   <property name="system.pem" value="platform.x509.pem" />
   <property name="system.pk8" value="platform.pk8" />
+  <property name="key.alias" value="xinthink" />
   <property name="dist.dir" value="../dist" />
   <property name="signapk.jar.dir" location="${android.source}/out/host/darwin-x86/framework" />
   <property name="apk.name" value="XinkVpn.apk" />
 
   <target name="clean">
     <delete failonerror="false">
-      <fileset dir="${dist.dir}" includes="*.unaligned, *.apk"/>
+      <fileset dir="${dist.dir}" includes="*.unaligned, *.apk" />
     </delete>
   </target>
-
-  <target name="signAsSystem">
+  
+  <target name="signAsSystem" depends="clean">
     <java jar="${signapk.jar.dir}/signapk.jar" fork="true">
       <arg line="${keystore.dir}/${system.pem} ${keystore.dir}/${system.pk8} ${dist.dir}/${apk.name}.unsigned ${dist.dir}/${apk.name}.unaligned" />
     </java>
@@ -21,6 +22,19 @@
     <antcall target="align" />
   </target>
 
+  <!--
+  <target name="sign" depends="clean">
+    <copy tofile="${dist.dir}/${apk.name}.unaligned" file="${dist.dir}/${apk.name}.unsigned"/>
+    <exec executable="jarsigner">
+      <arg line="-verbose -keystore ${keystore.dir}/${keystore.file} ${dist.dir}/${apk.name}.unsigned ${key.alias}" />
+    </exec>
+    <move tofile="${dist.dir}/${apk.name}.unaligned" file="${dist.dir}/${apk.name}.unsigned"/>
+    <move tofile="${dist.dir}/${apk.name}.unsigned" file="${dist.dir}/${apk.name}.unsigned.bak"/>
+    
+    <antcall target="align"/>
+  </target>
+  -->
+  
   <target name="align">
     <exec executable="${android_sdk}/tools/zipalign">
       <arg line="-fv 4 ${dist.dir}/${apk.name}.unaligned ${dist.dir}/${apk.name}" />

@@ -27,6 +27,10 @@ public class Constants {
 
     public static final int DLG_ABOUT = 2;
 
+    public static final int DLG_BACKUP = 3;
+
+    public static final int DLG_RESTORE = 4;
+
     // Action for broadcasting a connectivity state.
     public static final String ACTION_VPN_CONNECTIVITY = "vpn.connectivity";
     /** Key to the profile name of a connectivity broadcast event. */
@@ -56,4 +60,5 @@ public class Constants {
     /** Error code to indicate a successful connection. */
     public static final int VPN_ERROR_NO_ERROR = 0;
 
+    public static final String EXP_DIR_REGEX = "\\d{6}\\-\\d{6}";
 }

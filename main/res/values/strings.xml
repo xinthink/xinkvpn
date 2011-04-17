@@ -41,4 +41,15 @@
     <string name="err_no_active_vpn">There is no active VPN.</string>
     <string name="err_empty_psk">Please enter IPSec pre-shared key.</string>
     <string name="err_empty_secret">Please enter L2TP secret.</string>
+    <string name="export">Backup</string>
+    <string name="exp_dir">/sdcard/XinkVpn</string>
+    <string name="err_exp_write_storage_failed">Failed to access external storage.</string>
+    <string name="err_exp_failed">Backup failed.</string>
+    <string name="i_exp_done">Backup success.</string>
+    <string name="i_exp">Data will be exported to \'%1$s\', overwritting the previouse backup.</string>
+    <string name="imp">Restore</string>
+    <string name="err_imp_nodata">Backup data not found on external storage.</string>
+    <string name="err_imp_failed">Restore failed.</string>
+    <string name="i_imp_done">Restore success.</string>
+    <string name="i_imp">Data will be restored, changes made after %1$s will be lost.</string>
 </resources>

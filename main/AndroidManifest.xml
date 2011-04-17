@@ -3,8 +3,7 @@
       package="xink.vpn"
       android:versionName="1.2" android:versionCode="4" android:sharedUserId="android.uid.system">
     <uses-sdk android:maxSdkVersion="10" android:minSdkVersion="7" android:targetSdkVersion="10"/>
-    <uses-permission android:name="android.permission.WRITE_SETTINGS"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
         <activity android:name="VpnSettings"

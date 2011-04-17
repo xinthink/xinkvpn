@@ -103,7 +103,7 @@ public class VpnConnectorService extends Service {
         try {
             actor.connect();
         } catch (NoActiveVpnException e) {
-            Toast.makeText(this, getString(R.string.err_no_active_vpn), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.err_no_active_vpn, Toast.LENGTH_SHORT).show();
             Log.e(TAG, "connect failed, no active vpn");
         }
     }
