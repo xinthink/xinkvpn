@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>XinkVpn</name>
+	<name>XinkVpnAssist</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -35,6 +35,11 @@
 			<name>common_src</name>
 			<type>2</type>
 			<locationURI>_android_common_af3f29eb/src</locationURI>
+		</link>
+		<link>
+			<name>cryptolib_src</name>
+			<type>2</type>
+			<locationURI>_android_cryptolib_5f446e24/src</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>XinkVpn</name>
+	<name>common</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -30,11 +30,4 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>common_src</name>
-			<type>2</type>
-			<locationURI>_android_common_af3f29eb/src</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="android"/>
+	<classpathentry excluding="xink/vpn/test/VpnSettingsTest.java" kind="src" path="android"/>
 	<classpathentry excluding="xink/vpn/test/export/junit/RepositoryExportTest.java" kind="src" path="junit"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/XinkVpn"/>
