@@ -14,26 +14,17 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import xink.crypto.StreamCrypto;
+import xink.crypto.Crypto;
 import xink.vpn.AppException;
 import xink.vpn.R;
 import xink.vpn.wrapper.ProfileUtils;
 import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnType;
 import android.content.Context;
 import android.util.Log;
 
 public class RepositoryBackup {
 
-    private static final String JSON_FIELD_PROFILES = "profiles";
-
-    private static final String JSON_FIELD_ACTIVE_ID = "activeProfileId";
-
-    private static final String TAG = "xink";
+    private static final String TAG = "xink.RepoBak";
 
     private static final String FILE_PROFILES = "profiles";
 
@@ -41,14 +32,20 @@ public class RepositoryBackup {
 
     private Context context;
 
-    public void backup(final String repoJson, final String path) {
+    public RepositoryBackup(final Context context) {
+        super();
+        this.context = context;
+    }
+
+    public void backup(final byte[] code, final String path) {
         File dir = ensureDir(path);
 
         StringBuilder activeId = new StringBuilder();
         List<VpnProfile> profiles = new ArrayList<VpnProfile>();
 
         try {
-            parseProfiles(repoJson, activeId, profiles);
+            String repoJson = Crypto.decrypt(code);
+            ProfileUtils.fromJson(context, repoJson, activeId, profiles);
 
             if (profiles.isEmpty()) {
                 Log.i(TAG, "profile list is empty, will not export");
@@ -78,36 +75,12 @@ public class RepositoryBackup {
         return dir;
     }
 
-    private void parseProfiles(final String repoJson, final StringBuilder activeId, final List<VpnProfile> profiles) throws JSONException {
-        JSONObject repo = new JSONObject(repoJson);
-        if (!repo.isNull(JSON_FIELD_ACTIVE_ID)) {
-            activeId.append(repo.getString(JSON_FIELD_ACTIVE_ID));
-        }
-
-        parseProfiles(repo, profiles);
-    }
-
-    private void parseProfiles(final JSONObject repo, final List<VpnProfile> profiles) throws JSONException {
-        JSONArray arr = repo.getJSONArray(JSON_FIELD_PROFILES);
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject jo = arr.getJSONObject(i);
-            profiles.add(parseProfile(jo));
-        }
-    }
-
-    private VpnProfile parseProfile(final JSONObject jo) throws JSONException {
-        VpnType type = VpnType.valueOf(jo.getString("type"));
-        VpnProfile p = VpnProfile.newInstance(type, context);
-        p.fromJson(jo);
-        return p;
-    }
-
-    protected void backupProfiles(final List<VpnProfile> profiles, final File dir) throws Exception {
+    private void backupProfiles(final List<VpnProfile> profiles, final File dir) throws Exception {
         byte[] profileBytes = toBytes(profiles);
         doBackup(profileBytes, dir, FILE_PROFILES);
     }
 
-    protected void backupActiveProfileId(final String activeProfileId, final File dir) throws IOException, Exception {
+    private void backupActiveProfileId(final String activeProfileId, final File dir) throws IOException, Exception {
         byte[] activeIdBytes = toBytes(activeProfileId);
         doBackup(activeIdBytes, dir, FILE_ACT_ID);
     }
@@ -147,23 +120,23 @@ public class RepositoryBackup {
     private void doBackup(final byte[] input, final File dir, final String name) throws Exception {
         InputStream is = new ByteArrayInputStream(input);
         OutputStream os = new FileOutputStream(new File(dir, name));
-        StreamCrypto.encrypt(is, os);
+        Crypto.encrypt(is, os);
     }
 
-    public String restore(final String dir) {
+    public byte[] restore(final String dir) {
         checkExternalData(dir);
 
-        String result = null;
+        byte[] code = null;
 
         try {
             String activeId = restoreActiveProfileId(dir);
             List<VpnProfile> profiles = restoreProfiles(dir);
-            result = ProfileUtils.makeJsonString(activeId, profiles);
+            code = Crypto.encrypt(ProfileUtils.toJson(activeId, profiles));
         } catch (Throwable e) {
             throw new AppException("restore failed", e, R.string.err_imp_failed);
         }
 
-        return result;
+        return code;
     }
 
     private String restoreActiveProfileId(final String dir) throws Exception {
@@ -203,7 +176,7 @@ public class RepositoryBackup {
     private byte[] doRestore(final String dir, final String name) throws Exception {
         InputStream is = new FileInputStream(new File(dir, name));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        StreamCrypto.decrypt(is, os);
+        Crypto.decrypt(is, os);
         return os.toByteArray();
     }
 
@@ -232,11 +205,10 @@ public class RepositoryBackup {
         File id = new File(path, FILE_ACT_ID);
 
         if (!verifyDataFile(id)) {
-            return null;
+            throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
         }
 
         return new Date(id.lastModified());
     }
-
 
 }

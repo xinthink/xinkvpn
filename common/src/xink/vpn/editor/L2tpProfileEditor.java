@@ -72,11 +72,9 @@ public class L2tpProfileEditor extends VpnProfileEditor {
     @Override
     protected void doPopulateProfile() {
         L2tpProfile p = getProfile();
-        p.setSecretEnabled(chkSecretEnabled.isChecked());
-
-        if (p.isSecretEnabled()) {
-            p.setSecretString(txtSecret.getText().toString().trim());
-        }
+        boolean secretEnabled = chkSecretEnabled.isChecked();
+        p.setSecretEnabled(secretEnabled);
+        p.setSecretString(secretEnabled ? txtSecret.getText().toString().trim() : "");
     }
 
     @Override

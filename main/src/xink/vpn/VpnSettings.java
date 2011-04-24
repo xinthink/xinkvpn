@@ -2,9 +2,7 @@ package xink.vpn;
 
 import static xink.vpn.Constants.*;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -47,7 +46,6 @@ import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 public class VpnSettings extends Activity {
@@ -55,7 +53,7 @@ public class VpnSettings extends Activity {
     private static final String ROWITEM_KEY = "vpn"; //$NON-NLS-1$
     private static final String TAG = "xink"; //$NON-NLS-1$
 
-    // 同一行的所有控件绑定同一份数
+    // views on a single row will bind to the same data object
     private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY, ROWITEM_KEY, ROWITEM_KEY };
     private static final int[] VPN_VIEWS = new int[] { R.id.radioActive, R.id.tgbtnConn, R.id.txtStateMsg };
 
@@ -165,10 +163,10 @@ public class VpnSettings extends Activity {
 
         menu.setHeaderTitle(p.getName());
 
-        if (p.getState() == VpnState.CONNECTED) {
-            // 已经连通的VPN不允许修�?            menu.findItem(R.id.menu_edit_vpn).setEnabled(false);
-            menu.findItem(R.id.menu_del_vpn).setEnabled(false);
-        }
+        // profile can edit only when disconnected
+        boolean isIdle = p.getState() == VpnState.IDLE;
+        menu.findItem(R.id.menu_edit_vpn).setEnabled(isIdle);
+        menu.findItem(R.id.menu_del_vpn).setEnabled(isIdle);
     }
 
     @SuppressWarnings("unchecked")
@@ -254,13 +252,7 @@ public class VpnSettings extends Activity {
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
         menu.findItem(R.id.menu_exp).setEnabled(!repository.getAllVpnProfiles().isEmpty());
-        menu.findItem(R.id.menu_imp).setEnabled(checkLastBackup());
-
         return true;
-    }
-
-    private boolean checkLastBackup() {
-        return repository.checkLastBackup(getBackupDir()) != null;
     }
 
     /**
@@ -279,10 +271,10 @@ public class VpnSettings extends Activity {
             openWikiHome();
             break;
         case R.id.menu_exp:
-            showDialog(DLG_BACKUP);
+            doBackup();
             break;
         case R.id.menu_imp:
-            showDialog(DLG_RESTORE);
+            doRestore();
             break;
         default:
             consumed = super.onContextItemSelected(item);
@@ -292,86 +284,40 @@ public class VpnSettings extends Activity {
         return consumed;
     }
 
-    private AlertDialog createBackupDlg() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(android.R.drawable.ic_dialog_info).setTitle(R.string.export).setMessage(getString(R.string.i_exp, getBackupDir()));
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(final DialogInterface dialog, final int which) {
-                doBackup();
-            }
-        }).setNegativeButton(android.R.string.cancel, null);
-
-        AlertDialog dlg = builder.create();
-        dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(final DialogInterface dialog) {
-                Log.d(TAG, "onDismiss DLG_BACKUP");
-                removeDialog(DLG_BACKUP);
-            }
-        });
-        return dlg;
-    }
-
     private void doBackup() {
         Log.d(TAG, "doBackup");
 
         try {
-            repository.backup(getBackupDir());
-            Toast.makeText(this, R.string.i_exp_done, Toast.LENGTH_SHORT).show();
+            repository.backup(this);
         } catch (AppException e) {
             Log.e(TAG, "doBackup failed", e);
             showErrMessage(e);
         }
     }
 
-    private AlertDialog createRestoreDlg() {
-        String lastBak = makeLastBackupText();
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(android.R.drawable.ic_dialog_info).setTitle(R.string.imp).setMessage(getString(R.string.i_imp, lastBak));
-        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(final DialogInterface dialog, final int which) {
-                doRestore();
-            }
-        }).setNegativeButton(android.R.string.cancel, null);
-
-        AlertDialog dlg = builder.create();
-        dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(final DialogInterface dialog) {
-                Log.d(TAG, "onDismiss DLG_RESTORE");
-                removeDialog(DLG_RESTORE);
-            }
-        });
-        return dlg;
-    }
-
-    private String makeLastBackupText() {
-        Date lastBackup = repository.checkLastBackup(getBackupDir());
-        SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        return f.format(lastBackup);
-    }
-
     private void doRestore() {
         Log.d(TAG, "doRestore");
 
         try {
-            repository.restore(getBackupDir());
-            buildVpnListView();
-
-            actor.disconnect();
-            checkAllVpnStatus();
-            Toast.makeText(this, R.string.i_imp_done, Toast.LENGTH_SHORT).show();
+            repository.restore(this);
         } catch (AppException e) {
             Log.e(TAG, "doRestore failed", e);
             showErrMessage(e);
         }
     }
 
-    private String getBackupDir() {
-        return getString(R.string.exp_dir);
+    private void onRepoRestored(final Intent data) {
+        try {
+            byte[] repoCode = data.getByteArrayExtra(KEY_REPOSITORY);
+            repository.onRestored(repoCode);
+            buildVpnListView();
+
+            actor.disconnect();
+            checkAllVpnStatus();
+        } catch (AppException e) {
+            Log.e(TAG, "doRestore failed", e);
+            showErrMessage(e);
+        }
     }
 
     private void openWikiHome() {
@@ -393,6 +339,9 @@ public class VpnSettings extends Activity {
             break;
         case REQ_EDIT_VPN:
             onVpnProfileEdited(data);
+            break;
+        case REQ_RESTORE:
+            onRepoRestored(data);
             break;
         default:
             Log.w(TAG, "onActivityResult, unknown reqeustCode " + requestCode + ", result=" + resultCode + ", data=" + data); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -536,10 +485,6 @@ public class VpnSettings extends Activity {
         switch (id) {
         case DLG_ABOUT:
             return createAboutDlg();
-        case DLG_BACKUP:
-            return createBackupDlg();
-        case DLG_RESTORE:
-            return createRestoreDlg();
         default:
             break;
         }
@@ -594,7 +539,13 @@ public class VpnSettings extends Activity {
 
     private void showErrMessage(final AppException e) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true).setMessage(getString(e.getMessageResourceId(), e.getMessageArgs()));
+        builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(android.R.string.dialog_alert_title).setCancelable(true);
+
+        TextView txt = new TextView(this);
+        txt.setAutoLinkMask(Linkify.ALL);
+        txt.setText(getString(e.getMessageResourceId(), e.getMessageArgs()));
+        txt.setPadding(15, 10, 10, 15);
+        builder.setView(txt);
 
         AlertDialog dlg = builder.create();
         dlg.setOwnerActivity(this);

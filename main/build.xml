@@ -10,7 +10,7 @@
 
   <target name="clean">
     <delete failonerror="false">
-      <fileset dir="${dist.dir}" includes="*.unaligned, *.apk" />
+      <fileset dir="${dist.dir}" includes="${apk.name}.unaligned, ${apk.name}" />
     </delete>
   </target>
   

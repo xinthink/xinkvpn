@@ -11,9 +11,9 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import xink.crypto.StreamCrypto;
+import xink.crypto.Crypto;
 
-public class StreamCryptoTest {
+public class CryptoTest {
 
     private String segment = "0123456789abcdef";
 
@@ -42,9 +42,9 @@ public class StreamCryptoTest {
         ByteArrayInputStream in = new ByteArrayInputStream(clearText.getBytes());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        StreamCrypto.encrypt(in, out);
+        Crypto.encrypt(in, out);
         byte[] cipherText = out.toByteArray();
-        System.out.println('\'' + clearText + "' --> " + printBytes(cipherText));
+        System.out.println('\'' + clearText + "' --> " + toHex(cipherText));
         return cipherText;
     }
 
@@ -52,11 +52,11 @@ public class StreamCryptoTest {
         ByteArrayInputStream in = new ByteArrayInputStream(cipherText);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        StreamCrypto.decrypt(in, out);
+        Crypto.decrypt(in, out);
         return new String(out.toByteArray());
     }
 
-    private static String printBytes(final byte[] bytes) {
+    private static String toHex(final byte[] bytes) {
         StringBuilder buf = new StringBuilder();
         for (byte b : bytes) {
             buf.append(Integer.toHexString(b));
@@ -89,9 +89,9 @@ public class StreamCryptoTest {
         ByteArrayInputStream in = new ByteArrayInputStream(objBytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        StreamCrypto.encrypt(in, out);
+        Crypto.encrypt(in, out);
         byte[] cipherText = out.toByteArray();
-        System.out.println(obj + " --> " + printBytes(cipherText));
+        System.out.println(obj + " --> " + toHex(cipherText));
         return cipherText;
     }
 
@@ -99,7 +99,7 @@ public class StreamCryptoTest {
         ByteArrayInputStream in = new ByteArrayInputStream(cipherText);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        StreamCrypto.decrypt(in, out);
+        Crypto.decrypt(in, out);
         Data d = (Data) bytes2obj(out.toByteArray());
         return d;
     }
@@ -116,6 +116,18 @@ public class StreamCryptoTest {
         ObjectInputStream consumer = new ObjectInputStream(in);
         Serializable d = (Serializable) consumer.readObject();
         return d;
+    }
+
+    @Test
+    public void testStringCrypto() throws Exception {
+        String clear = "hell哈喽密鑰";
+
+        byte[] code = Crypto.encrypt(clear);
+        System.out.println(clear + " --> " + toHex(code));
+
+        String decrypted = Crypto.decrypt(code);
+
+        assertEquals("text crypto failed", decrypted, clear);
     }
 }
 

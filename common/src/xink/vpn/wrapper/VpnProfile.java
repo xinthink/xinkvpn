@@ -200,9 +200,9 @@ public abstract class VpnProfile extends AbstractWrapper {
     public void fromJson(final JSONObject jo) throws JSONException {
         setId(jo.getString("id"));
         setName(jo.getString("name"));
-        setServerName(jo.getString("serverName"));
-        setDomainSuffices(jo.getString("domainSuffices"));
-        username = jo.getString("username");
-        password = jo.getString("password");
+        setServerName(jo.optString("serverName"));
+        setDomainSuffices(jo.optString("domainSuffices"));
+        username = jo.optString("username");
+        password = jo.optString("password");
     }
 }

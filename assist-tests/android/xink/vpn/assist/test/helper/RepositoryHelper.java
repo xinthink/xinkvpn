@@ -43,7 +43,7 @@ public class RepositoryHelper {
         l2tp.setSecretEnabled(true);
         l2tp.setSecretString("secret");
         l2tp.setUsername("ywu");
-        l2tp.setPassword("passwd");
+        l2tp.setPassword("");
         profiles.add(l2tp);
 
         return profiles;
@@ -92,6 +92,6 @@ public class RepositoryHelper {
         assertTrue("check l2tp secret flag", l2tp.isSecretEnabled());
         assertEquals("check l2tp secret", "secret", l2tp.getSecretString());
         assertEquals("check l2tp user", "ywu", l2tp.getUsername());
-        assertEquals("check l2tp password", "passwd", l2tp.getPassword());
+        assertEquals("check l2tp password", "", l2tp.getPassword());
     }
 }

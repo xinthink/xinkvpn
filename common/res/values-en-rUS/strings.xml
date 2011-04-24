@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="assist_app_name">XinkVpnAssist</string>
+  <string name="date_format">MM/dd/yyyy HH:mm</string>
 </resources>

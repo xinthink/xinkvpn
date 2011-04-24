@@ -1,7 +1,7 @@
 #!/bin/sh
 
 dist_dir=../dist
-apk=XinkVpn.apk
+apk=XinkVpnAssist.apk
 key_dir=../../keystore
 key_file=xinthink_keystore
 key_alias=xinthink

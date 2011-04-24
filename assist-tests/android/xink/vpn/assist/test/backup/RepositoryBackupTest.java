@@ -4,8 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-
+import xink.crypto.Crypto;
 import xink.vpn.AppException;
 import xink.vpn.assist.bak.RepositoryBackup;
 import xink.vpn.assist.test.helper.RepositoryHelper;
@@ -31,7 +30,7 @@ public class RepositoryBackupTest extends AndroidTestCase {
         helper = new RepositoryHelper(mContext);
         helper.cleanDir(EXP_PATH);
 
-        bak = new RepositoryBackup();
+        bak = new RepositoryBackup(mContext);
         profiles = new ArrayList<VpnProfile>();
     }
 
@@ -50,10 +49,10 @@ public class RepositoryBackupTest extends AndroidTestCase {
         assertNull("activeId should be null", activeProfileId);
         assertTrue("should not has any profile", profiles.isEmpty());
 
-        String initJson = ProfileUtils.makeJsonString(activeProfileId, profiles);
+        String initJson = ProfileUtils.toJson(activeProfileId, profiles);
         System.out.println(initJson);
 
-        bak.backup(initJson, EXP_PATH);
+        bak.backup(Crypto.encrypt(initJson), EXP_PATH);
 
         File file = new File(EXP_PATH, ACTIVE_ID_FILE);
         assertFalse("should NOT produce an active id file", file.exists());
@@ -81,11 +80,11 @@ public class RepositoryBackupTest extends AndroidTestCase {
         doBackupAsserts();
     }
 
-    protected void doBackupAsserts() throws JSONException {
-        String initJson = ProfileUtils.makeJsonString(activeProfileId, profiles);
-        System.out.println(initJson);
+    private void doBackupAsserts() throws Exception {
+        String initJson = ProfileUtils.toJson(activeProfileId, profiles);
+        System.out.println("initJson ==> " + initJson);
 
-        bak.backup(initJson, EXP_PATH);
+        bak.backup(Crypto.encrypt(initJson), EXP_PATH);
 
         File file = new File(EXP_PATH, ACTIVE_ID_FILE);
         assertTrue("should produce an active id file", file.exists());
@@ -94,7 +93,8 @@ public class RepositoryBackupTest extends AndroidTestCase {
         assertTrue("should produce profiles file", file.exists());
 
         // restore
-        String restoredJson = bak.restore(EXP_PATH);
+        String restoredJson = Crypto.decrypt(bak.restore(EXP_PATH));
+        System.out.println("restoredJson ==> " + restoredJson);
         assertEquals("restore incorrect", initJson, restoredJson);
     }
 }

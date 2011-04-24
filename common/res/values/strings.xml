@@ -51,5 +51,9 @@
     <string name="err_imp_nodata">Backup data not found on external storage.</string>
     <string name="err_imp_failed">Restore failed.</string>
     <string name="i_imp_done">Restore success.</string>
-    <string name="i_imp">Data will be restored, changes made after %1$s will be lost.</string>
+    <string name="i_imp">Data will be restored, changes made after \'%1$s\' will be lost.</string>
+    <string name="assist_app_name">XinkVpnAssist</string>
+    <string name="url_dl">http://goo.gl/bKpJJ</string>
+    <string name="err_no_assist">To use backup/restore feature, please download XinkVpnAssist from %1$s. \n(Android prevent a \'system\' app from accessing sdcard :()</string>
+    <string name="date_format">dd/MM/yyyy HH:mm</string>
 </resources>

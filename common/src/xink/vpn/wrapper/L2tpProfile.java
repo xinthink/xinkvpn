@@ -143,6 +143,6 @@ public class L2tpProfile extends VpnProfile {
     public void fromJson(final JSONObject jo) throws JSONException {
         super.fromJson(jo);
         setSecretEnabled(jo.getBoolean("secretEnabled"));
-        setSecretString(jo.getString("secretString"));
+        setSecretString(jo.optString("secretString"));
     }
 }

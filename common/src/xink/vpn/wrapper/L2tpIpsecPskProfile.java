@@ -81,6 +81,6 @@ public class L2tpIpsecPskProfile extends L2tpProfile {
     @Override
     public void fromJson(final JSONObject jo) throws JSONException {
         super.fromJson(jo);
-        setPresharedKey(jo.getString("presharedKey"));
+        setPresharedKey(jo.optString("presharedKey"));
     }
 }

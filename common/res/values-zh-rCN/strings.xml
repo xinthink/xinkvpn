@@ -46,7 +46,9 @@
     <string name="err_imp_nodata">没有在外部存储中找到备份数据。</string>
     <string name="err_imp_failed">恢复失败。</string>
     <string name="i_imp_done">恢复成功。</string>
-    <string name="i_imp">数据将会恢复，%1$s之后的修改将会丢失。</string>
+    <string name="i_imp">数据将会恢复，\'%1$s\'之后的修改将会丢失。</string>
     <string name="err_empty_psk">请输入IPSec预共享密钥。</string>
     <string name="err_empty_secret">请输入L2TP密钥。</string>
+    <string name="err_no_assist">如需使用备份、恢复功能，请到 %1$s 下载XinkVpnAssist。\n（这是由于Android不允许签名为\'system\'的应用访问外部存储:(）</string>
+    <string name="date_format">yyyy-MM-dd HH:mm</string>
 </resources>
