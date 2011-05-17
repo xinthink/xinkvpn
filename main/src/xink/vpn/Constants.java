@@ -31,6 +31,8 @@ public class Constants {
 
     public static final int DLG_RESTORE = 4;
 
+    public static final int DLG_HACK = 5;
+
     // Action for broadcasting a connectivity state.
     public static final String ACTION_VPN_CONNECTIVITY = "vpn.connectivity";
     /** Key to the profile name of a connectivity broadcast event. */

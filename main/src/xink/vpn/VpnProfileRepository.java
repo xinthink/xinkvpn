@@ -254,14 +254,7 @@ public class VpnProfileRepository {
 
     private File ensureDir(final String path) {
         File dir = new File(path);
-
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        if (!dir.exists()) {
-            throw new AppException("failed to mkdir: " + path, R.string.err_exp_write_storage_failed);
-        }
+        Utils.ensureDir(dir);
 
         return dir;
     }

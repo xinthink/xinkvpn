@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="xink.vpn"
-      android:versionName="1.2" android:versionCode="4" android:sharedUserId="android.uid.system">
+      android:versionName="3.0" android:versionCode="5">
     <uses-sdk android:maxSdkVersion="10" android:minSdkVersion="7" android:targetSdkVersion="10"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
 
@@ -32,6 +32,8 @@
         <activity android:name=".editor.L2tpProfileEditor"></activity>
         <activity android:name=".editor.L2tpIpsecPskProfileEditor"></activity>
         <activity android:name="ToggleVpn" android:theme="@style/HiddenActivity"></activity>
+        <activity android:name="HackKeyStore" android:label="@string/hack_keystore" >
+        </activity>
 
     </application>
 </manifest>

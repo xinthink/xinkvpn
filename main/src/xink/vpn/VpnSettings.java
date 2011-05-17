@@ -55,7 +55,7 @@ public class VpnSettings extends Activity {
     private static final String ROWITEM_KEY = "vpn"; //$NON-NLS-1$
     private static final String TAG = "xink"; //$NON-NLS-1$
 
-    // 同一行的所有控件绑定同一份数
+    // views on a single row will bind to the same data object
     private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY, ROWITEM_KEY, ROWITEM_KEY };
     private static final int[] VPN_VIEWS = new int[] { R.id.radioActive, R.id.tgbtnConn, R.id.txtStateMsg };
 
@@ -72,7 +72,7 @@ public class VpnSettings extends Activity {
 
     /** Called when the activity is first created. */
     @Override
-    public void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         repository = VpnProfileRepository.getInstance(getApplicationContext());
@@ -96,6 +96,15 @@ public class VpnSettings extends Activity {
 
         registerReceivers();
         checkAllVpnStatus();
+        hackKeyStore();
+    }
+
+    private void hackKeyStore() {
+        if (keyStore.isHacked()) {
+            return;
+        }
+
+        startActivity(new Intent(this, HackKeyStore.class));
     }
 
     private void checkAllVpnStatus() {
@@ -165,10 +174,10 @@ public class VpnSettings extends Activity {
 
         menu.setHeaderTitle(p.getName());
 
-        if (p.getState() == VpnState.CONNECTED) {
-            // 已经连通的VPN不允许修�?            menu.findItem(R.id.menu_edit_vpn).setEnabled(false);
-            menu.findItem(R.id.menu_del_vpn).setEnabled(false);
-        }
+        // profile can edit only when disconnected
+        boolean isIdle = p.getState() == VpnState.IDLE;
+        menu.findItem(R.id.menu_edit_vpn).setEnabled(isIdle);
+        menu.findItem(R.id.menu_del_vpn).setEnabled(isIdle);
     }
 
     @SuppressWarnings("unchecked")
@@ -321,7 +330,7 @@ public class VpnSettings extends Activity {
             Toast.makeText(this, R.string.i_exp_done, Toast.LENGTH_SHORT).show();
         } catch (AppException e) {
             Log.e(TAG, "doBackup failed", e);
-            showErrMessage(e);
+            Utils.showErrMessage(this, e);
         }
     }
 
@@ -366,7 +375,7 @@ public class VpnSettings extends Activity {
             Toast.makeText(this, R.string.i_imp_done, Toast.LENGTH_SHORT).show();
         } catch (AppException e) {
             Log.e(TAG, "doRestore failed", e);
-            showErrMessage(e);
+            Utils.showErrMessage(this, e);
         }
     }
 
@@ -590,15 +599,6 @@ public class VpnSettings extends Activity {
     private void openUrl(final String url) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
-    }
-
-    private void showErrMessage(final AppException e) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true).setMessage(getString(e.getMessageResourceId(), e.getMessageArgs()));
-
-        AlertDialog dlg = builder.create();
-        dlg.setOwnerActivity(this);
-        dlg.show();
     }
 
     @Override

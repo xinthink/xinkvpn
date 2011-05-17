@@ -41,7 +41,7 @@ public class L2tpProfile extends VpnProfile {
     }
 
     public boolean isSecretEnabled() {
-        return invokeStubMethod("isSecretEnabled");
+        return this.<Boolean>invokeStubMethod("isSecretEnabled");
     }
 
     public void setSecretString(final String secret) {
