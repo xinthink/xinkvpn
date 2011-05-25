@@ -96,15 +96,15 @@ public class VpnSettings extends Activity {
 
         registerReceivers();
         checkAllVpnStatus();
-        hackKeyStore();
+        checkHack(false);
     }
 
-    private void hackKeyStore() {
-        if (keyStore.isHacked()) {
-            return;
-        }
-
-        startActivity(new Intent(this, HackKeyStore.class));
+    /*
+     * Check whether the system is hacked to allow 3rd-party keypair
+     */
+    private void checkHack(final boolean force) {
+        HackKeyStore hack = new HackKeyStore(this);
+        hack.check(force);
     }
 
     private void checkAllVpnStatus() {
@@ -256,6 +256,7 @@ public class VpnSettings extends Activity {
         menu.findItem(R.id.menu_help).setIcon(android.R.drawable.ic_menu_help);
         menu.findItem(R.id.menu_exp).setIcon(android.R.drawable.ic_menu_save);
         menu.findItem(R.id.menu_imp).setIcon(android.R.drawable.ic_menu_set_as);
+        menu.findItem(R.id.menu_diag).setIcon(android.R.drawable.ic_menu_manage);
 
         return true;
     }
@@ -292,6 +293,9 @@ public class VpnSettings extends Activity {
             break;
         case R.id.menu_imp:
             showDialog(DLG_RESTORE);
+            break;
+        case R.id.menu_diag:
+            checkHack(true);
             break;
         default:
             consumed = super.onContextItemSelected(item);

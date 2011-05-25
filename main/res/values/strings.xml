@@ -53,9 +53,9 @@
     <string name="i_imp_done">Restore success.</string>
     <string name="i_imp">Data will be restored, changes made after %1$s will be lost.</string>
     <string name="err_privcmd">Execute privilege command failure.</string>
-    <string name="hack_keystore">Hack KeyStore</string>
-    <string name="i_hack_keystore">In order to enable L2TP secret and IPSec PSk in XinkVpn,  system keystore service will be replaced (and reboot is required).\nWould you like to proceed now?</string>
+    <string name="hack_keystore">L2TP secret / IPSec PSK Unavailable</string>
+    <string name="i_hack_keystore">In order to enable L2TP secret and IPSec PSk in XinkVpn, system keystore service should be replaced, check it out: .</string>
     <string name="neverShow">Never show this agin</string>
-    <string name="reboot">Reboot Device</string>
-    <string name="i_reboot">Reboot is required to make changes take effect.\nPress \'OK\' to reboot now, or \'Cancel\' to reboot later.</string>
+    <string name="diag">Diagnose</string>
+    <string name="hacked">OK. It seems to be ready for L2TP secret and IPSec PSK.</string>
 </resources>

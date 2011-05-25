@@ -1,130 +1,92 @@
 package xink.vpn;
 
-import static xink.vpn.Constants.*;
-
-import java.io.File;
-
+import xink.vpn.wrapper.KeyStore;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
-import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.TextView;
+import android.widget.Toast;
 
-public class HackKeyStore extends Activity {
+public class HackKeyStore {
+
+    private static final String PREF_IGNORE_HACK = "xink.vpn.pref.ignoreHack";
 
     private static final String TAG = "xink.HackKeyStore";
 
-    private CheckBox ckbIgnore;
+    private SharedPreferences pref;
 
-    @Override
-    protected void onCreate(final Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private Activity activity;
 
-        setContentView(R.layout.hack);
-        ((TextView) findViewById(R.id.txtMsg)).setText(R.string.i_hack_keystore);
+    private KeyStore keyStore;
 
-        ((Button) findViewById(R.id.btnOk)).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(final View v) {
-                hackKeyStore();
-            }
-        });
-
-        ((Button) findViewById(R.id.btnCancel)).setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(final View v) {
-                finish();
-            }
-        });
+    public HackKeyStore(final Activity activity) {
+        super();
+        this.activity = activity;
+        pref = activity.getPreferences(Activity.MODE_PRIVATE);
+        keyStore = new KeyStore(activity);
     }
 
-    // public static Dialog createDialog(final Activity ctx) {
-    // AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
-    // builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(R.string.hack_keystore).setMessage(R.string.i_hack_keystore);
-    // builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-    // @Override
-    // public void onClick(final DialogInterface dialog, final int which) {
-    // hackKeyStore(ctx);
-    // }
-    // }).setNegativeButton(android.R.string.cancel, null);
-    //
-    // AlertDialog dlg = builder.create();
-    // dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
-    // @Override
-    // public void onDismiss(final DialogInterface dialog) {
-    // ctx.removeDialog(DLG_HACK);
-    // }
-    // });
-    // return dlg;
-    // }
+    public void check(final boolean force) {
+        boolean ignoreHack = pref.getBoolean(PREF_IGNORE_HACK, false);
 
-    private void hackKeyStore() {
-        try {
-            doHackKeyStore();
-            showDialog(DLG_HACK);
-        } catch (AppException e) {
-            Log.e(TAG, "hack keystore failed", e);
-            Utils.showErrMessage(this, e);
+        if (!force && ignoreHack) {
+            return;
         }
+
+        boolean hacked = keyStore.isHacked();
+        Log.d(TAG, String.format("check keytore, hacked=%1$s, ignore=%2$s", hacked, ignoreHack));
+
+        if (hacked) {
+            Toast.makeText(activity, R.string.hacked, Toast.LENGTH_SHORT);
+            return;
+        }
+
+        promoptHack(ignoreHack);
     }
 
-    private void doHackKeyStore() {
-        File temp = new File("/sdcard/tmp/keystore");
-        Utils.copyAsset(this, "keystore", temp);
+    private void promoptHack(final boolean ignoreHack) {
+        AlertDialog.Builder builder;
 
-        StringBuilder cmd = new StringBuilder();
-        cmd.append("mount -o rw,remount /system\n");
+        LayoutInflater inflater = activity.getLayoutInflater();
+        View layout = inflater.inflate(R.layout.hack, (ViewGroup) activity.findViewById(R.id.hackRoot));
 
-        cmd.append("mv /system/bin/keystore /system/bin/keystore_orig\n");
-        cmd.append("mv ").append(temp.getAbsolutePath()).append(" /system/bin/\n");
-        cmd.append("chmod 755 /system/bin/keystore\n");
+        builder = new AlertDialog.Builder(activity);
+        builder.setView(layout).setTitle(activity.getString(R.string.hack_keystore)).setIcon(android.R.drawable.ic_dialog_info);
+        builder.setCancelable(true);
 
-        // cmd.append("mount -o ro,remount /system\n");
-
-        Utils.sudo(cmd.toString());
-    }
-
-    private Dialog createRebootConfirmDlg() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(R.string.reboot).setMessage(R.string.i_reboot);
         builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, final int which) {
-                reboot();
+                dialog.dismiss();
             }
-        }).setNegativeButton(android.R.string.cancel, null);
+        });
+
+        final CheckBox chkIgnore = (CheckBox) layout.findViewById(R.id.chkIgnoreHack);
+        chkIgnore.setChecked(ignoreHack);
 
         AlertDialog dlg = builder.create();
+        dlg.setOwnerActivity(activity);
         dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(final DialogInterface dialog) {
-                removeDialog(DLG_HACK);
+                savePref(chkIgnore.isChecked());
             }
         });
-        return dlg;
+        dlg.show();
     }
 
-    private void reboot() {
-        try {
-            Utils.reboot();
-        } catch (AppException e) {
-            Log.e(TAG, "reboot failed", e);
-            Utils.showErrMessage(this, e);
-        }
+    private void savePref(final boolean isChecked) {
+        Log.d(TAG, PREF_IGNORE_HACK + "->" + isChecked);
+
+        Editor editor = pref.edit();
+        editor.putBoolean(PREF_IGNORE_HACK, isChecked);
+        editor.commit();
     }
 
-    @Override
-    protected Dialog onCreateDialog(final int id) {
-        if (id == DLG_HACK) {
-            return createRebootConfirmDlg();
-        }
-        return super.onCreateDialog(id);
-    }
 }

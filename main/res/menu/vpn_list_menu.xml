@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_exp" android:title="@string/export"></item><item android:id="@+id/menu_imp" android:title="@string/imp"></item><item android:id="@+id/menu_help" android:title="@string/help"></item><item android:id="@+id/menu_about" android:title="@string/about"></item>
+    <item android:id="@+id/menu_exp" android:title="@string/export"></item><item android:id="@+id/menu_imp" android:title="@string/imp"></item><item android:title="@string/diag" android:id="@+id/menu_diag"></item><item android:id="@+id/menu_help" android:title="@string/help"></item><item android:id="@+id/menu_about" android:title="@string/about"></item>
+    
     
     
     
