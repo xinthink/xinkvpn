@@ -5,6 +5,7 @@ bin/
 classes/
 cache/
 dist/
+local.properties
 
 *.jar
 .git*
