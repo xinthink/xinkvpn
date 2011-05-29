@@ -18,7 +18,6 @@
     <string name="cancel">取消</string>
     <string name="edit">編輯</string>
     <string name="about">關於</string>
-    <string name="pack_ver">%1$s %2$s</string>
     <string name="lbl_email">郵箱:</string>
     <string name="lbl_report_bug">反饋缺陷:</string>
     <string name="del_vpn_confirm">確定要刪除此VPN嗎？</string>
@@ -35,9 +34,9 @@
     <string name="l2tp_secret">L2TP密碼</string>
     <string name="psk">IPSec預先共用金鑰</string>
     <string name="help">幫助</string>
-    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
     <string name="err_no_active_vpn">尚未設定活動VPN。</string>
     <string name="export">備份</string>
+    <string name="err_no_writable_storage">無法訪問外部記憶體。</string>
     <string name="err_exp_write_storage_failed">無法訪問外部記憶體。</string>
     <string name="err_exp_failed">備份失敗。</string>
     <string name="i_exp_done">備份成功。</string>
@@ -49,4 +48,9 @@
     <string name="i_imp">資料將會還原，%1$s之後的改變將會丟失。</string>
     <string name="err_empty_psk">請輸入IPSec預先共用金鑰。</string>
     <string name="err_empty_secret">請輸入L2TP密碼。</string>
+    <string name="hack_keystore">L2TP密碼 / IPSec PSK無法使用</string>
+    <string name="i_hack_keystore">如需使用L2TP密碼和IPSec預先共用金鑰，必須替換系統的keystore服務。詳情請見：http://goo.gl/EtRgo</string>
+    <string name="neverShow">不再提示</string>
+    <string name="diag">破解</string>
+    <string name="hacked">OK，KeyStore服務破解成功。</string>
 </resources>

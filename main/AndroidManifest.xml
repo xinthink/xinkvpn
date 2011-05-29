@@ -32,8 +32,5 @@
         <activity android:name=".editor.L2tpProfileEditor"></activity>
         <activity android:name=".editor.L2tpIpsecPskProfileEditor"></activity>
         <activity android:name="ToggleVpn" android:theme="@style/HiddenActivity"></activity>
-        <activity android:name="HackKeyStore" android:label="@string/hack_keystore" >
-        </activity>
-
     </application>
 </manifest>

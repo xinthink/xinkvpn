@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
+import android.os.Environment;
 
 public class Utils {
 
@@ -63,6 +64,11 @@ public class Utils {
     }
 
     public static void ensureDir(final File dir) {
+        String state = Environment.getExternalStorageState();
+        if (!Environment.MEDIA_MOUNTED.equals(state)) {
+            throw new AppException("no writable storage found, state=" + state, R.string.err_no_writable_storage);
+        }
+        
         if (!dir.exists()) {
             dir.mkdirs();
         }
@@ -70,6 +76,10 @@ public class Utils {
         if (!dir.exists()) {
             throw new AppException("failed to mkdir: " + dir, R.string.err_exp_write_storage_failed);
         }
+    }
+    
+    public static void checkExternalStorageWritable() {
+        
     }
 
     public static void sudo(final String cmd) {

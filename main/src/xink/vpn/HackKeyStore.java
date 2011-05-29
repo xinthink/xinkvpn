@@ -42,12 +42,13 @@ public class HackKeyStore {
         boolean hacked = keyStore.isHacked();
         Log.d(TAG, String.format("check keytore, hacked=%1$s, ignore=%2$s", hacked, ignoreHack));
 
-        if (hacked) {
-            Toast.makeText(activity, R.string.hacked, Toast.LENGTH_SHORT);
-            return;
+        if (hacked && force) {
+            Toast.makeText(activity, R.string.hacked, Toast.LENGTH_SHORT).show();
         }
 
-        promoptHack(ignoreHack);
+        if (!hacked) {
+            promoptHack(ignoreHack);
+        }
     }
 
     private void promoptHack(final boolean ignoreHack) {
