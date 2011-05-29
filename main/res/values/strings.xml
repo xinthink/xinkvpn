@@ -56,7 +56,7 @@
     <string name="err_privcmd">Execute privilege command failure.</string>
     <string name="hack_keystore">L2TP secret / IPSec PSK Unavailable</string>
     <string name="i_hack_keystore">In order to enable L2TP secret and IPSec PSk in XinkVpn, system keystore service should be replaced, check it out: http://goo.gl/dWDDj</string>
-    <string name="neverShow">Never show this agin</string>
+    <string name="neverShow">Never show this again</string>
     <string name="diag">Hack</string>
     <string name="hacked">OK, keystore service is ready.</string>
 </resources>
