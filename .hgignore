@@ -7,6 +7,7 @@ cache/
 dist/
 local.properties
 
+*.sublime-project
 *.jar
 .git*
 *.log*
