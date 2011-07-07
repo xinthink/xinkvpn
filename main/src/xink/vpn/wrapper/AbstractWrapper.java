@@ -105,6 +105,7 @@ public abstract class AbstractWrapper implements Cloneable {
         }
 
         Method method = clazz.getMethod(methodName, argTypes);
+        method.setAccessible(true);
         return method;
     }
 

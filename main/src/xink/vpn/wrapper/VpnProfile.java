@@ -5,9 +5,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.UUID;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.content.Context;
 
 public abstract class VpnProfile extends AbstractWrapper {
@@ -185,24 +182,5 @@ public abstract class VpnProfile extends AbstractWrapper {
 
     public VpnProfile dulicateToConnect() {
         return clone();
-    }
-
-    public void toJson(final JSONObject jo) throws JSONException {
-        jo.put("type", getType().toString());
-        jo.put("id", getId());
-        jo.put("name", getName());
-        jo.put("serverName", getServerName());
-        jo.put("domainSuffices", getDomainSuffices());
-        jo.put("username", username);
-        jo.put("password", password);
-    }
-
-    public void fromJson(final JSONObject jo) throws JSONException {
-        setId(jo.getString("id"));
-        setName(jo.getString("name"));
-        setServerName(jo.optString("serverName"));
-        setDomainSuffices(jo.optString("domainSuffices"));
-        username = jo.optString("username");
-        password = jo.optString("password");
     }
 }

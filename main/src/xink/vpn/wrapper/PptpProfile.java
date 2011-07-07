@@ -2,9 +2,6 @@ package xink.vpn.wrapper;
 
 import java.lang.reflect.Method;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import xink.vpn.AppException;
 import android.content.Context;
 
@@ -32,18 +29,6 @@ public class PptpProfile extends VpnProfile {
     }
 
     public boolean isEncryptionEnabled() {
-        return invokeStubMethod("isEncryptionEnabled");
-    }
-
-    @Override
-    public void toJson(final JSONObject jo) throws JSONException {
-        super.toJson(jo);
-        jo.put("encryptionEnabled", isEncryptionEnabled());
-    }
-
-    @Override
-    public void fromJson(final JSONObject jo) throws JSONException {
-        super.fromJson(jo);
-        setEncryptionEnabled(jo.getBoolean("encryptionEnabled"));
+        return this.<Boolean>invokeStubMethod("isEncryptionEnabled");
     }
 }

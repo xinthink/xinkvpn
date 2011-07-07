@@ -43,6 +43,7 @@
     <string name="err_empty_secret">Please enter L2TP secret.</string>
     <string name="export">Backup</string>
     <string name="exp_dir">/sdcard/XinkVpn</string>
+    <string name="err_no_writable_storage">Failed to access external storage.</string>
     <string name="err_exp_write_storage_failed">Failed to access external storage.</string>
     <string name="err_exp_failed">Backup failed.</string>
     <string name="i_exp_done">Backup success.</string>
@@ -52,8 +53,10 @@
     <string name="err_imp_failed">Restore failed.</string>
     <string name="i_imp_done">Restore success.</string>
     <string name="i_imp">Data will be restored, changes made after \'%1$s\' will be lost.</string>
-    <string name="assist_app_name">XinkVpnAssist</string>
-    <string name="url_dl">http://goo.gl/bKpJJ</string>
-    <string name="err_no_assist">To use backup/restore feature, please download XinkVpnAssist from %1$s. \n(Android prevent a \'system\' app from accessing sdcard :()</string>
-    <string name="date_format">dd/MM/yyyy HH:mm</string>
+    <string name="err_privcmd">Execute privilege command failure.</string>
+    <string name="hack_keystore">L2TP secret / IPSec PSK Unavailable</string>
+    <string name="i_hack_keystore">In order to enable L2TP secret and IPSec PSk in XinkVpn, system keystore service should be replaced, check it out: http://goo.gl/dWDDj</string>
+    <string name="neverShow">Never show this again</string>
+    <string name="diag">Hack</string>
+    <string name="hacked">OK, keystore service is ready.</string>
 </resources>

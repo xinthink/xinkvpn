@@ -1,24 +1,25 @@
 package xink.vpn;
 
-import static xink.vpn.Constants.*;
-
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
-import xink.crypto.Crypto;
+import xink.crypto.StreamCrypto;
 import xink.vpn.wrapper.InvalidProfileException;
-import xink.vpn.wrapper.ProfileUtils;
 import xink.vpn.wrapper.VpnProfile;
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
+import xink.vpn.wrapper.VpnType;
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -124,12 +125,39 @@ public class VpnProfileRepository {
 
         try {
             is = new ObjectInputStream(context.openFileInput(FILE_PROFILES));
-            profiles.clear();
-            ProfileUtils.loadProfiles(context, is, profiles);
+            loadProfilesFrom(is);
         } finally {
             if (is != null) {
                 is.close();
             }
+        }
+    }
+
+    private void loadProfilesFrom(final ObjectInputStream is) throws Exception {
+        Object obj = null;
+
+        try {
+            while (true) {
+                VpnType type = (VpnType) is.readObject();
+                obj = is.readObject();
+                loadProfileObject(type, obj, is);
+            }
+        } catch (EOFException eof) {
+            Log.i(TAG, "reach the end of profiles file");
+        }
+    }
+
+    private void loadProfileObject(final VpnType type, final Object obj, final ObjectInputStream is) throws Exception {
+        if (obj == null) {
+            return;
+        }
+
+        VpnProfile p = VpnProfile.newInstance(type, context);
+        if (p.isCompatible(obj)) {
+            p.read(obj, is);
+            profiles.add(p);
+        } else {
+            Log.e(TAG, "saved profile '" + obj + "' is NOT compatible with " + type);
         }
     }
 
@@ -207,53 +235,89 @@ public class VpnProfileRepository {
         }
     }
 
-    public void backup(final Activity ctx) {
-        String repoJson = null;
+    public void backup(final String path) {
+        if (profiles.isEmpty()) {
+            Log.i(TAG, "profile list is empty, will not export");
+            return;
+        }
+
+        save();
+        File dir = ensureDir(path);
 
         try {
-            repoJson = ProfileUtils.toJson(activeProfileId, profiles);
-            Intent intent = new Intent(ACT_BACKUP);
-            intent.putExtra(KEY_REPOSITORY, Crypto.encrypt(repoJson));
-            ctx.startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            throw new AppException("doBackup failed", e, R.string.err_no_assist, context.getString(R.string.url_dl));
+            doBackup(dir, FILE_ACT_ID);
+            doBackup(dir, FILE_PROFILES);
         } catch (Throwable e) {
-            throw new AppException("doBackup failed", e, R.string.err_exp_failed);
+            throw new AppException("backup failed", e, R.string.err_exp_failed);
         }
     }
 
-    public void restore(final Activity ctx) {
+    private File ensureDir(final String path) {
+        File dir = new File(path);
+        Utils.ensureDir(dir);
+
+        return dir;
+    }
+
+    private void doBackup(final File dir, final String name) throws Exception {
+        InputStream is = context.openFileInput(name);
+        OutputStream os = new FileOutputStream(new File(dir, name));
+        StreamCrypto.encrypt(is, os);
+    }
+
+    public void restore(final String dir) {
+        checkExternalData(dir);
+
         try {
-            Intent intent = new Intent(ACT_RESTORE);
-            ctx.startActivityForResult(intent, REQ_RESTORE);
-        } catch (ActivityNotFoundException e) {
-            throw new AppException("restore failed", e, R.string.err_no_assist, context.getString(R.string.url_dl));
+            doRestore(dir, FILE_ACT_ID);
+            doRestore(dir, FILE_PROFILES);
+
+            clean();
+            load();
         } catch (Throwable e) {
-            throw new AppException("restore failed", e, R.string.err_exp_failed);
+            throw new AppException("restore failed", e, R.string.err_imp_failed);
         }
     }
 
-    public void onRestored(final byte[] bytes) {
-        try {
-            String json = Crypto.decrypt(bytes);
+    private void clean() {
+        activeProfileId = null;
+        profiles.clear();
+    }
 
-            StringBuilder activeId = new StringBuilder();
-            List<VpnProfile> tmpProfiles = new ArrayList<VpnProfile>();
+    private void doRestore(final String dir, final String name) throws Exception {
+        InputStream is = new FileInputStream(new File(dir, name));
+        OutputStream os = openPrivateFileOutput(name);
+        StreamCrypto.decrypt(is, os);
+    }
 
-            ProfileUtils.fromJson(context, json, activeId, tmpProfiles);
+    /*
+     * verify data files in external storage.
+     */
+    private void checkExternalData(final String path) {
+        File id = new File(path, FILE_ACT_ID);
+        File profiles = new File(path, FILE_PROFILES);
 
-            if (tmpProfiles.isEmpty()) {
-                Log.i(TAG, "profile list is empty, will not export");
-                return;
-            }
-
-            activeProfileId = activeId.length() > 0 ? activeId.toString() : null;
-            profiles.clear();
-            profiles.addAll(tmpProfiles);
-
-            save();
-        } catch (Throwable e) {
-            throw new AppException("restore failed", e, R.string.err_exp_failed);
+        if (!(verifyDataFile(id) && verifyDataFile(profiles))) {
+            throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
         }
+    }
+
+    private boolean verifyDataFile(final File file) {
+        return file.exists() && file.isFile() && file.length() > 0;
+    }
+
+    /**
+     * Check last backup time.
+     *
+     * @return timestamp of last backup, null for no backup.
+     */
+    public Date checkLastBackup(final String path) {
+        File id = new File(path, FILE_ACT_ID);
+
+        if (!verifyDataFile(id)) {
+            return null;
+        }
+
+        return new Date(id.lastModified());
     }
 }

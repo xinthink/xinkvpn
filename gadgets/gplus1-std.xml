@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module>
+  <ModulePrefs title="Google +1" />
+  <Content type="html">
+    <![CDATA[
+    <!-- &#x5C06;&#x4EE5;&#x4E0B;&#x4EE3;&#x7801;&#x653E;&#x5728;<head>&#x4E4B;&#x540E;&#x6216;&#x8005;</body>&#x6807;&#x7B7E;&#x4E4B;&#x524D;&#x3002; -->
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+
+    <!-- &#x8BF7;&#x5C06;&#x4EE5;&#x4E0B;&#x4EE3;&#x7801;&#x653E;&#x5728;&#x60A8;&#x5E0C;&#x671B;&#x5448;&#x73B0; +1 &#x6309;&#x94AE;&#x7684;&#x4F4D;&#x7F6E;&#x3002; -->
+    <g:plusone href="http://code.google.com/p/xinkvpn/" count="true"></g:plusone>
+    ]]>
+  </Content>
+</Module>

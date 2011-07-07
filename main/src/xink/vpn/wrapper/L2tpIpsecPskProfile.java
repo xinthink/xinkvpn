@@ -1,8 +1,5 @@
 package xink.vpn.wrapper;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import xink.vpn.R;
 import android.content.Context;
 import android.text.TextUtils;
@@ -70,17 +67,5 @@ public class L2tpIpsecPskProfile extends L2tpProfile {
         p.setPresharedKey(makeKey());
 
         return p;
-    }
-
-    @Override
-    public void toJson(final JSONObject jo) throws JSONException {
-        super.toJson(jo);
-        jo.put("presharedKey", getPresharedKey());
-    }
-
-    @Override
-    public void fromJson(final JSONObject jo) throws JSONException {
-        super.fromJson(jo);
-        setPresharedKey(jo.optString("presharedKey"));
     }
 }
