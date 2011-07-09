@@ -63,7 +63,25 @@
      <target name="-post-compile">
      </target>
      -->
-    
+     <target name="sonar">
+         <taskdef uri="antlib:org.sonar.ant" resource="org/sonar/ant/antlib.xml">
+           <classpath path="${sonar.dir}/sonar-ant-task-1.1.jar" />
+         </taskdef>
+       
+         <!-- list of mandatories Sonar properties -->
+         <property name="sonar.sources" value="src" />
+         <property name="sonar.sourceEncoding" value="UTF-8" />
+         <property name="sonar.java.source" value="1.6" />
+         <property name="sonar.java.target" value="1.6" />
+
+         <!-- list of optional Sonar properties -->
+         <property name="sonar.binaries" value="bin" />
+         <property name="sonar.tests" value="../XinkVpnTest/android, ../XinkVpnTest/junit" />
+         <property name="sonar.libraries" value="" />
+
+         <sonar:sonar key="xink.vpn:xinkvpn" version="3.1" xmlns:sonar="antlib:org.sonar.ant"/>
+     </target>
+
     <!-- Execute the Android Setup task that will setup some properties
      specific to the target, and import the build rules files.
      

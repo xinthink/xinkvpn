@@ -42,16 +42,16 @@ public class KeyStore extends AbstractWrapper {
     }
 
     public boolean put(final String key, final String value) {
-        return this.<Boolean>invokeStubMethod("put", key, value);
+        return this.<Boolean> invokeStubMethod("put", key, value);
     }
 
     public boolean contains(final VpnProfile p) {
         String key = L2tpIpsecPskProfile.KEY_PREFIX_IPSEC_PSK + p.getId();
-        return this.<Boolean>invokeStubMethod("contains", key);
+        return this.<Boolean> invokeStubMethod("contains", key);
     }
 
     public boolean delete(final String key) {
-        return this.<Boolean>invokeStubMethod("delete", key);
+        return this.<Boolean> invokeStubMethod("delete", key);
     }
 
     public void unlock(final Activity ctx) {
@@ -64,7 +64,7 @@ public class KeyStore extends AbstractWrapper {
     }
 
     public boolean isUnlocked() {
-        int err = this.<Integer>invokeStubMethod("test");
+        int err = this.<Integer> invokeStubMethod("test");
         Log.d("xink", "KeyStore.test result is: " + err);
         return err == NO_ERROR;
     }

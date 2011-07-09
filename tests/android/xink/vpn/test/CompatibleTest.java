@@ -2,6 +2,7 @@ package xink.vpn.test;
 
 import java.lang.reflect.Method;
 
+import xink.vpn.wrapper.KeyStore;
 import xink.vpn.wrapper.PptpProfile;
 import xink.vpn.wrapper.VpnManager;
 import xink.vpn.wrapper.VpnService;
@@ -32,9 +33,39 @@ public class CompatibleTest extends AndroidTestCase {
         assertMethodDefined(stubClass, "checkStatus", profileClass);
     }
 
-    private static void assertMethodDefined(final Class<?> clazz, final String methodName, final Class<?>... parameterTypes)
-            throws NoSuchMethodException {
-        Method m = clazz.getMethod(methodName, parameterTypes);
+    public void testKeyStore() throws Exception {
+        KeyStore ks = new KeyStore(getContext());
+        Class<?> stubClass = ks.getStubClass();
+
+        assertMethodDefined(stubClass, "getInstance");
+        assertMethodDefined(stubClass, "test");
+        assertMethodDefined(stubClass, "getLastError");
+        assertMethodDefined(stubClass, "execute", int.class, byte[][].class);
+        assertMethodDefined(stubClass, "put", String.class, String.class);
+        assertMethodDefined(stubClass, "contains", String.class);
+        assertMethodDefined(stubClass, "delete", String.class);
+    }
+
+    private static void assertMethodDefined(final Class<?> clazz, final String methodName, final Class<?>... parameterTypes) {
+        Method m = getMethod(clazz, methodName, false, parameterTypes);
+
+        if (m == null) {
+            // try class's declared methods
+            m = getMethod(clazz, methodName, true, parameterTypes);
+        }
+
         assertNotNull(methodName + " method not found", m);
+    }
+
+    private static Method getMethod(final Class<?> clazz, final String methodName, final boolean declaredOnly, final Class<?>... parameterTypes) {
+        Method m = null;
+
+        try {
+            m = declaredOnly ? clazz.getDeclaredMethod(methodName, parameterTypes) : clazz.getMethod(methodName, parameterTypes);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+        return m;
     }
 }
