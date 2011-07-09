@@ -18,7 +18,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 public class VpnActor {
-
+    private static final int ONE_SEC = 1000;
     private static final String TAG = "xink";
 
     private VpnProfileRepository repository;
@@ -144,11 +144,10 @@ public class VpnActor {
                 context.unbindService(this);
             }
         };
-        if (getVpnMgr().bindVpnService(c)) {
-            // wait for a second, let status propagate
-            if (!cv.block(1000)) {
-                broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-            }
+
+        boolean ret = getVpnMgr().bindVpnService(c);
+        if (ret && !cv.block(ONE_SEC)) { // if binding failed, wait for a second, let status propagate
+            broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
         }
     }
 

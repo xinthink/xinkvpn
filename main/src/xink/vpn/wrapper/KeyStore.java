@@ -28,17 +28,13 @@ public class KeyStore extends AbstractWrapper {
     */
 
     public KeyStore(final Context ctx) {
-        super(ctx, "android.security.KeyStore");
-    }
-
-    @Override
-    protected Object createStubObject(final Class<?> clazz) throws Exception {
-        return getStubInstance();
-    }
-
-    private Object getStubInstance() throws Exception {
-        Method method = getStubClass().getMethod("getInstance");
-        return method.invoke(null);
+        super(ctx, "android.security.KeyStore", new StubInstanceCreator() {
+            @Override
+            protected Object newStubInstance(final Class<?> stubClass, final Context ctx) throws Exception {
+                Method method = stubClass.getMethod("getInstance");
+                return method.invoke(null);
+            }
+        });
     }
 
     public boolean put(final String key, final String value) {

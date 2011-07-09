@@ -12,12 +12,12 @@ public class VpnManager extends AbstractWrapper {
     public static final String METHOD_START_VPN_SERVICE = "startVpnService";
 
 	public VpnManager(final Context ctx) {
-        super(ctx, "android.net.vpn.VpnManager");
-    }
-
-    @Override
-    protected Object createStubObject(final Class<?> clazz) throws Exception {
-        return clazz.getConstructor(Context.class).newInstance(getContext());
+        super(ctx, "android.net.vpn.VpnManager", new StubInstanceCreator() {
+            @Override
+            protected Object newStubInstance(final Class<?> stubClass, final Context ctx) throws Exception {
+                return stubClass.getConstructor(Context.class).newInstance(ctx);
+            }
+        });
     }
 
     /**

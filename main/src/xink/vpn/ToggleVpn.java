@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+/**
+ * Help desktop widgets to unlock keystore (which can only be invoked within an activity)
+ */
 public class ToggleVpn extends Activity {
     private static final String TAG = "xink.ToggleVpn";
 

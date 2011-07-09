@@ -27,6 +27,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 public abstract class VpnProfileEditor extends Activity {
+    private static final int DESC_FONT_SIZE = 12;
+    private static final int GRAY = 0xFF999999;
     private EditAction editAction;
     private VpnProfile profile;
     private EditText txtVpnName;
@@ -83,8 +85,8 @@ public abstract class VpnProfileEditor extends Activity {
 
         TextView lblDnsSufficesDesc = new TextView(this);
         lblDnsSufficesDesc.setText(getString(R.string.comma_sep)); //$NON-NLS-1$
-        lblDnsSufficesDesc.setTextColor(0xFF999999);
-        lblDnsSufficesDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+        lblDnsSufficesDesc.setTextColor(GRAY);
+        lblDnsSufficesDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, DESC_FONT_SIZE);
         content.addView(lblDnsSufficesDesc);
 
         txtDnsSuffices = new EditText(this);
@@ -270,7 +272,7 @@ public abstract class VpnProfileEditor extends Activity {
 
     private void promptInvalidProfile(final InvalidProfileException e) {
         errMsgArgs = e.getMessageArgs();
-        showDialog(e.getMessageResourceId());
+        showDialog(e.getMessageCode());
     }
 
     private void onCancel() {

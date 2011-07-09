@@ -8,12 +8,12 @@ import android.os.IBinder;
 public class VpnService extends AbstractWrapper {
 
     public VpnService(final Context ctx) {
-        super(ctx, "android.net.vpn.IVpnService$Stub");
-    }
-
-    @Override
-    protected Object createStubObject(final Class<?> clazz) {
-        return null;
+        super(ctx, "android.net.vpn.IVpnService$Stub", new StubInstanceCreator() {
+            @Override
+            protected Object newStubInstance(final Class<?> stubClass, final Context ctx) throws Exception {
+                return null;
+            }
+        });
     }
 
     public boolean connect(final IBinder service, final VpnProfile profile) throws Exception {

@@ -56,7 +56,7 @@ public class RepositoryExpImpTest extends AndroidTestCase {
             fail("ooh, u should NOT be here!");
         }
         catch (AppException e) {
-            assertTrue("lack of error prompt", e.getMessageResourceId() > 0);
+            assertTrue("lack of error prompt", e.getMessageCode() > 0);
         }
     }
 

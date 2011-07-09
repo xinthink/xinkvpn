@@ -10,6 +10,15 @@ import dalvik.system.PathClassLoader;
 
 public abstract class AbstractWrapper implements Cloneable {
 
+    /**
+     * subclass to customize stub object creation
+     */
+    protected static class StubInstanceCreator {
+        protected Object newStubInstance(final Class<?> stubClass, final Context context) throws Exception {
+            return stubClass.newInstance();
+        }
+    }
+
     private static final String STUB_PACK = "com.android.settings";
 
     private static PathClassLoader stubClassLoader;
@@ -22,10 +31,21 @@ public abstract class AbstractWrapper implements Cloneable {
 
     private Object stub;
 
+    private StubInstanceCreator stubInstanceCreator;
+
     protected AbstractWrapper(final Context ctx, final String stubClass) {
         super();
         this.context = ctx;
         stubClassName = stubClass;
+        stubInstanceCreator = new StubInstanceCreator();
+        init();
+    }
+
+    protected AbstractWrapper(final Context ctx, final String stubClass, final StubInstanceCreator stubCreator) {
+        super();
+        this.context = ctx;
+        stubClassName = stubClass;
+        stubInstanceCreator = stubCreator;
         init();
     }
 
@@ -52,7 +72,8 @@ public abstract class AbstractWrapper implements Cloneable {
     private void init() {
         try {
             initClassLoader(context);
-            initStub();
+            stubClass = loadClass(stubClassName);
+            stub = stubInstanceCreator.newStubInstance(stubClass, context);
         } catch (Throwable e) {
             throw new WrapperException("init classloader failed", e);
         }
@@ -66,16 +87,7 @@ public abstract class AbstractWrapper implements Cloneable {
         stubClassLoader = new PathClassLoader(vpnAppInfo.sourceDir, ClassLoader.getSystemClassLoader());
     }
 
-    private void initStub() throws Exception {
-        stubClass = loadClass(stubClassName);
-        stub = createStubObject(stubClass);
-    }
-
-    protected Object createStubObject(final Class<?> clazz) throws Exception {
-        return clazz.newInstance();
-    }
-
-    protected final Class<?> loadClass(final String qname) {
+    protected static final Class<?> loadClass(final String qname) {
         try {
             return Class.forName(qname, true, stubClassLoader);
         } catch (ClassNotFoundException e) {
