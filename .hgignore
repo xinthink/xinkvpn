@@ -5,6 +5,7 @@ bin/
 classes/
 cache/
 dist/
+coverage/
 
 .sublime-project
 local.properties
