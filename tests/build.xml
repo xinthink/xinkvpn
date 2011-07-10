@@ -89,7 +89,10 @@
     <setup />
   
     <target name="coverage" depends="-set-coverage-classpath, -install-instrumented, install" description="Runs the tests against the instrumented code and generates code coverage report">
-         <run-tests-helper emma.enabled="true">
+        <delete dir="coverage" />
+        <mkdir dir="coverage"/>
+        
+        <run-tests-helper emma.enabled="true">
              <extra-instrument-args>
                  <arg value="-e" />
                     <arg value="coverageFile" />
@@ -112,14 +115,14 @@
                      <include name="coverage.em" />
                  </infileset>
                  <!-- TODO: reports in other, indicated by user formats -->
-                 <html outfile="coverage/coverage.html" />
+                 <xml outfile="coverage/coverage.xml" />
             </report>
          </emma>
          <echo>Cleaning up temporary files...</echo>
          <delete dir="${instrumentation.absolute.dir}" />
          <delete file="coverage.ec" />
          <delete file="coverage.em" />
-         <echo>Saving the report file in ${basedir}/coverage/coverage.html</echo>
+         <echo>Saving the report file in ${basedir}/coverage/coverage.xml</echo>
     </target>
     
 </project>
