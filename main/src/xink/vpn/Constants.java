@@ -1,6 +1,6 @@
 package xink.vpn;
 
-public class Constants {
+public final class Constants {
     public static final int REQ_SELECT_VPN_TYPE = 1;
 
     public static final int REQ_ADD_VPN = 2;
@@ -63,4 +63,8 @@ public class Constants {
     public static final int VPN_ERROR_NO_ERROR = 0;
 
     public static final String EXP_DIR_REGEX = "\\d{6}\\-\\d{6}";
+
+    private Constants() {
+
+    }
 }

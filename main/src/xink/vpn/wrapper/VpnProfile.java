@@ -127,7 +127,11 @@ public abstract class VpnProfile extends AbstractWrapper {
     }
 
     public Class<?> getGenericProfileClass() {
-        return loadClass("android.net.vpn.VpnProfile");
+        try {
+            return loadClass("android.net.vpn.VpnProfile");
+        } catch (ClassNotFoundException e) {
+            throw new WrapperException("load class failed", e);
+        }
     }
 
     public VpnState getState() {
@@ -171,7 +175,7 @@ public abstract class VpnProfile extends AbstractWrapper {
     }
 
     @Override
-    protected VpnProfile clone() {
+    public VpnProfile clone() {
         VpnProfile c = (VpnProfile) super.clone();
         c.setId(getId());
         c.setName(getName());

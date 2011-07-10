@@ -74,7 +74,7 @@ public abstract class AbstractWrapper implements Cloneable {
             initClassLoader(context);
             stubClass = loadClass(stubClassName);
             stub = stubInstanceCreator.newStubInstance(stubClass, context);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new WrapperException("init classloader failed", e);
         }
     }
@@ -87,12 +87,8 @@ public abstract class AbstractWrapper implements Cloneable {
         stubClassLoader = new PathClassLoader(vpnAppInfo.sourceDir, ClassLoader.getSystemClassLoader());
     }
 
-    protected static final Class<?> loadClass(final String qname) {
-        try {
+    protected static final Class<?> loadClass(final String qname) throws ClassNotFoundException {
             return Class.forName(qname, true, stubClassLoader);
-        } catch (ClassNotFoundException e) {
-            throw new WrapperException("failed to load class: " + qname, e);
-        }
     }
 
     @SuppressWarnings("unchecked")
@@ -100,8 +96,8 @@ public abstract class AbstractWrapper implements Cloneable {
         try {
             Method method = findStubMethod(methodName, args);
             return (T) method.invoke(stub, args);
-        } catch (Throwable e) {
-            throw new IllegalArgumentException("failed to invoke mehod '" + methodName + "' on stub", e);
+        } catch (Exception e) {
+            throw new WrapperException("failed to invoke mehod '" + methodName + "' on stub", e);
         }
     }
 
@@ -122,7 +118,7 @@ public abstract class AbstractWrapper implements Cloneable {
     }
 
     @Override
-    protected AbstractWrapper clone() {
+    public AbstractWrapper clone() {
         AbstractWrapper c = null;
         try {
             c = (AbstractWrapper) super.clone();

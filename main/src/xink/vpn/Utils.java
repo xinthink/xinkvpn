@@ -6,7 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.os.Environment;
 
-public class Utils {
+public final class Utils {
 
     // private static final String TAG = "xink.Utils";
 

@@ -405,7 +405,7 @@ public class VpnSettings extends Activity {
             onVpnProfileAdded(data);
             break;
         case REQ_EDIT_VPN:
-            onVpnProfileEdited(data);
+            onVpnProfileEdited();
             break;
         default:
             Log.w(TAG, "onActivityResult, unknown reqeustCode " + requestCode + ", result=" + resultCode + ", data=" + data); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
@@ -441,7 +441,7 @@ public class VpnSettings extends Activity {
         refreshVpnListView();
     }
 
-    private void onVpnProfileEdited(final Intent data) {
+    private void onVpnProfileEdited() {
         Log.i(TAG, "vpn profile modified"); //$NON-NLS-1$
         refreshVpnListView();
     }
@@ -455,11 +455,10 @@ public class VpnSettings extends Activity {
             public void onReceive(final Context context, final Intent intent) {
                 String action = intent.getAction();
 
-                if (ACT_TOGGLE_VPN_CONN.equals(action)) {
-                } else if (ACTION_VPN_CONNECTIVITY.equals(action)) {
+                if (ACTION_VPN_CONNECTIVITY.equals(action)) {
                     onStateChanged(intent);
                 } else {
-                    Log.w(TAG, "VpnStateReceiver ignores unknown intent:" + intent); //$NON-NLS-1$
+                    Log.d(TAG, "VPNSettings receiver ignores intent:" + intent); //$NON-NLS-1$
                 }
             }
         };

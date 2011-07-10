@@ -23,7 +23,7 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class VpnProfileRepository {
+public final class VpnProfileRepository {
 
     private static final String TAG = "xink";
 
@@ -57,7 +57,7 @@ public class VpnProfileRepository {
         try {
             saveActiveProfileId();
             saveProfiles();
-        } catch (Throwable e) {
+        } catch (IOException e) {
             Log.e(TAG, "save profiles failed", e);
         }
     }
@@ -100,19 +100,17 @@ public class VpnProfileRepository {
             loadProfiles();
 
             Log.d(TAG, "loaded, activeId=" + activeProfileId + ", profiles=" + profiles);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Log.e(TAG, "load profiles failed", e);
         }
     }
 
-    private void loadActiveProfileId() throws Exception {
+    private void loadActiveProfileId() throws IOException, ClassNotFoundException {
         ObjectInputStream is = null;
 
         try {
             is = new ObjectInputStream(context.openFileInput(FILE_ACT_ID));
             activeProfileId = (String) is.readObject();
-        } catch (Exception e) {
-            Log.w(TAG, "loadActiveProfileId failed", e);
         } finally {
             if (is != null) {
                 is.close();
@@ -143,7 +141,7 @@ public class VpnProfileRepository {
                 loadProfileObject(type, obj, is);
             }
         } catch (EOFException eof) {
-            Log.i(TAG, "reach the end of profiles file");
+            Log.d(TAG, "reach the end of profiles file");
         }
     }
 
@@ -247,7 +245,7 @@ public class VpnProfileRepository {
         try {
             doBackup(dir, FILE_ACT_ID);
             doBackup(dir, FILE_PROFILES);
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new AppException("backup failed", e, R.string.err_exp_failed);
         }
     }
@@ -274,7 +272,7 @@ public class VpnProfileRepository {
 
             clean();
             load();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw new AppException("restore failed", e, R.string.err_imp_failed);
         }
     }
