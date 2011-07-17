@@ -272,7 +272,7 @@ public class VpnSettings extends Activity {
         menu.findItem(R.id.menu_exp).setIcon(android.R.drawable.ic_menu_save);
         menu.findItem(R.id.menu_imp).setIcon(android.R.drawable.ic_menu_set_as);
         menu.findItem(R.id.menu_diag).setIcon(android.R.drawable.ic_menu_manage);
-
+        menu.findItem(R.id.menu_settings).setIcon(android.R.drawable.ic_menu_preferences);
         return true;
     }
 
@@ -312,12 +312,19 @@ public class VpnSettings extends Activity {
         case R.id.menu_diag:
             checkHack(true);
             break;
+        case R.id.menu_settings:
+            openSettings();
+            break;
         default:
             consumed = super.onContextItemSelected(item);
             break;
         }
 
         return consumed;
+    }
+
+    private void openSettings() {
+        startActivity(new Intent(this, Settings.class));
     }
 
     private AlertDialog createBackupDlg() {

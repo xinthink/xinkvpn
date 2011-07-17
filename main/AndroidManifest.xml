@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="xink.vpn"
-      android:versionCode="6" android:versionName="3.1">
+      android:versionCode="6" android:versionName="3.1 Beta">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10" android:maxSdkVersion="10"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
@@ -38,5 +38,6 @@
                 <action android:name="vpn.connectivity"></action>
             </intent-filter>
         </receiver>
+        <activity android:name=".Settings"></activity>
     </application>
 </manifest>

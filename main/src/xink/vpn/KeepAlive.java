@@ -18,7 +18,6 @@ package xink.vpn;
 import static xink.vpn.Constants.*;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -29,7 +28,9 @@ import xink.vpn.wrapper.VpnState;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.http.AndroidHttpClient;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -37,9 +38,11 @@ import android.util.Log;
  */
 public final class KeepAlive extends BroadcastReceiver {
 
-    private static final String TAG = KeepAlive.class.getName();
+    public static final String PREF_HEARTBEAT_PERIOD = "xink.vpn.pref.keepAlive.period";
 
-    private static final int HEARTBEAT_PERIOD = 300000;
+    public static final String PREF_ENABLED = "xink.vpn.pref.keepAlive";
+
+    private static final String TAG = KeepAlive.class.getName();
 
     private static Timer timer = new Timer("xink.vpn.HeartbeatTimer", true);
 
@@ -60,16 +63,18 @@ public final class KeepAlive extends BroadcastReceiver {
             return;
         }
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
         VpnState newState = Utils.extractVpnState(intent);
-        stateChanged(profileName, newState);
+        stateChanged(profileName, newState, prefs);
     }
 
-    private void stateChanged(final String profileName, final VpnState newState) {
+    private void stateChanged(final String profileName, final VpnState newState, final SharedPreferences prefs) {
         Log.d(TAG, profileName + " state ==> " + newState);
 
         switch (newState) {
         case CONNECTED:
-            startHeartbeat();
+            startHeartbeat(prefs);
             break;
         case IDLE:
             stopHeartbeat();
@@ -79,12 +84,22 @@ public final class KeepAlive extends BroadcastReceiver {
         }
     }
 
-    private static void startHeartbeat() {
-        if (heartbeat != null)
+    private static void startHeartbeat(final SharedPreferences prefs) {
+        boolean enabled = prefs.getBoolean(PREF_ENABLED, true);
+        if (!enabled || heartbeat != null)
             return;
 
+        int period = getPeriodFromPrefs(prefs);
+        Log.d(TAG, "start heartbeat every (ms)" + period);
+
         heartbeat = new Heartbeat();
-        timer.schedule(heartbeat, HEARTBEAT_PERIOD, HEARTBEAT_PERIOD);
+        timer.schedule(heartbeat, period, period);
+    }
+
+    private static int getPeriodFromPrefs(final SharedPreferences prefs) {
+        String periodStr = prefs.getString(PREF_HEARTBEAT_PERIOD, Period.TEN_MIN.toString());
+        Period p = Period.valueOf(periodStr);
+        return p.value;
     }
 
     private static synchronized void stopHeartbeat() {
@@ -99,17 +114,18 @@ public final class KeepAlive extends BroadcastReceiver {
     private static class Heartbeat extends TimerTask {
 
         private static final String[] TARGETS = { "http://www.google.com", "http://www.android.com",
-                "http://www.bing.com", "http://code.google.com/p/xinkvpn/wiki/DonatePlusOne" };
+                "http://www.bing.com", "http://code.google.com/p/xinkvpn/wiki/DonatePlusOne", "http://www.yahoo.com" };
 
-        private static final Random RANDOM = new Random();
+        private static int index;
 
         @Override
         public void run() {
-            Log.i(TAG, "start heartbeat");
+            String url = nextUrl();
+            Log.i(TAG, "start heartbeat, target=" + url);
 
             AndroidHttpClient client = AndroidHttpClient.newInstance("XinkVpn");
             try {
-                HttpResponse resp = client.execute(new HttpHead(nextUrl()));
+                HttpResponse resp = client.execute(new HttpHead(url));
                 Log.i(TAG, "heartbeat resp: " + resp.getStatusLine());
             } catch (IOException e) {
                 Log.e(TAG, "heartdbeat error", e);
@@ -119,9 +135,22 @@ public final class KeepAlive extends BroadcastReceiver {
         }
 
         private static String nextUrl() {
-            String url = TARGETS[RANDOM.nextInt(TARGETS.length)];
-            Log.d(TAG, "next target: " + url);
-            return url;
+            return TARGETS[nextIndex()];
+        }
+
+        private static synchronized int nextIndex() {
+            index = index == TARGETS.length ? 0 : index;
+            return index++;
+        }
+    }
+
+    private static enum Period {
+        FIVE_MIN(300000), TEN_MIN(600000), FIFTEEN_MIN(900000), THIRTY_MIN(1800000), TEST_5_SEC(5000);
+
+        private int value; // in miliseconds
+
+        private Period(final int v) {
+            value = v;
         }
     }
 }

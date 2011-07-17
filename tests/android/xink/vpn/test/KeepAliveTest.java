@@ -16,6 +16,7 @@
 package xink.vpn.test;
 
 import static xink.vpn.Constants.*;
+import static xink.vpn.KeepAlive.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,8 @@ import xink.vpn.test.helper.RepositoryHelper;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
@@ -32,8 +35,9 @@ public class KeepAliveTest extends AndroidTestCase {
 
     private RepositoryHelper helper;
     private VpnProfileRepository repository;
-    private String activeVpnName = "l2tp";
+    private String activeVpnName = "pptp";
     private VpnProfile activeProfile;
+    private SharedPreferences prefs;
 
     @Override
     protected void setUp() throws Exception {
@@ -46,6 +50,7 @@ public class KeepAliveTest extends AndroidTestCase {
         activeProfile = repository.getProfileByName(activeVpnName);
         assertNotNull(activeProfile);
         repository.setActiveProfile(activeProfile);
+        prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     @Override
@@ -55,8 +60,21 @@ public class KeepAliveTest extends AndroidTestCase {
     }
 
     public void testVpnConnectted() throws Exception {
+        prefs.edit().putBoolean(PREF_ENABLED, true).putString(PREF_HEARTBEAT_PERIOD, "TEST_5_SEC").commit();
+
         sendConnBroadcast(VpnState.CONNECTED);
-        Thread.sleep(1000);
+        Thread.sleep(60000); // wait at least 5 heartbeat periods
+
+        List<Thread> threads = findThreads(".*HeartbeatTimer.*");
+        Log.i("xink.test", threads.toString());
+        assertEquals("has only one timer", 1, threads.size());
+    }
+
+    public void testKeepAliveDisabled() throws Exception {
+        prefs.edit().putBoolean(PREF_ENABLED, false).putString(PREF_HEARTBEAT_PERIOD, "TEST_5_SEC").commit();
+
+        sendConnBroadcast(VpnState.CONNECTED);
+        Thread.sleep(11000);
 
         List<Thread> threads = findThreads(".*HeartbeatTimer.*");
         Log.i("xink.test", threads.toString());

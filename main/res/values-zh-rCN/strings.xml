@@ -33,7 +33,6 @@
     <string name="l2tp_secret_enabled">启用L2TP密钥</string>
     <string name="l2tp_secret">L2TP密钥</string>
     <string name="psk">IPSec预共享密钥</string>
-    <string name="help">帮助</string>
     <string name="err_no_active_vpn">尚未指定默认VPN。</string>
     <string name="export">备份</string>
     <string name="err_no_writable_storage">无法访问外部存储。</string>
@@ -53,4 +52,16 @@
     <string name="neverShow">不再提示</string>
     <string name="diag">破解</string>
     <string name="hacked">OK，KeyStore服务破解成功。</string>
+    <string-array name="keepalive_period">
+        <item>5分钟</item>
+        <item>10分钟</item>
+        <item>15分钟</item>
+        <item>30分钟</item>
+    </string-array>
+    <string name="settings">设置</string>
+    <string name="enable_keepalive">保持连接活跃</string>
+    <string name="keepalive_on">已开启 *通过周期性的网络访问保持连接活跃，将会产生少量的网络流量</string>
+    <string name="keepalive_off">已关闭</string>
+    <string name="keepalive_period">心跳周期</string>
+    <string name="keepalive_period_sum">每%s心跳一次</string>
 </resources>

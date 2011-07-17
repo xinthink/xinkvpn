@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    
+    <PreferenceCategory android:title="@string/keepalive"><CheckBoxPreference android:disableDependentsState="false" android:key="xink.vpn.pref.keepAlive" android:defaultValue="false" android:title="@string/enable_keepalive" android:summaryOn="@string/keepalive_on" android:summaryOff="@string/keepalive_off"></CheckBoxPreference>
+    <ListPreference android:dependency="xink.vpn.pref.keepAlive" android:key="xink.vpn.pref.keepAlive.period" android:entries="@array/keepalive_period" android:entryValues="@array/keepalive_period_values" android:defaultValue="TEN_MIN" android:title="@string/keepalive_period" android:summary="@string/keepalive_period_sum"></ListPreference>
+</PreferenceCategory>
+    
+</PreferenceScreen>
