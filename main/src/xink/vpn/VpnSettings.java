@@ -1,3 +1,19 @@
+/*
+ * Copyright 2011 yingxinwu.g@gmail.com
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
@@ -138,9 +154,8 @@ public class VpnSettings extends Activity {
     }
 
     private void addToVpnListView(final String activeProfileId, final VpnProfile vpnProfile) {
-        if (vpnProfile == null) {
+        if (vpnProfile == null)
             return;
-        }
 
         VpnViewItem item = makeVpnViewItem(activeProfileId, vpnProfile);
 
@@ -393,9 +408,8 @@ public class VpnSettings extends Activity {
 
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if (data == null) {
+        if (data == null)
             return;
-        }
 
         switch (requestCode) {
         case REQ_SELECT_VPN_TYPE:
@@ -469,7 +483,7 @@ public class VpnSettings extends Activity {
         Log.d(TAG, "onStateChanged: " + intent); //$NON-NLS-1$
 
         final String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
-        final VpnState state = VpnActor.extractVpnState(intent);
+        final VpnState state = Utils.extractVpnState(intent);
         final int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
 
         runOnUiThread(new Runnable() {
@@ -520,9 +534,8 @@ public class VpnSettings extends Activity {
     }
 
     private void vpnItemActivated(final VpnViewItem activatedItem) {
-        if (activeVpnItem == activatedItem) {
+        if (activeVpnItem == activatedItem)
             return;
-        }
 
         if (activeVpnItem != null) {
             activeVpnItem.isActive = false;
@@ -623,9 +636,8 @@ public class VpnSettings extends Activity {
     }
 
     private boolean unlockKeyStoreIfNeeded(final VpnProfile p) {
-        if (!p.needKeyStoreToConnect() || keyStore.isUnlocked()) {
+        if (!p.needKeyStoreToConnect() || keyStore.isUnlocked())
             return true;
-        }
 
         Log.i(TAG, "keystore is locked, unlock it now and reconnect later.");
         resumeAction = new Runnable() {
@@ -641,7 +653,6 @@ public class VpnSettings extends Activity {
     }
 
     private void disconnect() {
-        Log.e(TAG, "disconnect ...");
         actor.disconnect();
     }
 
@@ -649,9 +660,8 @@ public class VpnSettings extends Activity {
 
         @Override
         public boolean setViewValue(final View view, final Object data, final String textRepresentation) {
-            if (!(data instanceof VpnViewItem)) {
+            if (!(data instanceof VpnViewItem))
                 return false;
-            }
 
             VpnViewItem item = (VpnViewItem) data;
             boolean bound = true;
@@ -684,7 +694,7 @@ public class VpnSettings extends Activity {
 
             VpnState state = item.profile.getState();
             view.setChecked(state == VpnState.CONNECTED);
-            view.setEnabled(VpnActor.isInStableState(item.profile));
+            view.setEnabled(Utils.isInStableState(item.profile));
 
             view.setOnCheckedChangeListener(item);
         }
@@ -726,9 +736,8 @@ public class VpnSettings extends Activity {
         }
 
         private void onActivationChanged(final boolean isChecked) {
-            if (isActive == isChecked) {
+            if (isActive == isChecked)
                 return;
-            }
 
             isActive = isChecked;
 

@@ -1,7 +1,22 @@
+/*
+ * Copyright 2011 yingxinwu.g@gmail.com
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
-import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -109,28 +124,20 @@ public class VpnConnectorService extends Service {
     }
 
     public void onStateChanged(final Intent intent) {
-        Log.d(TAG, "onStateChanged: " + intent);
-
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
+        VpnState newState = Utils.extractVpnState(intent);
+        int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
+        Log.d(TAG, profileName + " stateChanged: " + state + "->" + newState + ", errCode=" + err);
 
-        if (profileName.equals(getActvieProfileName())) {
-            VpnState state = VpnActor.extractVpnState(intent);
-            int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
+        updateViews(profileName, newState);
+    }
 
-            stateChanged(profileName, state, err);
-        } else {
-            Log.d(TAG, "ignores non-active profile event for " + profileName);
+    private void updateViews(final String profileName, final VpnState newState) {
+        if (!profileName.equals(Utils.getActvieProfileName(context))) {
+            Log.d(TAG, "updateViews, ignores non-active profile event for " + profileName);
+            return;
         }
-    }
 
-    private String getActvieProfileName() {
-        VpnProfileRepository repository = VpnProfileRepository.getInstance(context);
-        VpnProfile activeProfile = repository.getActiveProfile();
-        return activeProfile != null ? activeProfile.getName() : null;
-    }
-
-    private void stateChanged(final String profileName, final VpnState newState, final int errCode) {
-        Log.d(TAG, "stateChanged, '" + profileName + "', state: " + state + "->" + newState + ", errCode=" + errCode);
         state = newState;
         updateViews();
     }

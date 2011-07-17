@@ -1,8 +1,23 @@
+/*
+ * Copyright 2011 yingxinwu.g@gmail.com
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
 
-import java.io.Serializable;
 import java.util.List;
 
 import xink.vpn.wrapper.VpnManager;
@@ -33,9 +48,8 @@ public class VpnActor {
 
     public void connect() {
         final VpnProfile p = getRepository().getActiveProfile();
-        if (p == null) {
+        if (p == null)
             throw new NoActiveVpnException("connect failed, no active vpn");
-        }
 
         connect(p);
     }
@@ -110,9 +124,8 @@ public class VpnActor {
 
     public void checkStatus() {
         final VpnProfile p = getRepository().getActiveProfile();
-        if (p == null) {
+        if (p == null)
             return;
-        }
 
         checkStatus(p);
     }
@@ -194,20 +207,5 @@ public class VpnActor {
             intent.putExtra(BROADCAST_ERROR_CODE, error);
         }
         context.sendBroadcast(intent);
-    }
-
-    public static VpnState extractVpnState(final Intent intent) {
-        Serializable obj = intent.getSerializableExtra(BROADCAST_CONNECTION_STATE);
-        VpnState state = VpnState.IDLE;
-
-        if (obj != null) {
-            state = VpnState.valueOf(obj.toString());
-        }
-        return state;
-    }
-
-    public static boolean isInStableState(final VpnProfile p) {
-        VpnState state = p.getState();
-        return state == VpnState.CONNECTED || state == VpnState.IDLE;
     }
 }

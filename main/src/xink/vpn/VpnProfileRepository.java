@@ -1,3 +1,19 @@
+/*
+ * Copyright 2011 yingxinwu.g@gmail.com
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package xink.vpn;
 
 import java.io.EOFException;
@@ -146,9 +162,8 @@ public final class VpnProfileRepository {
     }
 
     private void loadProfileObject(final VpnType type, final Object obj, final ObjectInputStream is) throws Exception {
-        if (obj == null) {
+        if (obj == null)
             return;
-        }
 
         VpnProfile p = VpnProfile.newInstance(type, context);
         if (p.isCompatible(obj)) {
@@ -169,27 +184,24 @@ public final class VpnProfileRepository {
     }
 
     public VpnProfile getActiveProfile() {
-        if (activeProfileId == null) {
+        if (activeProfileId == null)
             return null;
-        }
 
         return getProfileById(activeProfileId);
     }
 
     private VpnProfile getProfileById(final String id) {
         for (VpnProfile p : profiles) {
-            if (p.getId().equals(id)) {
+            if (p.getId().equals(id))
                 return p;
-            }
         }
         return null;
     }
 
     public VpnProfile getProfileByName(final String name) {
         for (VpnProfile p : profiles) {
-            if (p.getName().equals(name)) {
+            if (p.getName().equals(name))
                 return p;
-            }
         }
         return null;
     }
@@ -209,14 +221,12 @@ public final class VpnProfileRepository {
     public void checkProfile(final VpnProfile newProfile) {
         String newName = newProfile.getName();
 
-        if (TextUtils.isEmpty(newName)) {
+        if (TextUtils.isEmpty(newName))
             throw new InvalidProfileException("profile name is empty.", R.string.err_empty_name);
-        }
 
         for (VpnProfile p : profiles) {
-            if (newProfile != p && newName.equals(p.getName())) {
+            if (newProfile != p && newName.equals(p.getName()))
                 throw new InvalidProfileException("duplicated profile name '" + newName + "'.", R.string.err_duplicated_profile_name, newName);
-            }
         }
 
         newProfile.validate();
@@ -295,9 +305,8 @@ public final class VpnProfileRepository {
         File id = new File(path, FILE_ACT_ID);
         File profiles = new File(path, FILE_PROFILES);
 
-        if (!(verifyDataFile(id) && verifyDataFile(profiles))) {
+        if (!(verifyDataFile(id) && verifyDataFile(profiles)))
             throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
-        }
     }
 
     private boolean verifyDataFile(final File file) {
@@ -312,9 +321,8 @@ public final class VpnProfileRepository {
     public Date checkLastBackup(final String path) {
         File id = new File(path, FILE_ACT_ID);
 
-        if (!verifyDataFile(id)) {
+        if (!verifyDataFile(id))
             return null;
-        }
 
         return new Date(id.lastModified());
     }
