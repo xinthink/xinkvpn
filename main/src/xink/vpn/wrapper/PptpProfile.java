@@ -47,4 +47,17 @@ public class PptpProfile extends VpnProfile {
     public boolean isEncryptionEnabled() {
         return this.<Boolean>invokeStubMethod("isEncryptionEnabled");
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.wrapper.VpnProfile#dulicateToConnect()
+     */
+    @Override
+    public PptpProfile dulicateToConnect() {
+        PptpProfile p = (PptpProfile) super.dulicateToConnect();
+        p.setEncryptionEnabled(isEncryptionEnabled());
+        return p;
+    }
+
 }
