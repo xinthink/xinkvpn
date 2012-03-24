@@ -1,0 +1,40 @@
+repositories {
+    add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+        name = 'GitHub'
+        addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
+    }
+}
+
+dependencies {
+    compile project(':main')
+    compile 'junit:junit:4.10'
+    //runtime 'jsankey:android-junit-report:1.2.6'
+}
+
+sourceSets {
+    main {
+        java.srcDirs = [ 'src/android', 'src/junit' ]
+        resources.srcDirs = []
+    }
+
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+androidEmulatorStart {
+    avdName = ant['avdName']
+}
+
+//androidInstrumentationTests {
+//    //testReportsTargetPath = file('build/test-results/xxxxx.xml')
+//
+//    runners {
+//        run with: 'com.zutubi.android.junitreport.JUnitReportTestRunner'
+//    }
+//
+//    doLast {
+//        "adb pull /data/data/com.youxiangbiao/files/ ${file('build/test-results/')}".execute()
+//    }
+//}

@@ -1,0 +1,46 @@
+//
+// Configure ecj as java compiler
+//
+configurations {
+    ecj
+}
+
+dependencies {
+    ecj 'org.eclipse.jdt.core.compiler:ecj:3.7.1'
+}
+
+// ecj warning flags
+warnings = [
+    'allOver-ann',
+    'conditionAssign',
+    'hashCode',
+    'hiding',
+    'emptyBlock',
+    'null',
+    'semicolon',
+    'unused',
+    'uselessTypeCheck',
+]
+
+compileJava {
+    options.compiler = "org.eclipse.jdt.core.JDTCompilerAdapter"
+    options.encoding = 'utf-8'
+    options.define(compilerArgs: ["-warn:+${warnings.join(',')}"])
+    doFirst {
+        ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
+        configurations.ecj.each { File f ->
+            antClassLoader.addURL(f.toURI().toURL())
+        }
+    }
+}
+
+compileTestJava {
+    options.compiler = "org.eclipse.jdt.core.JDTCompilerAdapter"
+    options.define(compilerArgs: ["-warn:+${warnings.join(',')}"])
+    doFirst {
+        ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
+        configurations.ecj.each { File f ->
+            antClassLoader.addURL(f.toURI().toURL())
+        }
+    }
+}

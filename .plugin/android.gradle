@@ -1,0 +1,47 @@
+apply plugin: 'android'
+
+jar {
+    classifier = 'debug' // debug is default
+}
+
+// Configure the filtering of resources with properties from the Gradle's project scope
+processResources {
+    expand (project.properties)
+}
+
+androidSignAndAlign {
+    try {
+        // use custem debug key to matches google map apikey
+        keyStore = ant['debugKeyStore']
+        keyAlias = ant['debugKeyAlias']
+        keyStorePassword = ant['debugKeyStorePassword']
+        keyAliasPassword = ant['debugKeyAliasPassword']
+    } catch (Exception e) {
+        // custom debug key NOT defined, the default one will be used
+    }
+}
+
+tasks.addRule("Pattern: cfg<debug|release>: Config Android build as Debug or Release") { String taskName ->
+    if (taskName.startsWith('cfg')) {
+        task(taskName) << {
+            def cfg = taskName - 'cfg'
+            configAndroidBuild cfg.toUpperCase()
+        }
+    }
+}
+
+def configAndroidBuild(cfg) {
+    println "configure android build as '$cfg'"
+
+    // keystore info, defined in local.properties
+    if (cfg == 'RELEASE') {
+        androidSignAndAlign.keyStore = ant['keyStore']
+        androidSignAndAlign.keyAlias = ant['keyAlias']
+        androidSignAndAlign.keyStorePassword = ant['keyStorePassword']
+        androidSignAndAlign.keyAliasPassword = ant['keyAliasPassword']
+
+        proguard.enabled = true
+    }
+
+    jar.classifier = cfg == 'DEBUG' ? 'debug' : ''
+}

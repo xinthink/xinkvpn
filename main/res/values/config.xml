@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="url_issues">http://goo.gl/hSG8Z</string>
+    <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
+    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
+    <string name="exp_dir">/sdcard/XinkVpn</string>
+
+    <string-array name="keepalive_period">
+        <item>5 minutes</item>
+        <item>10 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+    </string-array>
+    <string-array name="keepalive_period_values">
+        <item>FIVE_MIN</item>
+        <item>TEN_MIN</item>
+        <item>FIFTEEN_MIN</item>
+        <item>THIRTY_MIN</item>
+    </string-array>
+</resources>

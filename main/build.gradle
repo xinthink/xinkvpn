@@ -1,0 +1,21 @@
+
+sourceSets {
+    main {
+        java.srcDirs = [
+            'src/domain',
+            'src/service',
+            'src/activity',
+            'src/java',
+        ]
+        resources.srcDirs = []
+    }
+
+    test {
+        java.srcDirs = []
+        resources.srcDirs = []
+    }
+}
+
+androidEmulatorStart {
+    avdName = ant['avdName']
+}

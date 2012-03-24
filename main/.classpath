@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="android/net/vpn/L2tpIpsecProfile.java" kind="src" path="src"/>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="src" path="src/domain"/>
+	<classpathentry kind="src" path="src/service"/>
+	<classpathentry kind="src" path="src/activity"/>
+	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry exported="true" kind="lib" path="/Users/ywu/.gradle/caches/artifacts-8/filestore/com.google.code.gson/gson/2.1/jar/2e66da15851f9f5b5079228f856c2f090ba98c38/gson-2.1.jar" sourcepath="/Users/ywu/.gradle/caches/artifacts-8/filestore/com.google.code.gson/gson/2.1/source/5c2e6207e9abf9a18bde012371a821196dd18e13/gson-2.1-sources.jar"/>
+	<classpathentry exported="true" kind="lib" path="/Users/ywu/.gradle/caches/artifacts-8/filestore/org.slf4j/slf4j-android/1.6.1-RC1/jar/fe76e182946faad493a50968f3344e848b467b42/slf4j-android-1.6.1-RC1.jar" sourcepath="/Users/ywu/.gradle/caches/artifacts-8/filestore/org.slf4j/slf4j-android/1.6.1-RC1/source/6e2b4b7e142b73009cd88c2abdcb8c2fd5a2d044/slf4j-android-1.6.1-RC1-sources.jar"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

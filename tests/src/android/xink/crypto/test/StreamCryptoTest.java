@@ -33,6 +33,23 @@ public class StreamCryptoTest {
 
     private String segment = "0123456789abcdef";
 
+    // 新的密钥保存方法应能还原老版本的备份文件
+    private final String exp_bak_Id = "ee6edc7c-0a05-49b2-9a83-5b87130209b8";
+
+    private final String exp_bak_1_name = "pptp";
+    private final String exp_bak_1_server = "192.168.10.100";
+    private final boolean exp_bak_1_encrypt = false;
+    private final String exp_bak_1_dns = "8.8.8.8";
+    private final String exp_bak_1_usr = "usr";
+    private final String exp_bak_1_passwd = "psw";
+
+    private final String exp_bak_2_name = "l2tp";
+    private final String exp_bak_2_server = "192.168.10.101";
+    private final boolean exp_bak_2_encrypt = false;
+    private final String exp_bak_2_dns = "8.8.8.8";
+    private final String exp_bak_2_usr = "usr";
+    private final String exp_bak_2_passwd = "psw";
+
     @Test
     public void testTextCrypto() throws Exception {
         textCrypto(0);
@@ -144,13 +161,11 @@ class Data implements Serializable {
 
     @Override
     public boolean equals(final Object obj) {
-        if (obj == this) {
+        if (obj == this)
             return true;
-        }
 
-        if (!(obj instanceof Data)) {
+        if (!(obj instanceof Data))
             return false;
-        }
 
         Data that = (Data) obj;
 

@@ -39,6 +39,11 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
+/**
+ * Repository of VPN profiles
+ * 
+ * @author ywu
+ */
 public final class VpnProfileRepository {
 
     private static final String TAG = "xink";
@@ -58,10 +63,19 @@ public final class VpnProfileRepository {
         profiles = new ArrayList<VpnProfile>();
     }
 
+    /**
+     * Retrieves the single instance of repository.
+     * 
+     * @param ctx
+     *            Context
+     * @return singleton
+     */
     public static VpnProfileRepository getInstance(final Context ctx) {
         if (instance == null)  {
             instance = new VpnProfileRepository(ctx);
             instance.load();
+
+            StreamCrypto.init(ctx);
         }
 
         return instance;

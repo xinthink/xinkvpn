@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="xink.vpn"
-      android:versionCode="6" android:versionName="3.1 Beta">
+      android:versionCode="7" android:versionName="3.1">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10" android:maxSdkVersion="10"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 
     <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
-        <activity android:name="VpnSettings"
+        <activity android:name=".VpnSettings"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,23 +17,23 @@
                 <category android:name="android.intent.category.DEFAULT"></category>
             </intent-filter>
         </activity>
-        <receiver android:name="VpnAppWidgetProvider">
+        <receiver android:name=".VpnAppWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/vpn_appwidget_info"></meta-data>
         </receiver>
-        <activity android:name="VpnTypeSelection" android:label="@string/add_vpn"></activity>
-        <service android:name="VpnConnectorService">
+        <activity android:name=".VpnTypeSelection" android:label="@string/add_vpn"></activity>
+        <service android:name=".VpnConnectorService">
             <intent-filter>
                 <action android:name="xink.toggleVpnConnectionAction"></action>
             </intent-filter>
         </service><activity android:name=".editor.PptpProfileEditor"></activity>
-        
+
         <activity android:name=".editor.L2tpProfileEditor"></activity>
         <activity android:name=".editor.L2tpIpsecPskProfileEditor"></activity>
-        <activity android:name="ToggleVpn" android:theme="@style/HiddenActivity"></activity>
-        <receiver android:name="KeepAlive">
+        <activity android:name=".ToggleVpn" android:theme="@style/HiddenActivity"></activity>
+        <receiver android:name=".KeepAlive">
             <intent-filter>
                 <action android:name="vpn.connectivity"></action>
             </intent-filter>

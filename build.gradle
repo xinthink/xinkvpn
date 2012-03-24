@@ -1,0 +1,64 @@
+
+task wrap(type: Wrapper) {
+    gradleVersion = '1.0-milestone-9'
+    scriptFile = 'g'
+}
+
+// import android plugin
+buildscript {
+    repositories {
+        mavenCentral()
+        //mavenLocal()
+    }
+    dependencies {
+        classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
+        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply from: '../.plugin/ecj.gradle'
+    apply from: '../.plugin/android.gradle'
+    apply from: '../.plugin/javancss.gradle'
+
+    sourceCompatibility = 1.6
+    targetCompatibility = 1.6
+
+    repositories {
+        mavenCentral()
+        //mavenRepo url: 'http://maven.springframework.org/release'
+        //mavenRepo url: 'http://maven.springframework.org/milestone'
+        //mavenRepo url: 'http://maven.springframework.org/snapshot'
+    }
+
+    dependencies {
+        compile (
+            'com.google.code.gson:gson:2.1',
+            'org.slf4j:slf4j-android:1.6.1-RC1', // includes slf4j-api, android tools failed to deal with duplicated classess
+            //'org.slf4j:slf4j-api:1.6.4',
+            //'commons-codec:commons-codec:1.6',
+            //'com.google.collections:google-collections:1.0',
+            //'org.springframework.android:spring-android-rest-template:1.0.0.M4',
+        )
+
+        runtime (
+            //'org.slf4j:slf4j-android:1.6.1-RC1',
+        )
+    }
+
+    task initSrcDirs << {
+        sourceSets*.java.srcDirs*.each { it.mkdirs() }
+    }
+    eclipseClasspath.dependsOn initSrcDirs
+
+    eclipse.project {
+        name = "$prjName-$name"
+    }
+
+    jar {
+        baseName = prjName
+    }
+
+}
