@@ -28,6 +28,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
+import android.widget.Toast;
 
 public final class Utils {
 
@@ -40,6 +41,17 @@ public final class Utils {
         AlertDialog dlg = builder.create();
         dlg.setOwnerActivity(ctx);
         dlg.show();
+    }
+
+    /**
+     * 显示一个短时间的Toast提示信息(duration为short).
+     * 
+     * @param ctx context
+     * @param resId text resource id
+     * @param formatArgs arguments for formatting the message
+     */
+    public static void showToast(final Context ctx, final int resId, final Object... formatArgs) {
+        Toast.makeText(ctx, ctx.getString(resId, formatArgs), Toast.LENGTH_SHORT).show();
     }
 
     public static void ensureDir(final File dir) {
