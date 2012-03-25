@@ -9,5 +9,3 @@ local_config.xml
 lint.xml
 .DS_Store
 *.orig
-.project
-.classpath
