@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 yingxinwu.g@gmail.com
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -78,50 +78,55 @@ public abstract class VpnProfileEditor extends Activity {
 
     private void initWidgets(final ViewGroup content) {
         TextView lblVpnName = new TextView(this);
-        lblVpnName.setText(getString(R.string.vpnname)); //$NON-NLS-1$
+        lblVpnName.setText(getString(R.string.vpnname));
         content.addView(lblVpnName);
 
         txtVpnName = new EditText(this);
-        txtVpnName.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        txtVpnName.setLines(1);
+        txtVpnName.setImeOptions(EditorInfo.IME_ACTION_DONE);
         content.addView(txtVpnName);
 
         TextView lblServer = new TextView(this);
-        lblServer.setText(getString(R.string.server)); //$NON-NLS-1$
+        lblServer.setText(getString(R.string.server));
         content.addView(lblServer);
 
         txtServer = new EditText(this);
+        txtServer.setLines(1);
         txtServer.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtServer);
 
         initSpecificWidgets(content);
 
         TextView lblDnsSuffices = new TextView(this);
-        lblDnsSuffices.setText(getString(R.string.dns_suffices)); //$NON-NLS-1$
+        lblDnsSuffices.setText(getString(R.string.dns_suffices));
         content.addView(lblDnsSuffices);
 
         TextView lblDnsSufficesDesc = new TextView(this);
-        lblDnsSufficesDesc.setText(getString(R.string.comma_sep)); //$NON-NLS-1$
+        lblDnsSufficesDesc.setText(getString(R.string.comma_sep));
         lblDnsSufficesDesc.setTextColor(GRAY);
         lblDnsSufficesDesc.setTextSize(TypedValue.COMPLEX_UNIT_DIP, DESC_FONT_SIZE);
         content.addView(lblDnsSufficesDesc);
 
         txtDnsSuffices = new EditText(this);
+        txtDnsSuffices.setLines(1);
         txtDnsSuffices.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtDnsSuffices);
 
         TextView lblUserName = new TextView(this);
-        lblUserName.setText(getString(R.string.username)); //$NON-NLS-1$
+        lblUserName.setText(getString(R.string.username));
         content.addView(lblUserName);
 
         txtUserName = new EditText(this);
+        txtUserName.setLines(1);
         txtUserName.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         content.addView(txtUserName);
 
         TextView lblPassword = new TextView(this);
-        lblPassword.setText(getString(R.string.password)); //$NON-NLS-1$
+        lblPassword.setText(getString(R.string.password));
         content.addView(lblPassword);
 
         txtPassword = new EditText(this);
+        txtPassword.setLines(1);
         txtPassword.setImeOptions(EditorInfo.IME_ACTION_DONE);
         txtPassword.setTransformationMethod(new PasswordTransformationMethod());
         content.addView(txtPassword);
@@ -193,9 +198,8 @@ public abstract class VpnProfileEditor extends Activity {
 
     @Override
     protected void onRestoreInstanceState(final Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null)
             return;
-        }
 
         txtVpnName.setText(savedInstanceState.getCharSequence("name")); //$NON-NLS-1$
         txtServer.setText(savedInstanceState.getCharSequence("server")); //$NON-NLS-1$
@@ -263,9 +267,8 @@ public abstract class VpnProfileEditor extends Activity {
     }
 
     private boolean unlockKeyStoreIfNeeded() {
-        if (!profile.needKeyStoreToSave() || keyStore.isUnlocked()) {
+        if (!profile.needKeyStoreToSave() || keyStore.isUnlocked())
             return true;
-        }
 
         Log.i("xink", "keystore is locked, unlock it now and redo saving later.");
         resumeAction = new Runnable() {
