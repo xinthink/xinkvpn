@@ -48,7 +48,7 @@
     <string name="err_empty_psk">請輸入IPSec預先共用金鑰。</string>
     <string name="err_empty_secret">請輸入L2TP密碼。</string>
     <string name="hack_keystore">L2TP密碼 / IPSec PSK無法使用</string>
-    <string name="i_hack_keystore">如需使用L2TP密碼和IPSec預先共用金鑰，必須替換系統的keystore服務。詳情請見：http://goo.gl/EtRgo</string>
+    <string name="i_hack_keystore">如需使用L2TP密碼和IPSec預先共用金鑰，必須替換系統的keystore服務。詳情請見：http://bit.ly/H4GatY</string>
     <string name="neverShow">不再提示</string>
     <string name="diag">破解</string>
     <string name="hacked">OK，KeyStore服務破解成功。</string>

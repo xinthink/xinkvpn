@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 yingxinwu.g@gmail.com
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,10 +23,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
- * Help desktop widgets to unlock keystore (which can only be invoked within an activity)
+ * Help desktop widgets to unlock keystore (must be invoked in an activity)
  */
 public class ToggleVpn extends Activity {
     private static final String TAG = "xink.ToggleVpn";
@@ -85,8 +84,9 @@ public class ToggleVpn extends Activity {
 
         VpnProfile p = getRepository().getActiveProfile();
         if (p == null) {
-            Toast.makeText(this, getString(R.string.err_no_active_vpn), Toast.LENGTH_SHORT).show();
+            Utils.showToast(getApplicationContext(), R.string.err_no_active_vpn);
             Log.e(TAG, "connect failed, no active vpn");
+            finish();
             return;
         }
 
@@ -96,7 +96,6 @@ public class ToggleVpn extends Activity {
     private void connect(final VpnProfile p) {
         if (unlockKeyStoreIfNeeded(p)) {
             sendToggleRequest();
-            finish();
         }
     }
 
@@ -120,11 +119,14 @@ public class ToggleVpn extends Activity {
     private void disconnect() {
         Log.d(TAG, "disconnect ...");
         sendToggleRequest();
-        finish();
     }
 
     private void sendToggleRequest() {
-        Intent intent = new Intent(Constants.ACT_TOGGLE_VPN_CONN);
-        sendBroadcast(intent);
+        try {
+            Intent intent = new Intent(Constants.ACT_TOGGLE_VPN_CONN);
+            sendBroadcast(intent);
+        } finally {
+            finish();
+        }
     }
 }
