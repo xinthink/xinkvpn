@@ -11,3 +11,4 @@ lint.xml
 *.orig
 .project
 .classpath
+jarlist.cache

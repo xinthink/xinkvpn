@@ -7,12 +7,13 @@ task wrap(type: Wrapper) {
 // import android plugin
 buildscript {
     repositories {
+        mavenLocal()
         mavenCentral()
-        //mavenLocal()
     }
+
     dependencies {
-        classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
-        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
+        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
+        classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
     }
 }
 

@@ -10,7 +10,7 @@ dependencies {
 }
 
 // ecj warning flags
-warnings = [
+def warnings = [
     'allOver-ann',
     'conditionAssign',
     'hashCode',
