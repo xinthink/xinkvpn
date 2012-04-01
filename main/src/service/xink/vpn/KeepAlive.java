@@ -88,7 +88,7 @@ public final class KeepAlive extends BroadcastReceiver {
     }
 
     private static void startHeartbeat(final VpnProfile p, final SharedPreferences prefs) {
-        boolean enabled = prefs.getBoolean(PREF_ENABLED, true);
+        boolean enabled = prefs.getBoolean(PREF_ENABLED, false);
         if (!enabled || heartbeat != null)
             return;
 

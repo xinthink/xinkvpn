@@ -4,7 +4,6 @@
       android:versionCode="7" android:versionName="3.1">
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="10" android:maxSdkVersion="10"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     <supports-screens android:smallScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:normalScreens="true"/><application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
         <activity android:name=".VpnSettings" android:label="@string/task_main">
             <intent-filter>
