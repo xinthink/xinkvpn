@@ -62,4 +62,6 @@
     <string name="keepalive_off">Disabled</string>
     <string name="keepalive_period">Heartbeat interval</string>
     <string name="keepalive_period_sum">Take a keep-alive heartbeat every %s</string>
+    <string name="task_main">XinkVpn</string>
+    <string name="task_toggle">Toggle VPN Connection</string>
 </resources>

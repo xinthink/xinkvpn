@@ -59,9 +59,11 @@
         <item>30分鐘</item>
     </string-array>
     <string name="settings">設定</string>
-    <string name="enable_keepalive">保持連線活躍</string>
+    <string name="enable_keepalive">保持連線</string>
     <string name="keepalive_on">已開啟 *通過週期性的網路訪問保持連線活躍，將會產生少量的網路流量</string>
     <string name="keepalive_off">已關閉</string>
     <string name="keepalive_period">心跳週期</string>
     <string name="keepalive_period_sum">每%s心跳一次</string>
+    <string name="task_main">XinkVpn</string>
+    <string name="task_toggle">VPN開關</string>
 </resources>

@@ -50,6 +50,16 @@ public class ToggleVpn extends Activity {
         return repository;
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see android.app.Activity#onNewIntent(android.content.Intent)
+     */
+    @Override
+    protected void onNewIntent(final Intent intent) {
+        toggleVpn(intent);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
