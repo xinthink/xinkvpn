@@ -7,20 +7,27 @@ task wrap(type: Wrapper) {
 // import android plugin
 buildscript {
     repositories {
-        mavenLocal()
+        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+            name = 'GitHub'
+            addArtifactPattern githubArtifactPattern
+        }
+
+        //mavenLocal()
         mavenCentral()
     }
 
     dependencies {
         //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
-        classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
+        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
+        classpath 'xinthink:gradle-android-plugin:1.1.1-SNAPSHOT'
+        classpath 'xinthink:gradle-ecj:1.0-Beta'
     }
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'eclipse'
-    apply from: '../.plugin/ecj.gradle'
+    apply plugin: 'ecj'
     apply from: '../.plugin/android.gradle'
     apply from: '../.plugin/javancss.gradle'
 
@@ -36,7 +43,7 @@ subprojects {
 
     dependencies {
         compile (
-            'com.google.code.gson:gson:2.1',
+            //'com.google.code.gson:gson:2.1',
             'org.slf4j:slf4j-android:1.6.1-RC1', // includes slf4j-api, android tools failed to deal with duplicated classess
             //'org.slf4j:slf4j-api:1.6.4',
             //'commons-codec:commons-codec:1.6',
@@ -62,4 +69,7 @@ subprojects {
         baseName = prjName
     }
 
+    ecj {
+        warn << 'allOver-ann' << 'emptyBlock' << 'null' << 'semicolon'
+    }
 }
