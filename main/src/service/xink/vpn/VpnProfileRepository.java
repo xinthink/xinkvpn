@@ -227,7 +227,7 @@ public final class VpnProfileRepository {
         return Collections.unmodifiableList(profiles);
     }
 
-    public void addVpnProfile(final VpnProfile p) {
+    public synchronized void addVpnProfile(final VpnProfile p) {
         p.postConstruct();
         profiles.add(p);
     }
@@ -246,7 +246,7 @@ public final class VpnProfileRepository {
         newProfile.validate();
     }
 
-    public void deleteVpnProfile(final VpnProfile profile) {
+    public synchronized void deleteVpnProfile(final VpnProfile profile) {
         String id = profile.getId();
         boolean removed = profiles.remove(profile);
         Log.d(TAG, "delete vpn: " + profile + ", removed=" + removed);

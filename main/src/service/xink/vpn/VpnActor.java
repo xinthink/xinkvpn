@@ -165,9 +165,13 @@ public class VpnActor {
     }
 
     public void checkAllStatus() {
-        List<VpnProfile> profiles = getRepository().getAllVpnProfiles();
-        for (VpnProfile p : profiles) {
-            checkStatus(p);
+        VpnProfileRepository repo = getRepository();
+
+        synchronized (repo) {
+            List<VpnProfile> profiles = repo.getAllVpnProfiles();
+            for (VpnProfile p : profiles) {
+                checkStatus(p);
+            }
         }
     }
 
