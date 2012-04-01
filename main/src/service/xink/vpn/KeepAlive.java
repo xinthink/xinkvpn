@@ -17,19 +17,19 @@ package xink.vpn;
 
 import static xink.vpn.Constants.*;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpHead;
-
+import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.http.AndroidHttpClient;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -57,8 +57,11 @@ public final class KeepAlive extends BroadcastReceiver {
         if (!ACTION_VPN_CONNECTIVITY.equals(action))
             return;
 
+        VpnProfileRepository repo = VpnProfileRepository.getInstance(context);
+        VpnProfile p = repo.getActiveProfile();
+
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
-        if (!profileName.equals(Utils.getActvieProfileName(context))) {
+        if (p == null || profileName == null || !profileName.equals(p.getName())) {
             Log.d(TAG, "ignores non-active profile event: " + profileName);
             return;
         }
@@ -66,15 +69,15 @@ public final class KeepAlive extends BroadcastReceiver {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         VpnState newState = Utils.extractVpnState(intent);
-        stateChanged(profileName, newState, prefs);
+        stateChanged(p, newState, prefs);
     }
 
-    private void stateChanged(final String profileName, final VpnState newState, final SharedPreferences prefs) {
-        Log.d(TAG, profileName + " state ==> " + newState);
+    private void stateChanged(final VpnProfile p, final VpnState newState, final SharedPreferences prefs) {
+        Log.d(TAG, p + " state ==> " + newState);
 
         switch (newState) {
         case CONNECTED:
-            startHeartbeat(prefs);
+            startHeartbeat(p, prefs);
             break;
         case IDLE:
             stopHeartbeat();
@@ -84,7 +87,7 @@ public final class KeepAlive extends BroadcastReceiver {
         }
     }
 
-    private static void startHeartbeat(final SharedPreferences prefs) {
+    private static void startHeartbeat(final VpnProfile p, final SharedPreferences prefs) {
         boolean enabled = prefs.getBoolean(PREF_ENABLED, true);
         if (!enabled || heartbeat != null)
             return;
@@ -92,7 +95,7 @@ public final class KeepAlive extends BroadcastReceiver {
         int period = getPeriodFromPrefs(prefs);
         Log.d(TAG, "start heartbeat every (ms)" + period);
 
-        heartbeat = new Heartbeat();
+        heartbeat = new Heartbeat(p);
         timer.schedule(heartbeat, period, period);
     }
 
@@ -108,39 +111,55 @@ public final class KeepAlive extends BroadcastReceiver {
 
         heartbeat.cancel();
         int removed = timer.purge();
+        heartbeat = null;
         Log.d(TAG, "removed heartbeat timerTask: " + removed);
     }
 
     private static class Heartbeat extends TimerTask {
 
-        private static final String[] TARGETS = { "http://www.google.com", "http://www.android.com",
-                "http://www.bing.com", "http://code.google.com/p/xinkvpn/wiki/DonatePlusOne", "http://www.yahoo.com" };
+        private VpnProfile profile; // current hearbeat vpn profile
 
-        private static int index;
+        protected Heartbeat(final VpnProfile p) {
+            this.profile = p;
+        }
 
         @Override
         public void run() {
-            String url = nextUrl();
-            Log.i(TAG, "start heartbeat, target=" + url);
-
-            AndroidHttpClient client = AndroidHttpClient.newInstance("XinkVpn");
             try {
-                HttpResponse resp = client.execute(new HttpHead(url));
-                Log.i(TAG, "heartbeat resp: " + resp.getStatusLine());
+                execPing();
             } catch (IOException e) {
                 Log.e(TAG, "heartdbeat error", e);
-            } finally {
-                client.close();
             }
         }
 
-        private static String nextUrl() {
-            return TARGETS[nextIndex()];
+        // ping the vpn server to keep connection alive
+        private void execPing() throws IOException {
+            Process process = null;
+
+            try {
+                process = new ProcessBuilder("sh").redirectErrorStream(true).start();
+
+                DataOutputStream os = new DataOutputStream(process.getOutputStream());
+                os.writeBytes("ping -c 10 " + profile.getServerName() + "\n");
+                os.writeBytes("exit\n");
+                os.flush();
+
+                dumpPingResults(process);
+
+            } finally {
+                if (process != null) {
+                    process.destroy();
+                }
+            }
         }
 
-        private static synchronized int nextIndex() {
-            index = index == TARGETS.length ? 0 : index;
-            return index++;
+        private void dumpPingResults(final Process process) throws IOException {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                Log.d(TAG, line);
+            }
         }
     }
 

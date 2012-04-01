@@ -21,4 +21,4 @@ log.txt
 *.apk
 *.bak
 ~*
-lint.xml
+jarlist.cache
