@@ -7,18 +7,19 @@ task wrap(type: Wrapper) {
 // import android plugin
 buildscript {
     repositories {
+        //mavenLocal()
+        mavenCentral()
+
         add(new org.apache.ivy.plugins.resolver.URLResolver()) {
             name = 'GitHub'
             addArtifactPattern githubArtifactPattern
+            addArtifactPattern githubArtifactPatternWithType
         }
-
-        //mavenLocal()
-        mavenCentral()
     }
 
     dependencies {
         //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
-        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.1-SNAPSHOT'
+        //classpath 'xink.gradle:gradle-android-plugin:1.1.1-SNAPSHOT'
         classpath 'xinthink:gradle-android-plugin:1.1.1-SNAPSHOT'
         classpath 'xinthink:gradle-ecj:1.0-Beta'
     }
