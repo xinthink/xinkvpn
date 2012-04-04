@@ -64,4 +64,10 @@
     <string name="keepalive_period_sum">Take a keep-alive heartbeat every %s</string>
     <string name="task_main">XinkVpn</string>
     <string name="task_toggle">Toggle VPN Connection</string>
+
+    <string name="crash_dialog_title">Error Report</string>
+    <string name="crash_dialog_text">Oops! Something went wrong with XinkVpn...
+        Please help us fix it, an error report will be sent by email, if you allows.</string>
+    <string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
+    <string name="crash_dialog_ok_toast">Thank you !</string>
 </resources>

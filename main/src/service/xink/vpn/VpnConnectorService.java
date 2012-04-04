@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 yingxinwu.g@gmail.com
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -127,14 +127,14 @@ public class VpnConnectorService extends Service {
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
         VpnState newState = Utils.extractVpnState(intent);
         int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
-        Log.d(TAG, profileName + " stateChanged: " + state + "->" + newState + ", errCode=" + err);
+        //Log.d(TAG, profileName + " stateChanged: " + state + "->" + newState + ", errCode=" + err);
 
         updateViews(profileName, newState);
     }
 
     private void updateViews(final String profileName, final VpnState newState) {
         if (!profileName.equals(Utils.getActvieProfileName(context))) {
-            Log.d(TAG, "updateViews, ignores non-active profile event for " + profileName);
+            //Log.d(TAG, "updateViews, ignores non-active profile event for " + profileName);
             return;
         }
 

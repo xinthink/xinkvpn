@@ -13,7 +13,6 @@ buildscript {
         add(new org.apache.ivy.plugins.resolver.URLResolver()) {
             name = 'GitHub'
             addArtifactPattern githubArtifactPattern
-            addArtifactPattern githubArtifactPatternWithType
         }
     }
 
@@ -36,10 +35,13 @@ subprojects {
     targetCompatibility = 1.6
 
     repositories {
+        //mavenLocal()
         mavenCentral()
-        //mavenRepo url: 'http://maven.springframework.org/release'
-        //mavenRepo url: 'http://maven.springframework.org/milestone'
-        //mavenRepo url: 'http://maven.springframework.org/snapshot'
+
+        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+            name = 'GitHub'
+            addArtifactPattern githubArtifactPattern
+        }
     }
 
     dependencies {
@@ -47,10 +49,12 @@ subprojects {
             //'com.google.code.gson:gson:2.1',
             'org.slf4j:slf4j-android:1.6.1-RC1', // includes slf4j-api, android tools failed to deal with duplicated classess
             //'org.slf4j:slf4j-api:1.6.4',
-            //'commons-codec:commons-codec:1.6',
-            //'com.google.collections:google-collections:1.0',
-            //'org.springframework.android:spring-android-rest-template:1.0.0.M4',
+            'xinthink:acra:4.2.3-xink',
         )
+
+        //compile ('xink.android:acra:4.2.3-xink') {
+        //    transitive = false
+        //}
 
         runtime (
             //'org.slf4j:slf4j-android:1.6.1-RC1',
