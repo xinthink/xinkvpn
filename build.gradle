@@ -44,23 +44,6 @@ subprojects {
         }
     }
 
-    dependencies {
-        compile (
-            //'com.google.code.gson:gson:2.1',
-            'org.slf4j:slf4j-android:1.6.1-RC1', // includes slf4j-api, android tools failed to deal with duplicated classess
-            //'org.slf4j:slf4j-api:1.6.4',
-            'xinthink:acra:4.2.3-xink',
-        )
-
-        //compile ('xink.android:acra:4.2.3-xink') {
-        //    transitive = false
-        //}
-
-        runtime (
-            //'org.slf4j:slf4j-android:1.6.1-RC1',
-        )
-    }
-
     task initSrcDirs << {
         sourceSets*.java.srcDirs*.each { it.mkdirs() }
     }

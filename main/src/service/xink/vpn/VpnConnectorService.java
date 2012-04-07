@@ -63,7 +63,7 @@ public class VpnConnectorService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        Log.i(TAG, "VpnConnectorService created");
+        //Log.i(TAG, "VpnConnectorService created");
         context = getApplicationContext();
         actor = new VpnActor(context);
 
@@ -83,7 +83,7 @@ public class VpnConnectorService extends Service {
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "VpnConnectorService destroyed");
+        //Log.i(TAG, "VpnConnectorService destroyed");
 
         unregisterReceivers();
         super.onDestroy();

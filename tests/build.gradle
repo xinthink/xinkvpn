@@ -1,6 +1,6 @@
 dependencies {
     compile project(':main')
-    compile 'junit:junit:4.10'
+    //compile 'junit:junit:4.10'
     //runtime 'jsankey:android-junit-report:1.2.6'
 }
 
