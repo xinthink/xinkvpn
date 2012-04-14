@@ -26,5 +26,19 @@ package xink.vpn.wrapper;
  * determined. {@hide}
  */
 public enum VpnState {
-    CONNECTING, DISCONNECTING, CANCELLED, CONNECTED, IDLE, UNUSABLE, UNKNOWN
+    CONNECTING, DISCONNECTING, CANCELLED, CONNECTED, IDLE, UNUSABLE, UNKNOWN;
+
+    /**
+     * Whether this's a transitive state
+     */
+    public boolean isTransitive() {
+        return this == CONNECTING || this == DISCONNECTING;
+    }
+
+    /**
+     * Whether this's a stable state
+     */
+    public boolean isStable() {
+        return this == VpnState.CONNECTED || this == VpnState.IDLE;
+    }
 }

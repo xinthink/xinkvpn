@@ -28,6 +28,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -67,7 +68,7 @@ public class VpnConnectorService extends Service {
         context = getApplicationContext();
         actor = new VpnActor(context);
 
-        updateViews();
+        updateViews(null);
         registerReceivers();
         actor.checkStatus();
     }
@@ -126,49 +127,47 @@ public class VpnConnectorService extends Service {
     public void onStateChanged(final Intent intent) {
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
         VpnState newState = Utils.extractVpnState(intent);
-        int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
+        // int err = intent.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
         //Log.d(TAG, profileName + " stateChanged: " + state + "->" + newState + ", errCode=" + err);
 
         updateViews(profileName, newState);
     }
 
     private void updateViews(final String profileName, final VpnState newState) {
-        if (!profileName.equals(Utils.getActvieProfileName(context))) {
+        if (!profileName.equals(Utils.getActvieProfileName(context)))
             //Log.d(TAG, "updateViews, ignores non-active profile event for " + profileName);
             return;
-        }
 
         state = newState;
-        updateViews();
+        updateViews(newState);
     }
 
-    private void updateViews() {
-        RemoteViews views = new RemoteViews(context.getPackageName(), getViewId());
-        // Update specific list of appWidgetIds if given, otherwise default to all
-        updateButtons(views);
+    private void updateViews(final VpnState state) {
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.vpn_widget);
+        views.setViewVisibility(R.id.propStateTransition, getConnProgVisibility(state));
+        views.setTextColor(R.id.txtState, getStateTextColor(state));
+        views.setInt(R.id.txtState, "setBackgroundResource", getIndicator(state));
+
+        installIntent(views);
         final AppWidgetManager gm = AppWidgetManager.getInstance(context);
         gm.updateAppWidget(THIS_APPWIDGET, views);
     }
 
-    private int getViewId() {
-        int view = 0;
-        switch (state) {
-        case CONNECTED:
-            view = R.layout.vpn_widget_connected;
-            break;
-        case CONNECTING:
-        case DISCONNECTING:
-            view = R.layout.vpn_widget_transition;
-            break;
-        default:
-            view = R.layout.vpn_widget_disconnected;
-            break;
-        }
 
-        return view;
+    private int getConnProgVisibility(final VpnState state) {
+        return (state != null && state.isTransitive()) ? View.VISIBLE : View.GONE;
     }
 
-    private void updateButtons(final RemoteViews views) {
+    private int getStateTextColor(final VpnState state) {
+        int color = state == VpnState.CONNECTED ? R.color.vpn_widget_text_color_on : R.color.vpn_widget_text_color_off;
+        return getResources().getColor(color);
+    }
+
+    private int getIndicator(final VpnState state) {
+        return state == VpnState.CONNECTED ? R.drawable.vpn_on : R.drawable.vpn_off;
+    }
+
+    private void installIntent(final RemoteViews views) {
         Intent intent = new Intent(context, ToggleVpn.class);
         intent.putExtra(Constants.KEY_VPN_STATE, state);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);

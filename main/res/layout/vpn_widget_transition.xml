@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent" android:background="@drawable/vpnwidget_states" android:clickable="true" android:focusable="true" android:id="@+id/frmToggleVpnStatue">
-    <TextView android:layout_height="match_parent" android:text="VPN" android:layout_width="match_parent" android:layout_gravity="center|fill" style="@style/VpnOffWidgetTextStyle" android:background="@drawable/vpn_off" android:gravity="center"></TextView>
-    <ProgressBar android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/propStateTransition" android:layout_gravity="center"></ProgressBar>
-</FrameLayout>
