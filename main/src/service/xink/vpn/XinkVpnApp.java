@@ -40,7 +40,7 @@ import android.app.Application;
  resDialogIcon = android.R.drawable.ic_dialog_info,
 
  customReportContent = {
-        APP_VERSION_NAME, APP_VERSION_CODE, ANDROID_VERSION, PHONE_MODEL, CUSTOM_DATA, STACK_TRACE, LOGCAT }
+        APP_VERSION_NAME, APP_VERSION_CODE, USER_COMMENT, ANDROID_VERSION, PHONE_MODEL, CUSTOM_DATA, STACK_TRACE, LOGCAT }
 )
 public class XinkVpnApp extends Application {
 
