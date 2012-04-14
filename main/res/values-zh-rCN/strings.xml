@@ -66,4 +66,17 @@
     <string name="keepalive_period_sum">每%s心跳一次</string>
     <string name="task_main">XinkVpn</string>
     <string name="task_toggle">VPN开关</string>
+
+    <string name="crash_dialog_title">发送错误报告</string>
+    <string name="crash_dialog_text">擦！XinkVpn出了点小状况...
+        请允许通过email发送错误报告，从而帮助我们改进。</string>
+    <string name="crash_dialog_comment_prompt">您可以在此留言:</string>
+    <string name="crash_dialog_ok_toast">谢了！</string>
+
+    <string name="pref_crash_report_title">错误报告</string>
+    <string name="pref_crash_report_enabled_title">允许发送错误报告</string>
+    <string name="pref_crash_report_enabled_sum">通过email发送错误报告</string>
+    <string name="pref_crash_conn_broken_title">报告VPN连接错误</string>
+    <string name="pref_crash_conn_broken_threshold_title">连接错误阈值</string>
+    <string name="pref_crash_conn_broken_threshold_sum">连续%s次连接失败后发送错误报告</string>
 </resources>

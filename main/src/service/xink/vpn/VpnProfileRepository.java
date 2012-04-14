@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import xink.crypto.StreamCrypto;
+import xink.vpn.stats.VpnConnectivityStats;
 import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnType;
@@ -58,9 +59,12 @@ public final class VpnProfileRepository {
     private String activeProfileId;
     private List<VpnProfile> profiles;
 
+    private VpnConnectivityStats connStats;
+
     private VpnProfileRepository(final Context ctx) {
         this.context = ctx;
         profiles = new ArrayList<VpnProfile>();
+        connStats = new VpnConnectivityStats(ctx);
     }
 
     /**
@@ -79,6 +83,13 @@ public final class VpnProfileRepository {
         }
 
         return instance;
+    }
+
+    /**
+     * Retrieves the connectivity stats instance
+     */
+    public VpnConnectivityStats getConnectivityStats() {
+        return this.connStats;
     }
 
     public void save() {

@@ -17,10 +17,12 @@ package xink.vpn.stats;
 
 import static xink.vpn.Constants.*;
 
-import org.acra.ACRA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import xink.vpn.Utils;
+import xink.vpn.VpnProfileRepository;
+import xink.vpn.wrapper.VpnState;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -41,26 +43,19 @@ public class VpnConnectivityMonitor extends BroadcastReceiver {
     @Override
     public void onReceive(final Context context, final Intent intent) {
         if (ACTION_VPN_CONNECTIVITY.equals(intent.getAction())) {
-            onConnChanged(intent);
+            onConnChanged(intent, context);
         }
     }
 
-    private void onConnChanged(final Intent data) {
+    private void onConnChanged(final Intent data, final Context ctx) {
+        String profileName = data.getStringExtra(BROADCAST_PROFILE_NAME);
+        VpnState newState = Utils.extractVpnState(data);
         int err = data.getIntExtra(BROADCAST_ERROR_CODE, VPN_ERROR_NO_ERROR);
 
-        // handle connection errors
-        if (err != VPN_ERROR_NO_ERROR) {
-            handleConnErr(err, data);
-        }
-    }
+        LOG.info(String.format("vpn %1$s -> %2$s, err=%3$d", profileName, newState, err));
 
-    // send an error report
-    private void handleConnErr(final int err, final Intent data) {
-        LOG.info("connectivity error occurs, err={}", err);
-
-        // ErrorReporter.getInstance().handleSilentException(
-        // new RuntimeException("connection error occurs, err_code=" + err));
-        ACRA.getErrorReporter().handleException(null, false);
+        VpnConnectivityStats stats = VpnProfileRepository.getInstance(ctx).getConnectivityStats();
+        stats.onConnectivityChanged(profileName, newState, err);
     }
 
 }

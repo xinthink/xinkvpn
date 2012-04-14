@@ -59,7 +59,6 @@
     <string name="keepalive">Keep-alive</string>
     <string name="enable_keepalive">Keep connection alive</string>
     <string name="keepalive_on">Enabled *Keep connection alive by accessing internet periodically, may produce a small amount of network traffic</string>
-    <string name="keepalive_off">Disabled</string>
     <string name="keepalive_period">Heartbeat interval</string>
     <string name="keepalive_period_sum">Take a keep-alive heartbeat every %s</string>
     <string name="task_main">XinkVpn</string>
@@ -70,4 +69,11 @@
         Please help us fix it, an error report will be sent by email, if you allows.</string>
     <string name="crash_dialog_comment_prompt">You might add your comments about the problem below:</string>
     <string name="crash_dialog_ok_toast">Thank you !</string>
+
+    <string name="pref_crash_report_title">Error Reports</string>
+    <string name="pref_crash_report_enabled_title">Enable crash reports</string>
+    <string name="pref_crash_report_enabled_sum">Send crash reports through email</string>
+    <string name="pref_crash_conn_broken_title">Report connect problems</string>
+    <string name="pref_crash_conn_broken_threshold_title">Connect problems threshold</string>
+    <string name="pref_crash_conn_broken_threshold_sum">Reports error after %s connection failures detected</string>
 </resources>

@@ -27,6 +27,7 @@ import android.preference.PreferenceActivity;
 public class Settings extends PreferenceActivity implements OnSharedPreferenceChangeListener {
 
     private ListPreference periodList;
+    private ListPreference connErrThresholdList;
 
     /** Called when the activity is first created. */
     @Override
@@ -35,14 +36,16 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 
         addPreferencesFromResource(R.xml.pref);
         periodList = (ListPreference) getPreferenceScreen().findPreference(KeepAlive.PREF_HEARTBEAT_PERIOD);
+        connErrThresholdList = (ListPreference) getPreferenceScreen().findPreference(
+                getString(R.string.pref_crash_conn_broken_threshold_key));
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        CharSequence period = periodList.getEntry();
-        periodList.setSummary(getString(R.string.keepalive_period_sum, period));
+        updateListPrefSum(periodList, R.string.keepalive_period_sum);
+        updateListPrefSum(connErrThresholdList, R.string.pref_crash_conn_broken_threshold_sum);
 
         // Set up a listener whenever a key changes
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -66,8 +69,13 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     @Override
     public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
         if (key.equals(KeepAlive.PREF_HEARTBEAT_PERIOD)) {
-            CharSequence period = periodList.getEntry();
-            periodList.setSummary(getString(R.string.keepalive_period_sum, period));
+            updateListPrefSum(periodList, R.string.keepalive_period_sum);
+        } else if (key.equals(getString(R.string.pref_crash_conn_broken_threshold_key))) {
+            updateListPrefSum(connErrThresholdList, R.string.pref_crash_conn_broken_threshold_sum);
         }
+    }
+
+    private void updateListPrefSum(final ListPreference pref, final int sumRes) {
+        pref.setSummary(getString(sumRes, pref.getEntry()));
     }
 }
