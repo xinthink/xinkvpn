@@ -36,4 +36,7 @@
     <item name="pref_crash_conn_broken_default" type="bool">false</item>
     <string name="pref_crash_conn_broken_threshold_key">xink.vpn.pref.crash_conn_broken_threshold</string>
     <item name="pref_crash_conn_broken_threshold_default" type="integer">5</item>
+
+    <string name="active_vpn_state_key">xink.vpn.data.active_vpn_state</string>
+    <string name="active_vpn_state_default">IDLE</string>
 </resources>

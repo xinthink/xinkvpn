@@ -31,15 +31,17 @@ public class ToggleVpn extends Activity {
     private static final String TAG = "xink.ToggleVpn";
 
     private VpnProfileRepository repository;
+    private VpnActor vpnActor;
     private KeyStore keyStore;
     private Runnable resumeAction;
-    private VpnState currentState; // VPN state before toggle
 
     /** Called when the activity is first created. */
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         keyStore = new KeyStore(getApplicationContext());
+        vpnActor = new VpnActor(getApplicationContext());
+
         toggleVpn(getIntent());
     }
 
@@ -52,7 +54,7 @@ public class ToggleVpn extends Activity {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see android.app.Activity#onNewIntent(android.content.Intent)
      */
     @Override
@@ -73,9 +75,9 @@ public class ToggleVpn extends Activity {
     }
 
     private void toggleVpn(final Intent data) {
-        currentState = (VpnState) data.getSerializableExtra(Constants.KEY_VPN_STATE);
+        VpnState state = getRepository().getActiveVpnState();
 
-        switch (currentState) {
+        switch (state) {
         case IDLE:
             connect();
             break;
@@ -83,7 +85,7 @@ public class ToggleVpn extends Activity {
             disconnect();
             break;
         default:
-            Log.i(TAG, "intent not handled, currentState=" + currentState);
+            Log.i(TAG, "intent not handled, currentState=" + state);
             finish();
             break;
         }
@@ -105,7 +107,11 @@ public class ToggleVpn extends Activity {
 
     private void connect(final VpnProfile p) {
         if (unlockKeyStoreIfNeeded(p)) {
-            sendToggleRequest();
+            try {
+                vpnActor.connect(p);
+            } finally {
+                finish();
+            }
         }
     }
 
@@ -128,13 +134,8 @@ public class ToggleVpn extends Activity {
 
     private void disconnect() {
         Log.d(TAG, "disconnect ...");
-        sendToggleRequest();
-    }
-
-    private void sendToggleRequest() {
         try {
-            Intent intent = new Intent(Constants.ACT_TOGGLE_VPN_CONN);
-            sendBroadcast(intent);
+            vpnActor.disconnect();
         } finally {
             finish();
         }

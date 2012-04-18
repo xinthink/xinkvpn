@@ -470,7 +470,6 @@ public class VpnSettings extends Activity {
     private void registerReceivers() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_VPN_CONNECTIVITY);
-        filter.addAction(ACT_TOGGLE_VPN_CONN);
         stateBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(final Context context, final Intent intent) {

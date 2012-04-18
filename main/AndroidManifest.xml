@@ -18,16 +18,11 @@
         </activity>
         <receiver android:name=".VpnAppWidgetProvider">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
+                <action android:name="vpn.connectivity" /><action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/vpn_appwidget_info"></meta-data>
         </receiver>
-        <activity android:name=".VpnTypeSelection" android:label="@string/add_vpn"></activity>
-        <service android:name=".VpnConnectorService">
-            <intent-filter>
-                <action android:name="xink.toggleVpnConnectionAction"></action>
-            </intent-filter>
-        </service><activity android:name=".editor.PptpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
+        <activity android:name=".VpnTypeSelection" android:label="@string/add_vpn"></activity><activity android:name=".editor.PptpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
 
         <activity android:name=".editor.L2tpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".editor.L2tpIpsecPskProfileEditor" android:windowSoftInputMode="adjustResize"></activity>

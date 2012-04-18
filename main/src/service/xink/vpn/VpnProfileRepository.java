@@ -35,8 +35,11 @@ import xink.crypto.StreamCrypto;
 import xink.vpn.stats.VpnConnectivityStats;
 import xink.vpn.wrapper.InvalidProfileException;
 import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.wrapper.VpnState;
 import xink.vpn.wrapper.VpnType;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -59,6 +62,7 @@ public final class VpnProfileRepository {
     private String activeProfileId;
     private List<VpnProfile> profiles;
 
+    private VpnState activeVpnState;
     private VpnConnectivityStats connStats;
 
     private VpnProfileRepository(final Context ctx) {
@@ -83,6 +87,34 @@ public final class VpnProfileRepository {
         }
 
         return instance;
+    }
+
+
+    /**
+     * Get state of the active vpn.
+     */
+    public VpnState getActiveVpnState() {
+        if (activeVpnState == null) {
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+            String v = prefs.getString(context.getString(R.string.active_vpn_state_key),
+                    context.getString(R.string.active_vpn_state_default));
+            activeVpnState = VpnState.valueOf(v);
+        }
+
+        return activeVpnState;
+    }
+
+    /**
+     * Update state of the active vpn.
+     */
+    public void setActiveVpnState(final VpnState state) {
+        if (!state.isStable()) return;
+
+        this.activeVpnState = state;
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        prefs.edit().putString(context.getString(R.string.active_vpn_state_key), state.toString()).commit();
     }
 
     /**
