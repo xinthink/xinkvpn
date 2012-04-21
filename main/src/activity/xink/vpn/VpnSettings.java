@@ -1,12 +1,12 @@
 /*
  * Copyright 2011 yingxinwu.g@gmail.com
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -470,7 +470,6 @@ public class VpnSettings extends Activity {
     private void registerReceivers() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_VPN_CONNECTIVITY);
-        filter.addAction(ACT_TOGGLE_VPN_CONN);
         stateBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(final Context context, final Intent intent) {
@@ -487,7 +486,7 @@ public class VpnSettings extends Activity {
     }
 
     private void onStateChanged(final Intent intent) {
-        Log.d(TAG, "onStateChanged: " + intent); //$NON-NLS-1$
+        //Log.d(TAG, "onStateChanged: " + intent); //$NON-NLS-1$
 
         final String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
         final VpnState state = Utils.extractVpnState(intent);
@@ -502,7 +501,7 @@ public class VpnSettings extends Activity {
     }
 
     private void stateChanged(final String profileName, final VpnState state, final int errCode) {
-        Log.d(TAG, "stateChanged, '" + profileName + "', state: " + state + ", errCode=" + errCode); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        //Log.d(TAG, "stateChanged, '" + profileName + "', state: " + state + ", errCode=" + errCode); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         VpnProfile p = repository.getProfileByName(profileName);
 
         if (p == null) {
@@ -516,7 +515,7 @@ public class VpnSettings extends Activity {
 
     @Override
     protected void onDestroy() {
-        Log.d(TAG, "VpnSettings onDestroy"); //$NON-NLS-1$
+        //Log.d(TAG, "VpnSettings onDestroy"); //$NON-NLS-1$
         unregisterReceivers();
 
         super.onDestroy();
@@ -524,7 +523,7 @@ public class VpnSettings extends Activity {
 
     @Override
     protected void onPause() {
-        Log.d(TAG, "VpnSettings onPause"); //$NON-NLS-1$
+        //Log.d(TAG, "VpnSettings onPause"); //$NON-NLS-1$
         save();
 
         super.onPause();

@@ -62,7 +62,7 @@ public final class KeepAlive extends BroadcastReceiver {
 
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
         if (p == null || profileName == null || !profileName.equals(p.getName())) {
-            Log.d(TAG, "ignores non-active profile event: " + profileName);
+            //Log.d(TAG, "ignores non-active profile event: " + profileName);
             return;
         }
 
@@ -73,7 +73,7 @@ public final class KeepAlive extends BroadcastReceiver {
     }
 
     private void stateChanged(final VpnProfile p, final VpnState newState, final SharedPreferences prefs) {
-        Log.d(TAG, p + " state ==> " + newState);
+        //Log.d(TAG, p + " state ==> " + newState);
 
         switch (newState) {
         case CONNECTED:

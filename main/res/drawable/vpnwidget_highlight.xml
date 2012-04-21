@@ -4,9 +4,10 @@
     <gradient
         android:startColor="#FFA600"
         android:endColor="#FFA600"/>
-    <padding android:left="2dp"
+    <padding android:left="3dp"
         android:top="3dp"
         android:right="3dp"
         android:bottom="3dp" />
-    <corners android:radius="0dp" />
+    <corners android:radius="3dp" />
+    <stroke android:width="15dp" android:color="@android:color/transparent" />
 </shape>

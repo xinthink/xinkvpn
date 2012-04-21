@@ -21,18 +21,23 @@ import static xink.vpn.Constants.*;
 import java.io.File;
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.widget.Toast;
 
 public final class Utils {
 
-    // private static final String TAG = "xink.Utils";
+    private static final Logger LOG = LoggerFactory.getLogger("xink.Utils");
 
     public static void showErrMessage(final Activity ctx, final AppException e) {
         AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
@@ -86,6 +91,54 @@ public final class Utils {
     public static boolean isInStableState(final VpnProfile p) {
         VpnState state = p.getState();
         return state == VpnState.CONNECTED || state == VpnState.IDLE;
+    }
+
+    //
+    // *****************************************************************************************************
+    //
+    // Preferences Utilities
+    //
+    // *****************************************************************************************************
+    //
+
+    /**
+     * Retrieves a boolean from default SharedPreferences
+     * 
+     * @param key resource defines the preference key
+     * @param defaultValue resource defines the default value
+     * @param ctx Context
+     * @return boolean preference
+     */
+    public static boolean getPrefBool(final int key, final int defaultValue, final Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+        String prefKey = ctx.getString(key);
+        boolean prefDefault = ctx.getResources().getBoolean(defaultValue);
+
+        return sp.getBoolean(prefKey, prefDefault);
+    }
+
+    /**
+     * Retrieves an integer from default SharedPreferences
+     * 
+     * @param key resource defines the preference key
+     * @param defaultValue resource defines the default value
+     * @param ctx Context
+     * @return int preference
+     */
+    public static int getPrefInt(final int key, final int defaultValue, final Context ctx) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(ctx);
+
+        String prefKey = ctx.getString(key);
+        int value = ctx.getResources().getInteger(defaultValue);
+
+        try {
+            // 在xml中定义的数字型preference只能按字符串读取
+            value = Integer.parseInt(sp.getString(prefKey, String.valueOf(value)));
+        } catch (NumberFormatException e) {
+            LOG.warn("invalid NumberFormat: int prefs '{}'", prefKey);
+        }
+        return value;
     }
 
     private Utils() {

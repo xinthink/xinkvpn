@@ -5,7 +5,8 @@
     <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="15"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
     <supports-screens android:smallScreens="true" android:largeScreens="true" android:xlargeScreens="true" android:anyDensity="true" android:normalScreens="true"/>
-<application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true">
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+    <application android:icon="@drawable/icon" android:label="@string/app_name" android:debuggable="true" android:name="XinkVpnApp">
         <activity android:name=".VpnSettings" android:label="@string/task_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,16 +18,11 @@
         </activity>
         <receiver android:name=".VpnAppWidgetProvider">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
+                <action android:name="vpn.connectivity" /><action android:name="android.appwidget.action.APPWIDGET_UPDATE"></action>
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/vpn_appwidget_info"></meta-data>
         </receiver>
-        <activity android:name=".VpnTypeSelection" android:label="@string/add_vpn"></activity>
-        <service android:name=".VpnConnectorService">
-            <intent-filter>
-                <action android:name="xink.toggleVpnConnectionAction"></action>
-            </intent-filter>
-        </service><activity android:name=".editor.PptpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
+        <activity android:name=".VpnTypeSelection" android:label="@string/add_vpn"></activity><activity android:name=".editor.PptpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
 
         <activity android:name=".editor.L2tpProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".editor.L2tpIpsecPskProfileEditor" android:windowSoftInputMode="adjustResize"></activity>
@@ -37,5 +33,19 @@
             </intent-filter>
         </receiver>
         <activity android:name=".Settings"></activity>
+
+        <receiver android:name=".stats.VpnConnectivityMonitor" >
+            <intent-filter>
+                <action android:name="vpn.connectivity" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="org.acra.CrashReportDialog"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Dialog" />
     </application>
+
 </manifest>

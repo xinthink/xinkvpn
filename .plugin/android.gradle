@@ -40,7 +40,7 @@ def configAndroidBuild(cfg) {
         androidSignAndAlign.keyStorePassword = ant['keyStorePassword']
         androidSignAndAlign.keyAliasPassword = ant['keyAliasPassword']
 
-        proguard.enabled = true
+        //proguard.enabled = true
     }
 
     jar.classifier = cfg == 'DEBUG' ? 'debug' : ''

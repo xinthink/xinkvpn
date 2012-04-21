@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="url_issues">http://goo.gl/hSG8Z</string>
+    <string name="url_issues">http://bit.ly/HogsCW</string>
     <string name="url_paypal_donate">https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=yingxinwu.g@gmail.com&amp;item_name=Xink%20Vpn&amp;currency_code=USD</string>
-    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list?can=3</string>
+    <string name="url_wiki_home">http://code.google.com/p/xinkvpn/w/list</string>
     <string name="exp_dir">/sdcard/XinkVpn</string>
 
     <string-array name="keepalive_period">
@@ -17,4 +17,26 @@
         <item>FIFTEEN_MIN</item>
         <item>THIRTY_MIN</item>
     </string-array>
+    <string-array name="crash_conn_broken_thresholds">
+        <!-- <item>1</item> -->
+        <item>3</item>
+        <item>5</item>
+        <item>10</item>
+    </string-array>
+    <string-array name="crash_conn_broken_threshold_values">
+        <!-- <item>1</item> -->
+        <item>3</item>
+        <item>5</item>
+        <item>10</item>
+    </string-array>
+
+    <string name="pref_crash_report_enabled_key">acra.enable</string>
+    <item name="pref_crash_report_enabled_default" type="bool">true</item>
+    <string name="pref_crash_conn_broken_key">xink.vpn.pref.crash_conn_broken</string>
+    <item name="pref_crash_conn_broken_default" type="bool">false</item>
+    <string name="pref_crash_conn_broken_threshold_key">xink.vpn.pref.crash_conn_broken_threshold</string>
+    <item name="pref_crash_conn_broken_threshold_default" type="integer">5</item>
+
+    <string name="active_vpn_state_key">xink.vpn.data.active_vpn_state</string>
+    <string name="active_vpn_state_default">IDLE</string>
 </resources>
