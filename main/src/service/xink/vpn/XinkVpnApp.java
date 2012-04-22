@@ -44,6 +44,15 @@ import android.app.Application;
 )
 public class XinkVpnApp extends Application {
 
+    private static XinkVpnApp _instance;
+
+    /**
+     * @return the single instance of App
+     */
+    public static XinkVpnApp i() {
+        return _instance;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -51,6 +60,8 @@ public class XinkVpnApp extends Application {
      */
     @Override
     public void onCreate() {
+        _instance = this;
+
         ACRA.init(this);
         super.onCreate();
     }
