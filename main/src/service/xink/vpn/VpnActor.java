@@ -20,6 +20,8 @@ import static xink.vpn.Constants.*;
 
 import java.util.List;
 
+import xink.sys.Mtpd;
+import xink.vpn.wrapper.PptpProfile;
 import xink.vpn.wrapper.VpnManager;
 import xink.vpn.wrapper.VpnProfile;
 import xink.vpn.wrapper.VpnService;
@@ -60,67 +62,13 @@ public class VpnActor {
         p.preConnect();
         final VpnProfile cp = p.dulicateToConnect(); // connect using a clone, so the secret key can be replace
 
-        getVpnMgr().startVpnService();
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(final ComponentName className, final IBinder service) {
-                try {
-                    boolean success = getVpnSrv().connect(service, cp);
-
-                    if (!success) {
-                        Log.d(TAG, "~~~~~~ connect() failed!");
-                        broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
-                    } else {
-                        Log.d(TAG, "~~~~~~ connect() succeeded!");
-                    }
-                } catch (Throwable e) {
-                    Log.e(TAG, "connect()", e);
-                    broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                Log.e(TAG, "onServiceDisconnected");
-                checkStatus();
-            }
-        };
-
-        if (!getVpnMgr().bindVpnService(c)) {
-            Log.e(TAG, "bind service failed");
-            broadcastConnectivity(cp.getName(), VpnState.IDLE, VPN_ERROR_CONNECTION_FAILED);
-        }
+        Mtpd.startPptp(cp.getServerName(), cp.getUsername(), cp.getPassword(), ((PptpProfile) cp).isEncryptionEnabled());
     }
 
     public void disconnect() {
         Log.i(TAG, "disconnect active vpn");
 
-        getVpnMgr().startVpnService();
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(final ComponentName className, final IBinder service) {
-                try {
-                    getVpnSrv().disconnect(service);
-                } catch (Exception e) {
-                    Log.e(TAG, "disconnect()", e);
-                    checkStatus();
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                Log.e(TAG, "onServiceDisconnected");
-                checkStatus();
-            }
-        };
-        if (!getVpnMgr().bindVpnService(c)) {
-            Log.e(TAG, "bind service failed");
-            checkStatus();
-        }
+        Mtpd.stop();
     }
 
     public void checkStatus() {
