@@ -28,7 +28,8 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
-#include <linux/if_pppolac.h>
+#include <linux/netdevice.h>
+#include <linux/if_pppox.h>
 #include <openssl/md5.h>
 
 #include "mtpd.h"
@@ -184,15 +185,18 @@ static int recv_packet(uint16_t *session)
     uint16_t *p = (uint16_t *)incoming.buffer;
 
     incoming.length = recv(the_socket, incoming.buffer, MAX_PACKET_LENGTH, 0);
-    if (incoming.length == -1 && errno != EINTR) {
+    if (incoming.length == -1) {
+        if (errno == EINTR) {
+            return 0;
+        }
         log_print(FATAL, "Recv() %s", strerror(errno));
         exit(NETWORK_ERROR);
     }
 
     /* We only handle packets in our tunnel. */
     if ((incoming.length != ACK_SIZE && incoming.length < MESSAGE_HEADER_SIZE)
-        || (p[0] & htons(MESSAGE_MASK)) != htons(MESSAGE_FLAG)
-        || p[1] > htons(incoming.length) || p[2] != local_tunnel) {
+            || (p[0] & htons(MESSAGE_MASK)) != htons(MESSAGE_FLAG) ||
+            ntohs(p[1]) != incoming.length || p[2] != local_tunnel) {
         return 0;
     }
 
@@ -308,12 +312,9 @@ static int get_attribute_u16(uint16_t type, uint16_t *value)
     return get_attribute_raw(type, value, sizeof(uint16_t)) == sizeof(uint16_t);
 }
 
-static int l2tp_connect(int argc, char **argv)
+static int l2tp_connect(char **arguments)
 {
-    if (argc < 2) {
-        return -USAGE_ERROR;
-    }
-    create_socket(AF_INET, SOCK_DGRAM, argv[0], argv[1]);
+    create_socket(AF_INET, SOCK_DGRAM, arguments[0], arguments[1]);
 
     while (!local_tunnel) {
         local_tunnel = random();
@@ -328,7 +329,7 @@ static int l2tp_connect(int argc, char **argv)
     add_attribute_u16(ASSIGNED_TUNNEL, local_tunnel);
     add_attribute_u16(WINDOW_SIZE, htons(1));
 
-    if (argc >= 3) {
+    if (arguments[2][0]) {
         int fd = open(RANDOM_DEVICE, O_RDONLY);
         if (fd == -1 || read(fd, challenge, CHALLENGE_SIZE) != CHALLENGE_SIZE) {
             log_print(FATAL, "Cannot read %s", RANDOM_DEVICE);
@@ -337,8 +338,8 @@ static int l2tp_connect(int argc, char **argv)
         close(fd);
 
         add_attribute_raw(CHALLENGE, challenge, CHALLENGE_SIZE);
-        secret = argv[2];
-        secret_length = strlen(argv[2]);
+        secret = arguments[2];
+        secret_length = strlen(arguments[2]);
     }
 
     send_packet();
@@ -347,9 +348,8 @@ static int l2tp_connect(int argc, char **argv)
 
 static int create_pppox()
 {
-    int pppox;
+    int pppox = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OLAC);
     log_print(INFO, "Creating PPPoX socket");
-    pppox = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OLAC);
 
     if (pppox == -1) {
         log_print(FATAL, "Socket() %s", strerror(errno));
@@ -362,7 +362,7 @@ static int create_pppox()
             .local = {.tunnel = local_tunnel, .session = local_session},
             .remote = {.tunnel = remote_tunnel, .session = remote_session},
         };
-        if (connect(pppox, (struct sockaddr *)&address, sizeof(address)) != 0) {
+        if (connect(pppox, (struct sockaddr *)&address, sizeof(address))) {
             log_print(FATAL, "Connect() %s", strerror(errno));
             exit(SYSTEM_ERROR);
         }
@@ -387,11 +387,11 @@ static int verify_challenge()
     if (secret) {
         uint8_t response[MD5_DIGEST_LENGTH];
         if (get_attribute_raw(CHALLENGE_RESPONSE, response, MD5_DIGEST_LENGTH)
-            != MD5_DIGEST_LENGTH) {
+                != MD5_DIGEST_LENGTH) {
             return 0;
         }
         return !memcmp(compute_response(SCCRP, challenge, CHALLENGE_SIZE),
-                       response, MD5_DIGEST_LENGTH);
+                response, MD5_DIGEST_LENGTH);
     }
     return 1;
 }
@@ -423,18 +423,18 @@ static int l2tp_process()
     switch(incoming.message) {
         case SCCRP:
             if (state == SCCRQ) {
-                if (get_attribute_u16(ASSIGNED_TUNNEL, &tunnel) && tunnel
-                    && verify_challenge()) {
+                if (get_attribute_u16(ASSIGNED_TUNNEL, &tunnel) && tunnel &&
+                        verify_challenge()) {
                     remote_tunnel = tunnel;
                     log_print(DEBUG, "Received SCCRP (remote_tunnel = %d) -> "
-                              "Sending SCCCN", remote_tunnel);
+                            "Sending SCCCN", remote_tunnel);
                     state = SCCCN;
                     answer_challenge();
                     set_message(0, SCCCN);
                     break;
                 }
                 log_print(DEBUG, "Received SCCRP without %s", tunnel ?
-                          "valid challenge response" : "assigned tunnel");
+                        "valid challenge response" : "assigned tunnel");
                 log_print(ERROR, "Protocol error");
                 return tunnel ? -CHALLENGE_FAILED : -PROTOCOL_ERROR;
             }
@@ -445,7 +445,7 @@ static int l2tp_process()
                 if (get_attribute_u16(ASSIGNED_SESSION, &session) && session) {
                     remote_session = session;
                     log_print(DEBUG, "Received ICRP (remote_session = %d) -> "
-                              "Sending ICCN", remote_session);
+                            "Sending ICCN", remote_session);
                     state = ICCN;
                     set_message(remote_session, ICCN);
                     add_attribute_u32(CONNECT_SPEED, htonl(100000000));
@@ -467,7 +467,7 @@ static int l2tp_process()
         case CDN:
             if (session && session == local_session) {
                 log_print(DEBUG, "Received CDN (local_session = %d)",
-                          local_session);
+                        local_session);
                 log_print(INFO, "Remote server hung up");
                 return -REMOTE_REQUESTED;
             }
@@ -477,13 +477,13 @@ static int l2tp_process()
         case HELLO:
         case WEN:
         case SLI:
-            /* These are harmless, so we just treat them the same way. */
+            /* These are harmless, so we just treat them in the same way. */
             if (state == SCCCN) {
                 while (!local_session) {
                     local_session = random();
                 }
                 log_print(DEBUG, "Received %s -> Sending ICRQ (local_session = "
-                          "%d)", messages[incoming.message], local_session);
+                        "%d)", messages[incoming.message], local_session);
                 log_print(INFO, "Tunnel established");
                 state = ICRQ;
                 set_message(0, ICRQ);
@@ -513,7 +513,7 @@ static int l2tp_process()
              * accept ICRQ or OCRQ. Always send CDN with a proper error. */
             if (get_attribute_u16(ASSIGNED_SESSION, &session) && session) {
                 log_print(DEBUG, "Received %s (remote_session = %d) -> "
-                          "Sending CDN", messages[incoming.message], session);
+                        "Sending CDN", messages[incoming.message], session);
                 set_message(session, CDN);
                 add_attribute_u32(RESULT_CODE, htonl(0x00020006));
                 add_attribute_u16(ASSIGNED_SESSION, 0);
@@ -561,7 +561,8 @@ static void l2tp_shutdown()
 
 struct protocol l2tp = {
     .name = "l2tp",
-    .usage = "<server> <port> [secret]",
+    .arguments = 3,
+    .usage = "<server> <port> <secret>",
     .connect = l2tp_connect,
     .process = l2tp_process,
     .timeout = l2tp_timeout,

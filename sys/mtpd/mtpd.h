@@ -21,13 +21,12 @@
 extern int the_socket;
 
 enum exit_code {
-    USAGE_ERROR = 1,
-    SYSTEM_ERROR = 2,
-    NETWORK_ERROR = 3,
-    PROTOCOL_ERROR = 4,
-    CHALLENGE_FAILED = 5,
-    USER_REQUESTED = 6,
-    REMOTE_REQUESTED = 7,
+    SYSTEM_ERROR = 1,
+    NETWORK_ERROR = 2,
+    PROTOCOL_ERROR = 3,
+    CHALLENGE_FAILED = 4,
+    USER_REQUESTED = 5,
+    REMOTE_REQUESTED = 6,
     PPPD_EXITED = 32,
 };
 
@@ -48,12 +47,14 @@ void start_pppd(int pppox);
  * timeout intervals are in milliseconds, where zero means forever. To indicate
  * an error, one should use a negative exit code such as -REMOTE_REQUESTED. */
 struct protocol {
-    /* The name specified in the first argument. */
+    /* The name of this protocol. */
     char *name;
-    /* The usage of the rest of the arguments. */
+    /* The number of arguments. */
+    int arguments;
+    /* The usage of the arguments. */
     char *usage;
     /* Connect to the server and return the next timeout interval. */
-    int (*connect)(int argc, char **argv);
+    int (*connect)(char **arguments);
     /* Process the incoming packet and return the next timeout interval. */
     int (*process)();
     /* Handle the timeout event and return the next timeout interval. */

@@ -32,7 +32,6 @@
 #ifdef ANDROID_CHANGES
 #include <android/log.h>
 #include <cutils/sockets.h>
-#include "keystore_get.h"
 #endif
 
 #include "mtpd.h"
@@ -44,6 +43,7 @@ extern struct protocol pptp;
 static struct protocol *protocols[] = {&l2tp, &pptp, NULL};
 static struct protocol *the_protocol;
 
+static char *interface;
 static int pppd_argc;
 static char **pppd_argv;
 static pid_t pppd_pid;
@@ -58,55 +58,49 @@ static void interrupt(int signal)
 
 static int initialize(int argc, char **argv)
 {
-    int timeout = 0;
     int i;
 
-    for (i = 2; i < argc; ++i) {
-        if (!argv[i][0]) {
-            pppd_argc = argc - i - 1;
-            pppd_argv = &argv[i + 1];
-            argc = i;
+    for (i = 0; protocols[i]; ++i) {
+        struct protocol *p = protocols[i];
+        if (argc - 3 >= p->arguments && !strcmp(argv[2], p->name)) {
+            log_print(INFO, "Using protocol %s", p->name);
+            the_protocol = p;
             break;
         }
     }
 
-    if (argc >= 2) {
+    if (!the_protocol) {
+        printf("Usages:\n");
         for (i = 0; protocols[i]; ++i) {
-            if (!strcmp(argv[1], protocols[i]->name)) {
-                log_print(INFO, "Using protocol %s", protocols[i]->name);
-                the_protocol = protocols[i];
-                timeout = the_protocol->connect(argc - 2, &argv[2]);
-                break;
-            }
+            struct protocol *p = protocols[i];
+            printf("  %s interface %s %s pppd-arguments\n",
+                    argv[0], p->name, p->usage);
         }
+        exit(0);
     }
 
-    if (!the_protocol || timeout == -USAGE_ERROR) {
-        printf("Usage: %s <protocol-args> '' <pppd-args>, "
-               "where protocol-args are one of:\n", argv[0]);
-        for (i = 0; protocols[i]; ++i) {
-            printf("       %s %s\n", protocols[i]->name, protocols[i]->usage);
-        }
-        exit(USAGE_ERROR);
-    }
-    return timeout;
+    interface = argv[1];
+    pppd_argc = argc - 3 - the_protocol->arguments;
+    pppd_argv = &argv[3 + the_protocol->arguments];
+    return the_protocol->connect(&argv[3]);
 }
 
 static void stop_pppd()
 {
     if (pppd_pid) {
+        int status;
         log_print(INFO, "Sending signal to pppd (pid = %d)", pppd_pid);
         kill(pppd_pid, SIGTERM);
-        sleep(5);
+        waitpid(pppd_pid, &status, 0);
         pppd_pid = 0;
     }
 }
 
 #ifdef ANDROID_CHANGES
 
-static int get_control_and_arguments(int *argc, char ***argv)
+static int android_get_control_and_arguments(int *argc, char ***argv)
 {
-    static char *args[256];
+    static char *args[32];
     int control;
     int i;
 
@@ -122,16 +116,19 @@ static int get_control_and_arguments(int *argc, char ***argv)
     fcntl(control, F_SETFD, FD_CLOEXEC);
 
     args[0] = (*argv)[0];
-    for (i = 1; i < 256; ++i) {
-        unsigned char length;
-        if (recv(control, &length, 1, 0) != 1) {
+    for (i = 1; i < 32; ++i) {
+        unsigned char bytes[2];
+        if (recv(control, &bytes[0], 1, 0) != 1 ||
+                recv(control, &bytes[1], 1, 0) != 1) {
             log_print(FATAL, "Cannot get argument length");
             exit(SYSTEM_ERROR);
-        }
-        if (length == 0xFF) {
-            break;
         } else {
+            int length = bytes[0] << 8 | bytes[1];
             int offset = 0;
+
+            if (length == 0xFFFF) {
+                break;
+            }
             args[i] = malloc(length + 1);
             while (offset < length) {
                 int n = recv(control, &args[i][offset], length - offset, 0);
@@ -147,21 +144,6 @@ static int get_control_and_arguments(int *argc, char ***argv)
     }
     log_print(DEBUG, "Received %d arguments", i - 1);
 
-    /* L2TP secret is the only thing stored in keystore. We do the query here
-     * so other files are clean and free from android specific code. */
-    if (i > 4 && !strcmp("l2tp", args[1]) && args[4][0]) {
-        char value[KEYSTORE_MESSAGE_SIZE];
-        int length = keystore_get(args[4], strlen(args[4]), value);
-        if (length == -1) {
-            log_print(FATAL, "Cannot get L2TP secret from keystore");
-            exit(SYSTEM_ERROR);
-        }
-        free(args[4]);
-        args[4] = malloc(length + 1);
-        memcpy(args[4], value, length);
-        args[4][length] = 0;
-    }
-
     *argc = i;
     *argv = args;
     return control;
@@ -171,13 +153,14 @@ static int get_control_and_arguments(int *argc, char ***argv)
 
 int main(int argc, char **argv)
 {
-    struct pollfd pollfds[2];
+    struct pollfd pollfds[3];
+    int control = -1;
     int timeout;
     int status;
+
 #ifdef ANDROID_CHANGES
-    int control = get_control_and_arguments(&argc, &argv);
-    unsigned char code = argc - 1;
-    send(control, &code, 1, 0);
+    control = android_get_control_and_arguments(&argc, &argv);
+    shutdown(control, SHUT_WR);
 #endif
 
     srandom(time(NULL));
@@ -198,21 +181,31 @@ int main(int argc, char **argv)
     signal(SIGPIPE, SIG_IGN);
     atexit(stop_pppd);
 
-    pollfds[0].fd = signals[0];
+    pollfds[0].fd = the_socket;
     pollfds[0].events = POLLIN;
-    pollfds[1].fd = the_socket;
+    pollfds[1].fd = signals[0];
     pollfds[1].events = POLLIN;
+    pollfds[2].fd = control;
+    pollfds[2].events = 0;
 
     while (timeout >= 0) {
-        if (poll(pollfds, 2, timeout ? timeout : -1) == -1 && errno != EINTR) {
+        if (poll(pollfds, 3, timeout ? timeout : -1) == -1 && errno != EINTR) {
             log_print(FATAL, "Poll() %s", strerror(errno));
             exit(SYSTEM_ERROR);
         }
-        if (pollfds[0].revents) {
+        if (pollfds[1].revents) {
             break;
         }
-        timeout = pollfds[1].revents ?
-            the_protocol->process() : the_protocol->timeout();
+        if (pollfds[2].revents) {
+            interrupt(SIGTERM);
+        }
+#ifdef ANDROID_CHANGES
+        if (!access("/data/misc/vpn/abort", F_OK)) {
+            interrupt(SIGTERM);
+        }
+#endif
+        timeout = pollfds[0].revents ?
+                the_protocol->process() : the_protocol->timeout();
     }
 
     if (timeout < 0) {
@@ -222,7 +215,7 @@ int main(int argc, char **argv)
         read(signals[0], &signal, sizeof(int));
         log_print(INFO, "Received signal %d", signal);
         if (signal == SIGCHLD && waitpid(pppd_pid, &status, WNOHANG) == pppd_pid
-            && WIFEXITED(status)) {
+                && WIFEXITED(status)) {
             status = WEXITSTATUS(status);
             log_print(INFO, "Pppd is terminated (status = %d)", status);
             status += PPPD_EXITED;
@@ -234,11 +227,6 @@ int main(int argc, char **argv)
 
     stop_pppd();
     the_protocol->shutdown();
-
-#ifdef ANDROID_CHANGES
-    code = status;
-    send(control, &code, 1, 0);
-#endif
     log_print(INFO, "Mtpd is terminated (status = %d)", status);
     return status;
 }
@@ -278,24 +266,23 @@ void create_socket(int family, int type, char *server, char *port)
     struct addrinfo *r;
     int error;
 
-    log_print(INFO, "Connecting to %s port %s", server, port);
+    log_print(INFO, "Connecting to %s port %s via %s", server, port, interface);
 
     error = getaddrinfo(server, port, &hints, &records);
     if (error) {
         log_print(FATAL, "Getaddrinfo() %s", (error == EAI_SYSTEM) ?
-                  strerror(errno) : gai_strerror(error));
+                strerror(errno) : gai_strerror(error));
         exit(NETWORK_ERROR);
     }
 
     for (r = records; r; r = r->ai_next) {
-        the_socket = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
-        if (the_socket != -1) {
-            if (connect(the_socket, r->ai_addr, r->ai_addrlen) == 0) {
-                break;
-            }
-            close(the_socket);
-            the_socket = -1;
+        int s = socket(r->ai_family, r->ai_socktype, r->ai_protocol);
+        if (!setsockopt(s, SOL_SOCKET, SO_BINDTODEVICE, interface,
+                strlen(interface)) && !connect(s, r->ai_addr, r->ai_addrlen)) {
+            the_socket = s;
+            break;
         }
+        close(s);
     }
 
     freeaddrinfo(records);

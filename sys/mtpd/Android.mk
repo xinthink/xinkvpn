@@ -14,18 +14,22 @@
 # limitations under the License.
 #
 
-ifneq ($(TARGET_SIMULATOR),true)
-
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 
+LOCAL_SRC_FILES := mtpd.c l2tp.c pptp.c
+LOCAL_SHARED_LIBRARIES := libcutils libcrypto
+LOCAL_CFLAGS := -DANDROID_CHANGES
+LOCAL_C_INCLUDES := external/openssl/include
+
+LOCAL_MODULE := mtpd
+
+include $(CLEAR_VARS)
 LOCAL_SRC_FILES := xinkvpnd.c
 LOCAL_SHARED_LIBRARIES := libcutils
 LOCAL_CFLAGS := -DDEBUG
 LOCAL_C_INCLUDES :=
 
-LOCAL_MODULE := mtpd
+LOCAL_MODULE := xinkvpnd
 
 include $(BUILD_EXECUTABLE)
-
-endif

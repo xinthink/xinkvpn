@@ -26,7 +26,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <linux/if_pppopns.h>
+#include <linux/netdevice.h>
+#include <linux/if_pppox.h>
 
 #include "mtpd.h"
 
@@ -207,17 +208,14 @@ static int recv_packet()
             return 1;
         }
         log_print(DEBUG, "Ignored non-control message (type = %d)",
-                  ntohs(incoming.header.type));
+                ntohs(incoming.header.type));
     }
     return 0;
 }
 
-static int pptp_connect(int argc, char **argv)
+static int pptp_connect(char **arguments)
 {
-    if (argc < 2) {
-        return -USAGE_ERROR;
-    }
-    create_socket(AF_UNSPEC, SOCK_STREAM, argv[0], argv[1]);
+    create_socket(AF_UNSPEC, SOCK_STREAM, arguments[0], arguments[1]);
 
     log_print(DEBUG, "Sending SCCRQ");
     state = SCCRQ;
@@ -233,9 +231,8 @@ static int pptp_connect(int argc, char **argv)
 
 static int create_pppox()
 {
-    int pppox;
+    int pppox = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OPNS);
     log_print(INFO, "Creating PPPoX socket");
-    pppox = socket(AF_PPPOX, SOCK_DGRAM, PX_PROTO_OPNS);
 
     if (pppox == -1) {
         log_print(FATAL, "Socket() %s", strerror(errno));
@@ -248,7 +245,7 @@ static int create_pppox()
             .local = local,
             .remote = remote,
         };
-        if (connect(pppox, (struct sockaddr *)&address, sizeof(address)) != 0) {
+        if (connect(pppox, (struct sockaddr *)&address, sizeof(address))) {
             log_print(FATAL, "Connect() %s", strerror(errno));
             exit(SYSTEM_ERROR);
         }
@@ -274,20 +271,20 @@ static int pptp_process()
     }
     if (incoming.length < lengths[incoming.message]) {
         log_print(DEBUG, "Received %s with invalid length (length = %d)",
-                  messages[incoming.message], incoming.length);
+                messages[incoming.message], incoming.length);
         return 0;
     }
 
     switch(incoming.message) {
         case SCCRP:
             if (state == SCCRQ) {
-                if (incoming.sccrp.protocol_version == PROTOCOL_VERSION
-                    && ESTABLISHED(incoming.sccrp.result)) {
+                if (incoming.sccrp.protocol_version == PROTOCOL_VERSION &&
+                        ESTABLISHED(incoming.sccrp.result)) {
                     while (!local) {
                         local = random();
                     }
                     log_print(DEBUG, "Received SCCRP -> Sending OCRQ "
-                              "(local = %d)", local);
+                            "(local = %d)", local);
                     log_print(INFO, "Tunnel established");
                     state = OCRQ;
                     set_message(OCRQ);
@@ -302,7 +299,7 @@ static int pptp_process()
                     return 0;
                 }
                 log_print(DEBUG, "Received SCCRP (result = %d)",
-                          incoming.sccrq.result);
+                        incoming.sccrq.result);
                 log_print(INFO, "Remote server hung up");
                 return -REMOTE_REQUESTED;
             }
@@ -319,7 +316,7 @@ static int pptp_process()
                     return 0;
                 }
                 log_print(DEBUG, "Received OCRP (result = %d)",
-                          incoming.ocrp.result);
+                        incoming.ocrp.result);
                 log_print(INFO, "Remote server hung up");
                 return -REMOTE_REQUESTED;
             }
@@ -365,7 +362,7 @@ static int pptp_process()
 
         case ICRQ:
             log_print(DEBUG, "Received ICRQ (remote = %d) -> Sending ICRP "
-                      "with error", incoming.icrq.call);
+                    "with error", incoming.icrq.call);
             set_message(ICRP);
             outgoing.icrp.peer = incoming.icrq.call;
             outgoing.icrp.result = RESULT_ERROR;
@@ -374,7 +371,7 @@ static int pptp_process()
 
         case OCRQ:
             log_print(DEBUG, "Received OCRQ (remote = %d) -> Sending OCRP "
-                      "with error", incoming.ocrq.call);
+                    "with error", incoming.ocrq.call);
             set_message(OCRP);
             outgoing.ocrp.peer = incoming.ocrq.call;
             outgoing.ocrp.result = RESULT_ERROR;
@@ -400,6 +397,7 @@ static void pptp_shutdown()
 
 struct protocol pptp = {
     .name = "pptp",
+    .arguments = 2,
     .usage = "<server> <port>",
     .connect = pptp_connect,
     .process = pptp_process,
