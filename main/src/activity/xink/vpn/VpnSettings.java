@@ -588,14 +588,6 @@ public class VpnSettings extends Activity {
 
         bindPackInfo(layout);
 
-        ImageView imgPaypal = (ImageView) layout.findViewById(R.id.imgPaypalDonate);
-        imgPaypal.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(final View v) {
-                openUrl(getString(R.string.url_paypal_donate));
-            }
-        });
-
         AlertDialog dlg = builder.create();
         dlg.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override

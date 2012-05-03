@@ -14,8 +14,5 @@
             <TextView android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_marginRight="2dip" android:autoLink="email" android:text="@string/lbl_email"></TextView>
             <TextView android:layout_height="wrap_content" android:text="yingxinwu.g@gmail.com" android:autoLink="email" android:layout_width="match_parent" android:gravity="right" android:ellipsize="middle"></TextView>
         </LinearLayout>
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="2dip">
-            <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:clickable="true" android:background="@drawable/vpnwidget_states" android:layout_gravity="left|center_vertical" android:src="@drawable/paypal_donate_48" android:id="@+id/imgPaypalDonate"></ImageView>
-        </LinearLayout>
     </LinearLayout>
 </LinearLayout>
