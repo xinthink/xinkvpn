@@ -18,20 +18,12 @@ package xink.crypto.test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.EOFException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import xink.crypto.StreamCrypto;
-import xink.vpn.wrapper.L2tpProfile;
-import xink.vpn.wrapper.PptpProfile;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnType;
 import android.test.AndroidTestCase;
 
 /**
@@ -43,23 +35,6 @@ import android.test.AndroidTestCase;
 public class StreamCryptoTest extends AndroidTestCase {
 
     private String segment = "0123456789abcdef";
-
-    // 新的密钥保存方法应能还原老版本的备份文件
-    private final String EXP_BAK_ID = "ee6edc7c-0a05-49b2-9a83-5b87130209b8";
-
-    private final String EXP_BAK_1_NAME = "pptp";
-    private final String EXP_BAK_1_SERVER = "192.168.10.100";
-    private final boolean EXP_BAK_1_ENCRYPT = false;
-    private final String EXP_BAK_1_DNS = "8.8.8.8";
-    private final String EXP_BAK_1_USR = "usr";
-    private final String EXP_BAK_1_PASSWD = "psw";
-
-    private final String EXP_BAK_2_NAME = "l2tp";
-    private final String EXP_BAK_2_SERVER = "192.168.10.101";
-    private final boolean EXP_BAK_2_ENCRYPT = false;
-    private final String EXP_BAK_2_DNS = "8.8.8.8";
-    private final String EXP_BAK_2_USR = "usr";
-    private final String EXP_BAK_2_PASSWD = "psw";
 
     /*
      * (non-Javadoc)
@@ -176,77 +151,6 @@ public class StreamCryptoTest extends AndroidTestCase {
         ObjectInputStream consumer = new ObjectInputStream(in);
         Serializable d = (Serializable) consumer.readObject();
         return d;
-    }
-
-    /**
-     * 保证能够解密3.1之前的版本加密的数据文件
-     */
-    public void testDecryptLagecyActiveIdFile() throws Exception {
-        String activeId = (String) loadLegacyDataFile("old_active_profile_id").readObject();
-        assertEquals("should restore active-profile-id correctly", EXP_BAK_ID, activeId);
-    }
-
-    /**
-     * 保证能够解密3.1之前的版本加密的数据文件
-     */
-    public void testDecryptLagecyProfilesFile() throws Exception {
-        ObjectInputStream ois = loadLegacyDataFile("old_profiles");
-        List<VpnProfile> profiles = loadProfilesFrom(ois);
-
-        assertEquals(2, profiles.size());
-
-        VpnProfile p1 = profiles.get(0);
-        assertEquals(VpnType.PPTP, p1.getType());
-        assertEquals(EXP_BAK_1_NAME, p1.getName());
-        assertEquals(EXP_BAK_1_SERVER, p1.getServerName());
-        assertEquals(EXP_BAK_1_ENCRYPT, ((PptpProfile) p1).isEncryptionEnabled());
-        assertEquals(EXP_BAK_1_USR, p1.getUsername());
-        assertEquals(EXP_BAK_1_PASSWD, p1.getPassword());
-        assertEquals(EXP_BAK_1_DNS, p1.getDomainSuffices());
-
-        VpnProfile p2 = profiles.get(1);
-        assertEquals(VpnType.L2TP, p2.getType());
-        assertEquals(EXP_BAK_2_NAME, p2.getName());
-        assertEquals(EXP_BAK_2_SERVER, p2.getServerName());
-        assertEquals(EXP_BAK_2_ENCRYPT, ((L2tpProfile) p2).isSecretEnabled());
-        assertEquals(EXP_BAK_2_USR, p2.getUsername());
-        assertEquals(EXP_BAK_2_PASSWD, p2.getPassword());
-        assertEquals(EXP_BAK_2_DNS, p2.getDomainSuffices());
-    }
-
-    private ObjectInputStream loadLegacyDataFile(final String file) throws Exception {
-        InputStream in = getClass().getResourceAsStream(file);
-        assertNotNull(in);
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        StreamCrypto.decrypt(in, out);
-        byte[] data = out.toByteArray();
-
-        return new ObjectInputStream(new ByteArrayInputStream(data));
-    }
-
-    private List<VpnProfile> loadProfilesFrom(final ObjectInputStream is) throws Exception {
-        List<VpnProfile> profiles = new ArrayList<VpnProfile>();
-
-        try {
-            while (true) {
-                VpnType type = (VpnType) is.readObject();
-                Object obj = is.readObject();
-                assertNotNull(obj);
-
-                VpnProfile p = VpnProfile.newInstance(type, mContext);
-                if (p.isCompatible(obj)) {
-                    p.read(obj, is);
-                    profiles.add(p);
-                } else {
-                    fail("saved profile '" + obj + "' is NOT compatible with " + type);
-                }
-            }
-        } catch (EOFException eof) {
-            // reach end of file
-        }
-
-        return profiles;
     }
 }
 
