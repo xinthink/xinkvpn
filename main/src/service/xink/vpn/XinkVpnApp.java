@@ -21,6 +21,7 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 
+import xink.vpn.wrapper.KeyStore;
 import android.app.Application;
 
 /**
@@ -46,6 +47,8 @@ public class XinkVpnApp extends Application {
 
     private static XinkVpnApp _instance;
 
+    private KeyStore keyStore;
+
     /**
      * @return the single instance of App
      */
@@ -64,5 +67,13 @@ public class XinkVpnApp extends Application {
 
         ACRA.init(this);
         super.onCreate();
+    }
+
+    public KeyStore getKeyStoreService() {
+        if (keyStore == null) {
+            keyStore = new KeyStore(this);
+        }
+
+        return keyStore;
     }
 }

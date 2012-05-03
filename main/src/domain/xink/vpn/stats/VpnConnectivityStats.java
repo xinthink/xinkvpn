@@ -21,7 +21,7 @@ import org.acra.ACRA;
 
 import xink.vpn.R;
 import xink.vpn.Utils;
-import xink.vpn.wrapper.VpnState;
+import xink.vpn.VpnState;
 import android.content.Context;
 
 /**

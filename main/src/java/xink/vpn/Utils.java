@@ -24,8 +24,6 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -75,7 +73,7 @@ public final class Utils {
     public static String getActvieProfileName(final Context ctx) {
         VpnProfileRepository repository = VpnProfileRepository.getInstance(ctx);
         VpnProfile activeProfile = repository.getActiveProfile();
-        return activeProfile != null ? activeProfile.getName() : null;
+        return activeProfile != null ? activeProfile.name : null;
     }
 
     public static VpnState extractVpnState(final Intent intent) {
@@ -86,11 +84,6 @@ public final class Utils {
             state = VpnState.valueOf(obj.toString());
         }
         return state;
-    }
-
-    public static boolean isInStableState(final VpnProfile p) {
-        VpnState state = p.getState();
-        return state == VpnState.CONNECTED || state == VpnState.IDLE;
     }
 
     //

@@ -33,10 +33,6 @@ import java.util.List;
 
 import xink.crypto.StreamCrypto;
 import xink.vpn.stats.VpnConnectivityStats;
-import xink.vpn.wrapper.InvalidProfileException;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
-import xink.vpn.wrapper.VpnType;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -154,7 +150,6 @@ public final class VpnProfileRepository {
         try {
             os = new ObjectOutputStream(openPrivateFileOutput(FILE_PROFILES));
             for (VpnProfile p : profiles) {
-                p.write(os);
             }
         } finally {
             if (os != null) {
@@ -222,18 +217,18 @@ public final class VpnProfileRepository {
         if (obj == null)
             return;
 
-        VpnProfile p = VpnProfile.newInstance(type, context);
-        if (p.isCompatible(obj)) {
-            p.read(obj, is);
-            profiles.add(p);
-        } else {
-            Log.e(TAG, "saved profile '" + obj + "' is NOT compatible with " + type);
-        }
+        VpnProfile p = VpnProfile.newInstance(type);
+        // if (p.isCompatible(obj)) {
+        // p.read(obj, is);
+        // profiles.add(p);
+        // } else {
+        // Log.e(TAG, "saved profile '" + obj + "' is NOT compatible with " + type);
+        // }
     }
 
     public void setActiveProfile(final VpnProfile profile) {
         Log.i(TAG, "active vpn set to: " + profile);
-        activeProfileId = profile.getId();
+        activeProfileId = profile.id;
     }
 
     public String getActiveProfileId() {
@@ -249,7 +244,7 @@ public final class VpnProfileRepository {
 
     private VpnProfile getProfileById(final String id) {
         for (VpnProfile p : profiles) {
-            if (p.getId().equals(id))
+            if (p.id.equals(id))
                 return p;
         }
         return null;
@@ -257,7 +252,7 @@ public final class VpnProfileRepository {
 
     public VpnProfile getProfileByName(final String name) {
         for (VpnProfile p : profiles) {
-            if (p.getName().equals(name))
+            if (p.name.equals(name))
                 return p;
         }
         return null;
@@ -276,13 +271,13 @@ public final class VpnProfileRepository {
     }
 
     public void checkProfile(final VpnProfile newProfile) {
-        String newName = newProfile.getName();
+        String newName = newProfile.name;
 
         if (TextUtils.isEmpty(newName))
             throw new InvalidProfileException("profile name is empty.", R.string.err_empty_name);
 
         for (VpnProfile p : profiles) {
-            if (newProfile != p && newName.equals(p.getName()))
+            if (newProfile != p && newName.equals(p.name))
                 throw new InvalidProfileException("duplicated profile name '" + newName + "'.", R.string.err_duplicated_profile_name, newName);
         }
 
@@ -290,7 +285,7 @@ public final class VpnProfileRepository {
     }
 
     public synchronized void deleteVpnProfile(final VpnProfile profile) {
-        String id = profile.getId();
+        String id = profile.id;
         boolean removed = profiles.remove(profile);
         Log.d(TAG, "delete vpn: " + profile + ", removed=" + removed);
 

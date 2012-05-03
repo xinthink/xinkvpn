@@ -16,9 +16,9 @@
 
 package xink.vpn.editor;
 
+import xink.vpn.L2tpProfile;
 import xink.vpn.R;
-import xink.vpn.wrapper.L2tpProfile;
-import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.VpnProfile;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.view.ViewGroup;
@@ -37,11 +37,11 @@ public class L2tpProfileEditor extends VpnProfileEditor {
     @Override
     protected void initSpecificWidgets(final ViewGroup content) {
         chkSecretEnabled = new CheckBox(this);
-        chkSecretEnabled.setText(getString(R.string.l2tp_secret_enabled)); //$NON-NLS-1$
+        chkSecretEnabled.setText(getString(R.string.l2tp_secret_enabled));
         content.addView(chkSecretEnabled);
 
         final TextView lblSecret = new TextView(this);
-        lblSecret.setText(getString(R.string.l2tp_secret)); //$NON-NLS-1$
+        lblSecret.setText(getString(R.string.l2tp_secret));
         content.addView(lblSecret);
 
         txtSecret = new EditText(this);
@@ -64,9 +64,8 @@ public class L2tpProfileEditor extends VpnProfileEditor {
 
     @Override
     protected void onRestoreInstanceState(final Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null)
             return;
-        }
         super.onRestoreInstanceState(savedInstanceState);
 
         chkSecretEnabled.setChecked(savedInstanceState.getBoolean("secretEnabled")); //$NON-NLS-1$
@@ -83,24 +82,24 @@ public class L2tpProfileEditor extends VpnProfileEditor {
 
     @Override
     protected VpnProfile createProfile() {
-        return new L2tpProfile(getApplicationContext());
+        return new L2tpProfile();
     }
 
     @Override
     protected void doPopulateProfile() {
         L2tpProfile p = getProfile();
         boolean secretEnabled = chkSecretEnabled.isChecked();
-        p.setSecretEnabled(secretEnabled);
-        p.setSecretString(secretEnabled ? txtSecret.getText().toString().trim() : "");
+        p.secretEnabled = secretEnabled;
+        p.secret = secretEnabled ? txtSecret.getText().toString().trim() : "";
     }
 
     @Override
     protected void doBindToViews() {
         L2tpProfile p = getProfile();
-        chkSecretEnabled.setChecked(p.isSecretEnabled());
+        chkSecretEnabled.setChecked(p.secretEnabled);
 
-        if (p.isSecretEnabled()) {
-            txtSecret.setText(p.getSecretString());
+        if (p.secretEnabled) {
+            txtSecret.setText(p.secret);
         }
     }
 

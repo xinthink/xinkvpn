@@ -17,7 +17,6 @@
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
-import xink.vpn.wrapper.VpnState;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;

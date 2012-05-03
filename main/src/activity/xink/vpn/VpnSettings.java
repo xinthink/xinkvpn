@@ -28,9 +28,6 @@ import java.util.Map;
 import xink.vpn.editor.EditAction;
 import xink.vpn.editor.VpnProfileEditor;
 import xink.vpn.wrapper.KeyStore;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
-import xink.vpn.wrapper.VpnType;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -57,7 +54,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
@@ -169,7 +165,7 @@ public class VpnSettings extends Activity {
         VpnViewItem item = new VpnViewItem();
         item.profile = vpnProfile;
 
-        if (vpnProfile.getId().equals(activeProfileId)) {
+        if (vpnProfile.id.equals(activeProfileId)) {
             item.isActive = true;
             activeVpnItem = item;
         }
@@ -187,10 +183,10 @@ public class VpnSettings extends Activity {
         VpnViewItem selectedVpnItem = getVpnViewItemAt(info.position);
         VpnProfile p = selectedVpnItem.profile;
 
-        menu.setHeaderTitle(p.getName());
+        menu.setHeaderTitle(p.name);
 
         // profile can edit only when disconnected
-        boolean isIdle = p.getState() == VpnState.IDLE;
+        boolean isIdle = p.state == VpnState.IDLE;
         menu.findItem(R.id.menu_edit_vpn).setEnabled(isIdle);
         menu.findItem(R.id.menu_del_vpn).setEnabled(isIdle);
     }
@@ -248,7 +244,7 @@ public class VpnSettings extends Activity {
     }
 
     private void editVpn(final VpnProfile p) {
-        VpnType type = p.getType();
+        VpnType type = p.type;
 
         Class<? extends VpnProfileEditor> editorClass = type.getEditorClass();
         if (editorClass == null) {
@@ -258,7 +254,7 @@ public class VpnSettings extends Activity {
 
         Intent intent = new Intent(this, editorClass);
         intent.setAction(EditAction.EDIT.toString());
-        intent.putExtra(KEY_VPN_PROFILE_NAME, p.getName());
+        intent.putExtra(KEY_VPN_PROFILE_NAME, p.name);
         startActivityForResult(intent, REQ_EDIT_VPN);
     }
 
@@ -509,7 +505,7 @@ public class VpnSettings extends Activity {
             return;
         }
 
-        p.setState(state);
+        p.state = state;
         refreshVpnListView();
     }
 
@@ -681,7 +677,7 @@ public class VpnSettings extends Activity {
         private void bindVpnItem(final RadioButton view, final VpnViewItem item) {
             view.setOnCheckedChangeListener(null);
 
-            view.setText(item.profile.getName());
+            view.setText(item.profile.name);
             view.setChecked(item.isActive);
 
             view.setOnCheckedChangeListener(item);
@@ -690,15 +686,15 @@ public class VpnSettings extends Activity {
         private void bindVpnState(final ToggleButton view, final VpnViewItem item) {
             view.setOnCheckedChangeListener(null);
 
-            VpnState state = item.profile.getState();
+            VpnState state = item.profile.state;
             view.setChecked(state == VpnState.CONNECTED);
-            view.setEnabled(Utils.isInStableState(item.profile));
+            view.setEnabled(state.isStable());
 
             view.setOnCheckedChangeListener(item);
         }
 
         private void bindVpnStateMsg(final TextView textView, final VpnViewItem item) {
-            VpnState state = item.profile.getState();
+            VpnState state = item.profile.state;
             String txt = getStateText(state);
             textView.setVisibility(TextUtils.isEmpty(txt) ? View.INVISIBLE : View.VISIBLE);
             textView.setText(txt);
@@ -754,7 +750,7 @@ public class VpnSettings extends Activity {
 
         @Override
         public String toString() {
-            return profile.getName();
+            return profile.name;
         }
     }
 }

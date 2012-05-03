@@ -16,9 +16,9 @@
 
 package xink.vpn.editor;
 
+import xink.vpn.L2tpIpsecPskProfile;
 import xink.vpn.R;
-import xink.vpn.wrapper.L2tpIpsecPskProfile;
-import xink.vpn.wrapper.VpnProfile;
+import xink.vpn.VpnProfile;
 import android.os.Bundle;
 import android.text.method.PasswordTransformationMethod;
 import android.view.ViewGroup;
@@ -33,7 +33,7 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
     @Override
     protected void initSpecificWidgets(final ViewGroup content) {
         TextView lblKey = new TextView(this);
-        lblKey.setText(getString(R.string.psk)); //$NON-NLS-1$
+        lblKey.setText(getString(R.string.psk));
         content.addView(lblKey);
 
         txtKey = new EditText(this);
@@ -47,9 +47,8 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
 
     @Override
     protected void onRestoreInstanceState(final Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
+        if (savedInstanceState == null)
             return;
-        }
         super.onRestoreInstanceState(savedInstanceState);
 
         txtKey.setText(savedInstanceState.getCharSequence("psk")); //$NON-NLS-1$
@@ -64,13 +63,13 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
 
     @Override
     protected VpnProfile createProfile() {
-        return new L2tpIpsecPskProfile(getApplicationContext());
+        return new L2tpIpsecPskProfile();
     }
 
     @Override
     protected void doPopulateProfile() {
         L2tpIpsecPskProfile p = getProfile();
-        p.setPresharedKey(txtKey.getText().toString().trim());
+        p.psk = txtKey.getText().toString().trim();
 
         super.doPopulateProfile();
     }
@@ -78,7 +77,7 @@ public class L2tpIpsecPskProfileEditor extends L2tpProfileEditor {
     @Override
     protected void doBindToViews() {
         L2tpIpsecPskProfile p = getProfile();
-        txtKey.setText(p.getPresharedKey());
+        txtKey.setText(p.psk);
 
         super.doBindToViews();
     }

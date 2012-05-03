@@ -17,8 +17,6 @@
 package xink.vpn;
 
 import xink.vpn.wrapper.KeyStore;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

@@ -21,17 +21,8 @@ import static xink.vpn.Constants.*;
 import java.util.List;
 
 import xink.sys.Mtpd;
-import xink.vpn.wrapper.PptpProfile;
-import xink.vpn.wrapper.VpnManager;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnService;
-import xink.vpn.wrapper.VpnState;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.ConditionVariable;
-import android.os.IBinder;
 import android.util.Log;
 
 public class VpnActor {
@@ -39,8 +30,6 @@ public class VpnActor {
     private static final String TAG = "xink";
 
     private VpnProfileRepository repository;
-    private VpnManager vpnMgr;
-    private VpnService vpnSrv;
     private Context context;
 
     public VpnActor(final Context ctx) {
@@ -60,9 +49,9 @@ public class VpnActor {
         Log.i(TAG, "connect to: " + p);
 
         p.preConnect();
-        final VpnProfile cp = p.dulicateToConnect(); // connect using a clone, so the secret key can be replace
+        final VpnProfile cp = p.clone4Connect(); // connect using a clone, so the secret key can be replace
 
-        Mtpd.startPptp(cp.getServerName(), cp.getUsername(), cp.getPassword(), ((PptpProfile) cp).isEncryptionEnabled());
+        Mtpd.startPptp(cp.server, cp.username, cp.password, ((PptpProfile) cp).encrypted);
     }
 
     public void disconnect() {
@@ -82,36 +71,7 @@ public class VpnActor {
     private void checkStatus(final VpnProfile p) {
         Log.i(TAG, "check status of vpn: " + p);
 
-        final ConditionVariable cv = new ConditionVariable();
-        cv.close();
 
-        getVpnMgr().startVpnService();
-        ServiceConnection c = new ServiceConnection() {
-            @Override
-            public synchronized void onServiceConnected(final ComponentName className, final IBinder service) {
-                cv.open();
-                try {
-                    getVpnSrv().checkStatus(service, p);
-                } catch (Exception e) {
-                    Log.e(TAG, "checkStatus()", e);
-                    broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-                } finally {
-                    context.unbindService(this);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(final ComponentName className) {
-                cv.open();
-                broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-                context.unbindService(this);
-            }
-        };
-
-        boolean ret = getVpnMgr().bindVpnService(c);
-        if (ret && !cv.block(ONE_SEC)) { // if binding failed, wait for a second, let status propagate
-            broadcastConnectivity(p.getName(), VpnState.IDLE, VPN_ERROR_NO_ERROR);
-        }
     }
 
     public void checkAllStatus() {
@@ -133,24 +93,9 @@ public class VpnActor {
         return repository;
     }
 
-    private VpnManager getVpnMgr() {
-        if (vpnMgr == null) {
-            vpnMgr = new VpnManager(context);
-        }
-        return vpnMgr;
-    }
-
-    private VpnService getVpnSrv() {
-
-        if (vpnSrv == null) {
-            vpnSrv = new VpnService(context);
-        }
-        return vpnSrv;
-    }
-
     public void activate(final VpnProfile p) {
         getRepository().setActiveProfile(p);
-        broadcastConnectivity(p.getName(), p.getState(), VPN_ERROR_NO_ERROR);
+        broadcastConnectivity(p.name, p.state, VPN_ERROR_NO_ERROR);
     }
 
     public void broadcastConnectivity(final String profileName, final VpnState s, final int error) {

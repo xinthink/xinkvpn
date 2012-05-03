@@ -24,8 +24,6 @@ import java.io.InputStreamReader;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -61,10 +59,9 @@ public final class KeepAlive extends BroadcastReceiver {
         VpnProfile p = repo.getActiveProfile();
 
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);
-        if (p == null || profileName == null || !profileName.equals(p.getName())) {
+        if (p == null || profileName == null || !profileName.equals(p.name))
             //Log.d(TAG, "ignores non-active profile event: " + profileName);
             return;
-        }
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
 
@@ -140,7 +137,7 @@ public final class KeepAlive extends BroadcastReceiver {
                 process = new ProcessBuilder("sh").redirectErrorStream(true).start();
 
                 DataOutputStream os = new DataOutputStream(process.getOutputStream());
-                os.writeBytes("ping -c 10 " + profile.getServerName() + "\n");
+                os.writeBytes("ping -c 10 " + profile.server + "\n");
                 os.writeBytes("exit\n");
                 os.flush();
 

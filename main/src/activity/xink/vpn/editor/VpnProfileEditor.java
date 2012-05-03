@@ -18,12 +18,12 @@ package xink.vpn.editor;
 
 import xink.vpn.AppException;
 import xink.vpn.Constants;
+import xink.vpn.InvalidProfileException;
 import xink.vpn.R;
+import xink.vpn.VpnProfile;
 import xink.vpn.VpnProfileRepository;
-import xink.vpn.wrapper.InvalidProfileException;
+import xink.vpn.VpnState;
 import xink.vpn.wrapper.KeyStore;
-import xink.vpn.wrapper.VpnProfile;
-import xink.vpn.wrapper.VpnState;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -168,15 +168,15 @@ public abstract class VpnProfileEditor extends Activity {
             throw new AppException("failed to init VpnProfileEditor, unknown editAction: " + editAction); //$NON-NLS-1$
         }
 
-        setTitle(profile.getType().getNameRid());
+        setTitle(profile.type.getNameRid());
     }
 
     private void initViewBinding() {
-        txtVpnName.setText(profile.getName());
-        txtServer.setText(profile.getServerName());
-        txtDnsSuffices.setText(profile.getDomainSuffices());
-        txtUserName.setText(profile.getUsername());
-        txtPassword.setText(profile.getPassword());
+        txtVpnName.setText(profile.name);
+        txtServer.setText(profile.server);
+        txtDnsSuffices.setText(profile.domainSuffices);
+        txtUserName.setText(profile.username);
+        txtPassword.setText(profile.password);
         doBindToViews();
     }
 
@@ -242,12 +242,12 @@ public abstract class VpnProfileEditor extends Activity {
 
     private void populateProfile() {
         String name = txtVpnName.getText().toString().trim();
-        profile.setName(name);
-        profile.setServerName(txtServer.getText().toString().trim());
-        profile.setDomainSuffices(txtDnsSuffices.getText().toString().trim());
-        profile.setUsername(txtUserName.getText().toString().trim());
-        profile.setPassword(txtPassword.getText().toString().trim());
-        profile.setState(VpnState.IDLE);
+        profile.name = name;
+        profile.server = txtServer.getText().toString().trim();
+        profile.domainSuffices = txtDnsSuffices.getText().toString().trim();
+        profile.username = txtUserName.getText().toString().trim();
+        profile.password = txtPassword.getText().toString().trim();
+        profile.state = VpnState.IDLE;
         doPopulateProfile();
 
         repository.checkProfile(profile);
@@ -285,7 +285,7 @@ public abstract class VpnProfileEditor extends Activity {
 
     private void prepareResult() {
         Intent intent = new Intent();
-        intent.putExtra(Constants.KEY_VPN_PROFILE_NAME, profile.getName());
+        intent.putExtra(Constants.KEY_VPN_PROFILE_NAME, profile.name);
         setResult(RESULT_OK, intent);
     }
 

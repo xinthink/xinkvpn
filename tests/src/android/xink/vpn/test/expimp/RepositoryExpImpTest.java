@@ -19,10 +19,10 @@ package xink.vpn.test.expimp;
 import java.io.File;
 
 import xink.vpn.AppException;
+import xink.vpn.L2tpProfile;
+import xink.vpn.VpnProfile;
 import xink.vpn.VpnProfileRepository;
 import xink.vpn.test.helper.RepositoryHelper;
-import xink.vpn.wrapper.L2tpProfile;
-import xink.vpn.wrapper.VpnProfile;
 import android.test.AndroidTestCase;
 
 /**
@@ -107,9 +107,9 @@ public class RepositoryExpImpTest extends AndroidTestCase {
     }
 
     private VpnProfile makeL2tp() {
-        L2tpProfile p = new L2tpProfile(mContext);
-        p.setName("l2tp test");
-        p.setServerName("10.1.1.5");
+        L2tpProfile p = new L2tpProfile();
+        p.name = "l2tp test";
+        p.server = "10.1.1.5";
         return p;
     }
 

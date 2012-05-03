@@ -19,6 +19,8 @@ package xink.vpn.wrapper;
 import java.lang.reflect.Method;
 
 import xink.vpn.AppException;
+import xink.vpn.L2tpIpsecPskProfile;
+import xink.vpn.VpnProfile;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -58,7 +60,7 @@ public class KeyStore extends AbstractWrapper {
     }
 
     public boolean contains(final VpnProfile p) {
-        String key = L2tpIpsecPskProfile.KEY_PREFIX_IPSEC_PSK + p.getId();
+        String key = L2tpIpsecPskProfile.KEY_PREFIX_IPSEC_PSK + p.id;
         return this.<Boolean> invokeStubMethod("contains", key);
     }
 

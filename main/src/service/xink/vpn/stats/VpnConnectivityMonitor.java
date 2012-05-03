@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import xink.vpn.Utils;
 import xink.vpn.VpnProfileRepository;
-import xink.vpn.wrapper.VpnState;
+import xink.vpn.VpnState;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;

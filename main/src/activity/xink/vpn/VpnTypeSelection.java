@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import xink.vpn.wrapper.VpnType;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
