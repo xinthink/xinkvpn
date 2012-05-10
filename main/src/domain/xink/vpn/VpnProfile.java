@@ -18,6 +18,9 @@ package xink.vpn;
 
 import java.util.UUID;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public abstract class VpnProfile implements Cloneable {
 
@@ -43,7 +46,9 @@ public abstract class VpnProfile implements Cloneable {
             throw new IllegalArgumentException("profile class is null for " + vpnType);
 
         try {
-            return profileClass.newInstance();
+            VpnProfile p = profileClass.newInstance();
+            p.type = vpnType;
+            return p;
         } catch (Exception e) {
             throw new AppException("failed to create instance for " + vpnType, e);
         }
@@ -91,5 +96,62 @@ public abstract class VpnProfile implements Cloneable {
 
     public VpnProfile clone4Connect() {
         return clone();
+    }
+
+    /**
+     * Instantiate a VpnProfile object from json
+     */
+    public static VpnProfile fromJson(final JSONObject jo) {
+        VpnProfile p = null;
+
+        try {
+            String typeName = jo.getString("type");
+            p = VpnProfile.newInstance(VpnType.valueOf(typeName));
+            p.restoreFrom(jo);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        return p;
+    }
+
+    /**
+     * Encode the profile as json
+     */
+    public JSONObject toJson() {
+        JSONObject jo = new JSONObject();
+
+        try {
+            saveTo(jo);
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+
+        return jo;
+    }
+
+    /**
+     * Save instance state into the given json object
+     */
+    protected void saveTo(final JSONObject jo) throws JSONException {
+        jo.put("type", type);
+        jo.put("id", id);
+        jo.put("name", name);
+        jo.put("server", server);
+        jo.put("username", username);
+        jo.put("password", password);
+        jo.putOpt("domain", domainSuffices);
+    }
+
+    /**
+     * Restore instance state from the given json object
+     */
+    protected void restoreFrom(final JSONObject jo) throws JSONException {
+        id = jo.getString("id");
+        name = jo.getString("name");
+        server = jo.getString("server");
+        username = jo.getString("username");
+        password = jo.getString("password");
+        domainSuffices = jo.optString("domain");
     }
 }

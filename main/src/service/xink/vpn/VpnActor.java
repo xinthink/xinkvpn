@@ -17,9 +17,6 @@
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
-
-import java.util.List;
-
 import xink.sys.Mtpd;
 import android.content.Context;
 import android.content.Intent;
@@ -78,8 +75,7 @@ public class VpnActor {
         VpnProfileRepository repo = getRepository();
 
         synchronized (repo) {
-            List<VpnProfile> profiles = repo.getAllVpnProfiles();
-            for (VpnProfile p : profiles) {
+            for (VpnProfile p : repo.getAllVpnProfiles()) {
                 checkStatus(p);
             }
         }
@@ -87,7 +83,7 @@ public class VpnActor {
 
     private VpnProfileRepository getRepository() {
         if (repository == null) {
-            repository = VpnProfileRepository.getInstance(context);
+            repository = VpnProfileRepository.i();
         }
 
         return repository;

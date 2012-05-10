@@ -16,6 +16,9 @@
 
 package xink.vpn;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class PptpProfile extends VpnProfile {
 
@@ -35,4 +38,25 @@ public class PptpProfile extends VpnProfile {
         return (PptpProfile) super.clone();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.VpnProfile#saveTo(org.json.JSONObject)
+     */
+    @Override
+    protected void saveTo(final JSONObject jo) throws JSONException {
+        super.saveTo(jo);
+        jo.put("encrypt", encrypted);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.VpnProfile#restoreFrom(org.json.JSONObject)
+     */
+    @Override
+    protected void restoreFrom(final JSONObject jo) throws JSONException {
+        super.restoreFrom(jo);
+        encrypted = jo.getBoolean("encrypt");
+    }
 }

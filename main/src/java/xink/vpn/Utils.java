@@ -71,7 +71,7 @@ public final class Utils {
     }
 
     public static String getActvieProfileName(final Context ctx) {
-        VpnProfileRepository repository = VpnProfileRepository.getInstance(ctx);
+        VpnProfileRepository repository = VpnProfileRepository.i();
         VpnProfile activeProfile = repository.getActiveProfile();
         return activeProfile != null ? activeProfile.name : null;
     }

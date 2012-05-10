@@ -62,7 +62,7 @@ public abstract class VpnProfileEditor extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.vpn_profile_editor);
 
-        repository = VpnProfileRepository.getInstance(getApplicationContext());
+        repository = VpnProfileRepository.i();
         keyStore = new KeyStore(getApplicationContext());
 
         LinearLayout contentView = new LinearLayout(this);

@@ -87,7 +87,7 @@ public class VpnSettings extends Activity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        repository = VpnProfileRepository.getInstance(getApplicationContext());
+        repository = VpnProfileRepository.i();
         actor = new VpnActor(getApplicationContext());
         keyStore = new KeyStore(getApplicationContext());
 
@@ -106,7 +106,7 @@ public class VpnSettings extends Activity {
         vpnListView = (ListView) findViewById(R.id.listVpns);
         buildVpnListView();
 
-        registerReceivers();
+        // registerReceivers();
         checkAllVpnStatus();
         checkHack(false);
     }
@@ -142,9 +142,7 @@ public class VpnSettings extends Activity {
         activeVpnItem = null;
 
         String activeProfileId = repository.getActiveProfileId();
-        List<VpnProfile> allVpnProfiles = repository.getAllVpnProfiles();
-
-        for (VpnProfile vpnProfile : allVpnProfiles) {
+        for (VpnProfile vpnProfile : repository.getAllVpnProfiles()) {
             addToVpnListView(activeProfileId, vpnProfile);
         }
     }
@@ -510,19 +508,11 @@ public class VpnSettings extends Activity {
     }
 
     @Override
-    protected void onDestroy() {
-        //Log.d(TAG, "VpnSettings onDestroy"); //$NON-NLS-1$
-        unregisterReceivers();
+    protected void onStop() {
+        save();
+        // unregisterReceivers();
 
         super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        //Log.d(TAG, "VpnSettings onPause"); //$NON-NLS-1$
-        save();
-
-        super.onPause();
     }
 
     private void save() {

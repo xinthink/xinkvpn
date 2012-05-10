@@ -46,7 +46,7 @@ public class KeepAliveTest extends AndroidTestCase {
         helper.clearRepository();
         helper.populateRepository();
 
-        repository = VpnProfileRepository.getInstance(mContext);
+        repository = VpnProfileRepository.i();
         activeProfile = repository.getProfileByName(activeVpnName);
         assertNotNull(activeProfile);
         repository.setActiveProfile(activeProfile);

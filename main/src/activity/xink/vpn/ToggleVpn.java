@@ -45,7 +45,7 @@ public class ToggleVpn extends Activity {
 
     private VpnProfileRepository getRepository() {
         if (repository == null) {
-            repository = VpnProfileRepository.getInstance(getApplicationContext());
+            repository = VpnProfileRepository.i();
         }
         return repository;
     }

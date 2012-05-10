@@ -43,7 +43,7 @@ public class RepositoryExpImpTest extends AndroidTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         helper = new RepositoryHelper(getContext());
-        repository = VpnProfileRepository.getInstance(getContext());
+        repository = VpnProfileRepository.i();
         clean();
     }
 

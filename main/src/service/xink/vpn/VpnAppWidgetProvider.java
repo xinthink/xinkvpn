@@ -57,7 +57,7 @@ public class VpnAppWidgetProvider extends AppWidgetProvider {
     }
 
     private VpnState getActiveVpnState(final Context context) {
-        return VpnProfileRepository.getInstance(context).getActiveVpnState();
+        return VpnProfileRepository.i().getActiveVpnState();
     }
 
     @Override
@@ -94,7 +94,7 @@ public class VpnAppWidgetProvider extends AppWidgetProvider {
             return;
 
         Log.d(TAG, "update state of the active vpn");
-        VpnProfileRepository.getInstance(context).setActiveVpnState(newState);
+        VpnProfileRepository.i().setActiveVpnState(newState);
         updateViews(newState);
     }
 

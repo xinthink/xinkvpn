@@ -16,28 +16,32 @@
 
 package xink.vpn;
 
-import java.io.EOFException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-import xink.crypto.StreamCrypto;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import xink.crypto.AesCrypto;
 import xink.vpn.stats.VpnConnectivityStats;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 /**
  * Repository of VPN profiles
@@ -46,71 +50,67 @@ import android.util.Log;
  */
 public final class VpnProfileRepository {
 
-    private static final String TAG = "xink";
+    private static final Logger LOG = LoggerFactory.getLogger("xink.vpnrepo");
 
-    private static final String FILE_PROFILES = "profiles";
-
-    private static final String FILE_ACT_ID = "active_profile_id";
+    private static final String FILE_PROFILES = "profiles_store";
 
     private static VpnProfileRepository instance;
 
     private Context context;
-    private String activeProfileId;
-    private List<VpnProfile> profiles;
+    private Store store;
 
-    private VpnState activeVpnState;
+    private VpnProfile activeVpn;
     private VpnConnectivityStats connStats;
 
     private VpnProfileRepository(final Context ctx) {
         this.context = ctx;
-        profiles = new ArrayList<VpnProfile>();
-        connStats = new VpnConnectivityStats(ctx);
     }
 
     /**
      * Retrieves the single instance of repository.
      *
-     * @param ctx
-     *            Context
      * @return singleton
      */
-    public static VpnProfileRepository getInstance(final Context ctx) {
+    public static VpnProfileRepository i() {
         if (instance == null)  {
-            instance = new VpnProfileRepository(ctx);
+            instance = new VpnProfileRepository(XinkVpnApp.i());
             instance.load();
-
-            StreamCrypto.init(ctx);
         }
 
         return instance;
     }
 
-
     /**
      * Get state of the active vpn.
      */
     public VpnState getActiveVpnState() {
-        if (activeVpnState == null) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        if (activeVpn == null)
+            return VpnState.IDLE;
 
-            String v = prefs.getString(context.getString(R.string.active_vpn_state_key),
-                    context.getString(R.string.active_vpn_state_default));
-            activeVpnState = VpnState.valueOf(v);
-        }
+        return activeVpn.state;
 
-        return activeVpnState;
+        // if (activeVpnState == null) {
+        // SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        //
+        // String v = prefs.getString(context.getString(R.string.active_vpn_state_key),
+        // context.getString(R.string.active_vpn_state_default));
+        // activeVpnState = VpnState.valueOf(v);
+        // }
+        //
+        // return activeVpnState;
     }
 
     /**
      * Update state of the active vpn.
      */
     public void setActiveVpnState(final VpnState state) {
-        if (!state.isStable()) return;
+        if (!state.isStable() || activeVpn == null)
+            return;
 
-        this.activeVpnState = state;
+        activeVpn.state = state;
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        prefs.edit().putString(context.getString(R.string.active_vpn_state_key), state.toString()).commit();
+        // SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        // prefs.edit().putString(context.getString(R.string.active_vpn_state_key), state.toString()).commit();
     }
 
     /**
@@ -121,137 +121,40 @@ public final class VpnProfileRepository {
     }
 
     public void save() {
-        Log.d(TAG, "save, activeId=" + activeProfileId + ", profiles=" + profiles);
+        LOG.info("saving profile store");
 
         try {
-            saveActiveProfileId();
-            saveProfiles();
-        } catch (IOException e) {
-            Log.e(TAG, "save profiles failed", e);
+            store.save();
+        } catch (Exception e) {
+            throw new AppException("failed to save profiles", e); // TODO prompt save failure
         }
-    }
-
-    private void saveActiveProfileId() throws IOException {
-        ObjectOutputStream os = null;
-
-        try {
-            os = new ObjectOutputStream(openPrivateFileOutput(FILE_ACT_ID));
-            os.writeObject(activeProfileId);
-        } finally {
-            if (os != null) {
-                os.close();
-            }
-        }
-    }
-
-    private void saveProfiles() throws IOException {
-        ObjectOutputStream os = null;
-
-        try {
-            os = new ObjectOutputStream(openPrivateFileOutput(FILE_PROFILES));
-            for (VpnProfile p : profiles) {
-            }
-        } finally {
-            if (os != null) {
-                os.close();
-            }
-        }
-    }
-
-    private FileOutputStream openPrivateFileOutput(final String fileName) throws FileNotFoundException {
-        return context.openFileOutput(fileName, Context.MODE_PRIVATE);
     }
 
     private void load() {
         try {
-            loadActiveProfileId();
-            loadProfiles();
-
-            Log.d(TAG, "loaded, activeId=" + activeProfileId + ", profiles=" + profiles);
+            store = Store.load();
+            activeVpn = store.getActiveVpn();
         } catch (Exception e) {
-            Log.e(TAG, "load profiles failed", e);
+            LOG.error("load profiles failed", e);
         }
-    }
-
-    private void loadActiveProfileId() throws IOException, ClassNotFoundException {
-        ObjectInputStream is = null;
-
-        try {
-            is = new ObjectInputStream(context.openFileInput(FILE_ACT_ID));
-            activeProfileId = (String) is.readObject();
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-    }
-
-    private void loadProfiles() throws Exception {
-        ObjectInputStream is = null;
-
-        try {
-            is = new ObjectInputStream(context.openFileInput(FILE_PROFILES));
-            loadProfilesFrom(is);
-        } finally {
-            if (is != null) {
-                is.close();
-            }
-        }
-    }
-
-    private void loadProfilesFrom(final ObjectInputStream is) throws Exception {
-        Object obj = null;
-
-        try {
-            while (true) {
-                VpnType type = (VpnType) is.readObject();
-                obj = is.readObject();
-                loadProfileObject(type, obj, is);
-            }
-        } catch (EOFException eof) {
-            Log.d(TAG, "reach the end of profiles file");
-        }
-    }
-
-    private void loadProfileObject(final VpnType type, final Object obj, final ObjectInputStream is) throws Exception {
-        if (obj == null)
-            return;
-
-        VpnProfile p = VpnProfile.newInstance(type);
-        // if (p.isCompatible(obj)) {
-        // p.read(obj, is);
-        // profiles.add(p);
-        // } else {
-        // Log.e(TAG, "saved profile '" + obj + "' is NOT compatible with " + type);
-        // }
     }
 
     public void setActiveProfile(final VpnProfile profile) {
-        Log.i(TAG, "active vpn set to: " + profile);
-        activeProfileId = profile.id;
+        LOG.info("active vpn set to: {}", profile);
+        activeVpn = profile;
+        store.activeProfileId = profile.id;
     }
 
     public String getActiveProfileId() {
-        return activeProfileId;
+        return store.activeProfileId;
     }
 
     public VpnProfile getActiveProfile() {
-        if (activeProfileId == null)
-            return null;
-
-        return getProfileById(activeProfileId);
-    }
-
-    private VpnProfile getProfileById(final String id) {
-        for (VpnProfile p : profiles) {
-            if (p.id.equals(id))
-                return p;
-        }
-        return null;
+        return activeVpn;
     }
 
     public VpnProfile getProfileByName(final String name) {
-        for (VpnProfile p : profiles) {
+        for (VpnProfile p : store.getProfileCollection()) {
             if (p.name.equals(name))
                 return p;
         }
@@ -262,12 +165,12 @@ public final class VpnProfileRepository {
      * @return a read-only view of the VpnProfile list.
      */
     public List<VpnProfile> getAllVpnProfiles() {
-        return Collections.unmodifiableList(profiles);
+        return Collections.unmodifiableList(new ArrayList<VpnProfile>(store.getProfileCollection()));
     }
 
     public synchronized void addVpnProfile(final VpnProfile p) {
         p.postConstruct();
-        profiles.add(p);
+        store.add(p);
     }
 
     public void checkProfile(final VpnProfile newProfile) {
@@ -276,7 +179,7 @@ public final class VpnProfileRepository {
         if (TextUtils.isEmpty(newName))
             throw new InvalidProfileException("profile name is empty.", R.string.err_empty_name);
 
-        for (VpnProfile p : profiles) {
+        for (VpnProfile p : store.getProfileCollection()) {
             if (newProfile != p && newName.equals(p.name))
                 throw new InvalidProfileException("duplicated profile name '" + newName + "'.", R.string.err_duplicated_profile_name, newName);
         }
@@ -285,19 +188,12 @@ public final class VpnProfileRepository {
     }
 
     public synchronized void deleteVpnProfile(final VpnProfile profile) {
-        String id = profile.id;
-        boolean removed = profiles.remove(profile);
-        Log.d(TAG, "delete vpn: " + profile + ", removed=" + removed);
-
-        if (id.equals(activeProfileId)) {
-            activeProfileId = null;
-            Log.d(TAG, "deactivate vpn: " + profile);
-        }
+        store.remove(profile);
     }
 
     public void backup(final String path) {
-        if (profiles.isEmpty()) {
-            Log.i(TAG, "profile list is empty, will not export");
+        if (store.isEmpty()) {
+            LOG.info("profile list is empty, will not export");
             return;
         }
 
@@ -305,7 +201,6 @@ public final class VpnProfileRepository {
         File dir = ensureDir(path);
 
         try {
-            doBackup(dir, FILE_ACT_ID);
             doBackup(dir, FILE_PROFILES);
         } catch (Exception e) {
             throw new AppException("backup failed", e, R.string.err_exp_failed);
@@ -322,14 +217,13 @@ public final class VpnProfileRepository {
     private void doBackup(final File dir, final String name) throws Exception {
         InputStream is = context.openFileInput(name);
         OutputStream os = new FileOutputStream(new File(dir, name));
-        StreamCrypto.encrypt(is, os);
+        // AesCrypto.encrypt(is, os);
     }
 
     public void restore(final String dir) {
         checkExternalData(dir);
 
         try {
-            doRestore(dir, FILE_ACT_ID);
             doRestore(dir, FILE_PROFILES);
 
             clean();
@@ -340,21 +234,21 @@ public final class VpnProfileRepository {
     }
 
     private void clean() {
-        activeProfileId = null;
-        profiles.clear();
+        activeVpn = null;
+        store = null;
     }
 
     private void doRestore(final String dir, final String name) throws Exception {
-        InputStream is = new FileInputStream(new File(dir, name));
-        OutputStream os = openPrivateFileOutput(name);
-        StreamCrypto.decrypt(is, os);
+        // InputStream is = new FileInputStream(new File(dir, name));
+        // OutputStream os = openPrivateFileOutput(name);
+        // StreamCrypto.decrypt(is, os);
     }
 
     /*
      * verify data files in external storage.
      */
     private void checkExternalData(final String path) {
-        File id = new File(path, FILE_ACT_ID);
+        File id = new File(path, FILE_PROFILES);
         File profiles = new File(path, FILE_PROFILES);
 
         if (!(verifyDataFile(id) && verifyDataFile(profiles)))
@@ -371,11 +265,138 @@ public final class VpnProfileRepository {
      * @return timestamp of last backup, null for no backup.
      */
     public Date checkLastBackup(final String path) {
-        File id = new File(path, FILE_ACT_ID);
+        File id = new File(path, FILE_PROFILES);
 
         if (!verifyDataFile(id))
             return null;
 
         return new Date(id.lastModified());
+    }
+
+    /**
+     * Profiles storage
+     */
+    private static class Store {
+        String activeProfileId;
+        Map<String, VpnProfile> profiles = new LinkedHashMap<String, VpnProfile>();
+        boolean isDirty;
+
+        /**
+         * load saved profiles from internal storage
+         */
+        static Store load() throws IOException, GeneralSecurityException, JSONException {
+            Store i = null;
+
+            InputStream is = null;
+            try {
+                is = XinkVpnApp.i().openFileInput(FILE_PROFILES);
+                i = load(is);
+            } catch (FileNotFoundException e) {
+                LOG.info("store file not found, init an empty store");
+                i = new Store();
+            } finally {
+                if (is != null) {
+                    is.close();
+                }
+            }
+
+            return i;
+        }
+
+        private static Store load(final InputStream is) throws IOException, GeneralSecurityException, JSONException {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+
+            byte[] buf = new byte[64];
+            int n;
+
+            while ((n = is.read(buf)) != -1) {
+                result.write(buf, 0, n);
+            }
+
+            String json = AesCrypto.decrypt(result.toByteArray());
+            return fromJson(json);
+        }
+
+        private static Store fromJson(final String json) throws JSONException {
+            Store s = new Store();
+
+            JSONObject jo = new JSONObject(json);
+            s.activeProfileId = jo.optString("activeProfileId");
+
+            JSONArray arrProfiles = jo.getJSONArray("profiles");
+            for (int i = 0; i < arrProfiles.length(); i++) {
+                JSONObject jsonProfile = arrProfiles.getJSONObject(i);
+                VpnProfile p = VpnProfile.fromJson(jsonProfile);
+                s.profiles.put(p.id, p);
+            }
+
+            return s;
+        }
+
+        /**
+         * save the whole strage to an internal file
+         */
+        void save() throws IOException, GeneralSecurityException, JSONException {
+            if (!isDirty) return;
+
+            OutputStream os = null;
+
+            try {
+                os = XinkVpnApp.i().openFileOutput(FILE_PROFILES, Context.MODE_PRIVATE);
+                os.write(AesCrypto.encrypt(toJson()));
+                isDirty = false;
+            } finally {
+                if (os != null) {
+                    os.close();
+                }
+            }
+        }
+
+        private String toJson() throws JSONException {
+            JSONObject o = new JSONObject();
+            o.putOpt("activeProfileId", activeProfileId);
+
+            JSONArray arrProfiles = new JSONArray();
+            for (VpnProfile p : profiles.values()) {
+                arrProfiles.put(p.toJson());
+            }
+            o.put("profiles", arrProfiles);
+
+            return o.toString();
+        }
+
+        VpnProfile getActiveVpn() {
+            if (TextUtils.isEmpty(activeProfileId) || profiles == null)
+                return null;
+
+            return profiles.get(activeProfileId);
+        }
+
+        Collection<VpnProfile> getProfileCollection() {
+            return profiles.values();
+        }
+
+        void add(final VpnProfile p) {
+            if (profiles.containsKey(p.id))
+                return;
+
+            profiles.put(p.id, p);
+            isDirty = true;
+        }
+
+        void remove(final VpnProfile p) {
+            if (profiles.remove(p.id) != null) {
+                isDirty = true;
+            }
+
+            if (p.id.equals(activeProfileId)) {
+                activeProfileId = null;
+            }
+        }
+
+        boolean isEmpty() {
+            return profiles.isEmpty();
+        }
+
     }
 }

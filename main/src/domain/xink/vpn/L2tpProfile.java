@@ -16,6 +16,9 @@
 
 package xink.vpn;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import xink.vpn.wrapper.KeyStore;
 import android.text.TextUtils;
 import android.util.Log;
@@ -110,5 +113,29 @@ public class L2tpProfile extends VpnProfile {
         }
 
         return p;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.VpnProfile#saveTo(org.json.JSONObject)
+     */
+    @Override
+    protected void saveTo(final JSONObject jo) throws JSONException {
+        super.saveTo(jo);
+        jo.put("secretEnabled", secretEnabled);
+        jo.putOpt("secret", secret);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.VpnProfile#restoreFrom(org.json.JSONObject)
+     */
+    @Override
+    protected void restoreFrom(final JSONObject jo) throws JSONException {
+        super.restoreFrom(jo);
+        secretEnabled = jo.getBoolean("secretEnabled");
+        secret = jo.optString("secret");
     }
 }

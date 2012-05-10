@@ -55,7 +55,7 @@ public final class KeepAlive extends BroadcastReceiver {
         if (!ACTION_VPN_CONNECTIVITY.equals(action))
             return;
 
-        VpnProfileRepository repo = VpnProfileRepository.getInstance(context);
+        VpnProfileRepository repo = VpnProfileRepository.i();
         VpnProfile p = repo.getActiveProfile();
 
         String profileName = intent.getStringExtra(BROADCAST_PROFILE_NAME);

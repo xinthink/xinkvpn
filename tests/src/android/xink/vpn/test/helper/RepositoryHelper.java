@@ -34,7 +34,7 @@ public class RepositoryHelper {
 
     public RepositoryHelper(final Context ctx) {
         this.context = ctx;
-        repository = VpnProfileRepository.getInstance(ctx);
+        repository = VpnProfileRepository.i();
     }
 
     public void populateRepository() {

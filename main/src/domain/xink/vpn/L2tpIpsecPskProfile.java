@@ -16,6 +16,9 @@
 
 package xink.vpn;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -78,5 +81,27 @@ public class L2tpIpsecPskProfile extends L2tpProfile {
         p.psk = makeKey(); // use key instead of psk itself (stored in KeyStore, indexed by a key)
 
         return p;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.L2tpProfile#saveTo(org.json.JSONObject)
+     */
+    @Override
+    protected void saveTo(final JSONObject jo) throws JSONException {
+        super.saveTo(jo);
+        jo.put("psk", psk);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see xink.vpn.L2tpProfile#restoreFrom(org.json.JSONObject)
+     */
+    @Override
+    protected void restoreFrom(final JSONObject jo) throws JSONException {
+        super.restoreFrom(jo);
+        psk = jo.getString("psk");
     }
 }

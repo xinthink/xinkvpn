@@ -54,7 +54,7 @@ public class VpnConnectivityMonitor extends BroadcastReceiver {
 
         LOG.info(String.format("vpn %1$s -> %2$s, err=%3$d", profileName, newState, err));
 
-        VpnConnectivityStats stats = VpnProfileRepository.getInstance(ctx).getConnectivityStats();
+        VpnConnectivityStats stats = VpnProfileRepository.i().getConnectivityStats();
         stats.onConnectivityChanged(profileName, newState, err);
     }
 

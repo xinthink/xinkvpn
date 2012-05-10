@@ -39,4 +39,6 @@
 
     <string name="active_vpn_state_key">xink.vpn.data.active_vpn_state</string>
     <string name="active_vpn_state_default">IDLE</string>
+    
+    <string name="profile_db">profiles.dat</string>
 </resources>
