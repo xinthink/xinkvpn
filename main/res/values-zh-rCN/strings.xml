@@ -79,4 +79,9 @@
     <string name="pref_crash_conn_broken_title">报告VPN连接错误</string>
     <string name="pref_crash_conn_broken_threshold_title">连接错误阈值</string>
     <string name="pref_crash_conn_broken_threshold_sum">连续%s次连接失败后发送错误报告</string>
+
+    <string name="on">打开</string>
+    <string name="off">关闭</string>
+    <string name="title_select_vpn_count">已选定%1$d个</string>
+    <string name="btn_connect">连接</string>
 </resources>

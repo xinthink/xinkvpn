@@ -79,4 +79,8 @@
     <string name="pref_crash_conn_broken_title">報告VPN連線錯誤</string>
     <string name="pref_crash_conn_broken_threshold_title">連線錯誤次數</string>
     <string name="pref_crash_conn_broken_threshold_sum">連續%s次連線失敗後發送錯誤報告</string>
+
+    <string name="on">開啟</string>
+    <string name="off">關閉</string>
+    <string name="title_select_vpn_count">已選取%1$d項</string>
 </resources>

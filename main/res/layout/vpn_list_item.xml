@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fadingEdgeLength="10dp"
+    android:paddingBottom="10dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:paddingTop="10dp" android:background="@drawable/checkable_bg">
+
+    <ImageView
+        android:id="@+id/rdb_active_vpn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/check" android:padding="5dp"/>
+
+    <TextView
+        android:id="@+id/txt_vpn_state"
+        style="@style/VpnTypeDescStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/rdb_active_vpn"
+        android:lines="1"
+        android:text="VPN state message" android:paddingLeft="15dp"/>
+
+    <TextView
+        android:id="@+id/txt_vpn_name"
+        style="@style/VpnTypeNameStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/txt_vpn_state"
+        android:layout_alignTop="@+id/rdb_active_vpn"
+        android:layout_alignBottom="@+id/rdb_active_vpn"
+        android:layout_toLeftOf="@+id/tgb_conn_vpn"
+        android:layout_toRightOf="@+id/rdb_active_vpn"
+        android:lines="1"
+        android:text="VPN Name" android:gravity="center_vertical"/>
+
+    <TextView
+        android:id="@+id/tgb_conn_vpn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/rdb_active_vpn"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/rdb_active_vpn"
+        android:layout_marginRight="5dp"
+        android:background="@drawable/connect"
+        android:text="OFF" android:gravity="center" android:lines="1" android:paddingLeft="15dp" android:paddingRight="15dp"/>
+
+</RelativeLayout>

@@ -139,10 +139,9 @@ public final class VpnProfileRepository {
         }
     }
 
-    public void setActiveProfile(final VpnProfile profile) {
-        LOG.info("active vpn set to: {}", profile);
-        activeVpn = profile;
-        store.activeProfileId = profile.id;
+    public void setActiveProfileId(final String id) {
+        store.setActiveProfileId(id);
+        activeVpn = store.getActiveVpn();
     }
 
     public String getActiveProfileId() {
@@ -391,6 +390,15 @@ public final class VpnProfileRepository {
 
             if (p.id.equals(activeProfileId)) {
                 activeProfileId = null;
+                isDirty = true;
+            }
+        }
+
+        void setActiveProfileId(final String id) {
+            Assert.notNull(id);
+            if (!id.equals(activeProfileId)) {
+                activeProfileId = id;
+                isDirty = true;
             }
         }
 

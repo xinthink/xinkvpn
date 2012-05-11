@@ -19,11 +19,7 @@ package xink.vpn;
 import static xink.vpn.Constants.*;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import xink.vpn.editor.EditAction;
 import xink.vpn.editor.VpnProfileEditor;
@@ -40,43 +36,28 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.util.SparseBooleanArray;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.AbsListView;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.SimpleAdapter;
-import android.widget.SimpleAdapter.ViewBinder;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class VpnSettings extends Activity {
 
-    private static final String ROWITEM_KEY = "vpn"; //$NON-NLS-1$
     private static final String TAG = "xink"; //$NON-NLS-1$
-
-    // views on a single row will bind to the same data object
-    private static final String[] VPN_VIEW_KEYS = new String[] { ROWITEM_KEY, ROWITEM_KEY, ROWITEM_KEY };
-    private static final int[] VPN_VIEWS = new int[] { R.id.radioActive, R.id.tgbtnConn, R.id.txtStateMsg };
 
     private VpnProfileRepository repository;
     private ListView vpnListView;
-    private List<Map<String, VpnViewItem>> vpnListViewContent;
-    private VpnViewBinder vpnViewBinder = new VpnViewBinder();
-    private VpnViewItem activeVpnItem;
-    private SimpleAdapter vpnListAdapter;
+    private VpnListAdapter vpnListAdapter;
+    private ActionMode vpnActMode;
     private VpnActor actor;
     private BroadcastReceiver stateBroadcastReceiver;
     private KeyStore keyStore;
@@ -94,21 +75,94 @@ public class VpnSettings extends Activity {
         setTitle(R.string.selectVpn);
         setContentView(R.layout.vpn_list);
 
-        ((TextView) findViewById(R.id.btnAddVpn)).setOnClickListener(new OnClickListener() {
+        initVpnList();
+    }
+
+    private void initVpnList() {
+        vpnListView = (ListView) findViewById(R.id.listVpns);
+    
+        vpnListAdapter = new VpnListAdapter(this);
+        vpnListView.setAdapter(vpnListAdapter);
+        vpnListView.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
+
+        vpnListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            @Override
+            public boolean onCreateActionMode(final ActionMode mode, final Menu menu) {
+                vpnActMode = mode;
+                mode.getMenuInflater().inflate(R.menu.vpn_list_context_menu, menu);
+                return true;
+            }
 
             @Override
-            public void onClick(final View v) {
-                onAddVpn();
+            public boolean onPrepareActionMode(final ActionMode mode, final Menu menu) {
+                updateCab(mode); // restore CAB state
+                return true;
+            }
+
+            @Override
+            public void onDestroyActionMode(final ActionMode mode) {
+                vpnActMode = null;
+            }
+
+            @Override
+            public boolean onActionItemClicked(final ActionMode mode, final MenuItem item) {
+                return onOptionsItemSelected(item);
+            }
+
+            @Override
+            public void onItemCheckedStateChanged(final ActionMode mode, final int position, final long id,
+                    final boolean checked) {
+                updateCab(mode);
+            }
+
+            private void updateCab(final ActionMode mode) {
+                int cnt = vpnListView.getCheckedItemCount();
+                mode.setTitle(getString(R.string.title_select_vpn_count, cnt));
+                mode.getMenu().findItem(R.id.menu_edit_vpn).setEnabled(cnt == 1);
+                mode.getMenu().findItem(R.id.menu_del_vpn).setEnabled(cnt > 0);
             }
         });
+    }
 
-        vpnListViewContent = new ArrayList<Map<String, VpnViewItem>>();
-        vpnListView = (ListView) findViewById(R.id.listVpns);
-        buildVpnListView();
-
+    /*
+     * (non-Javadoc)
+     * 
+     * @see android.app.Activity#onStart()
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+    
         // registerReceivers();
         checkAllVpnStatus();
         checkHack(false);
+    }
+
+    @Override
+    protected void onStop() {
+        save();
+        // unregisterReceivers();
+
+        super.onStop();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    
+        Log.d(TAG, "onResume, check and run resume action");
+        if (resumeAction != null) {
+            Runnable action = resumeAction;
+            resumeAction = null;
+            runOnUiThread(action);
+        }
+    }
+
+    protected void finishVpnAction() {
+        if (vpnActMode == null)
+            return;
+
+        vpnActMode.finish();
     }
 
     /*
@@ -128,117 +182,54 @@ public class VpnSettings extends Activity {
         }, "vpn-state-checker").start(); //$NON-NLS-1$
     }
 
-    private void buildVpnListView() {
-        loadContent();
-
-        vpnListAdapter = new SimpleAdapter(this, vpnListViewContent, R.layout.vpn_profile, VPN_VIEW_KEYS, VPN_VIEWS);
-        vpnListAdapter.setViewBinder(vpnViewBinder);
-        vpnListView.setAdapter(vpnListAdapter);
-        registerForContextMenu(vpnListView);
-    }
-
-    private void loadContent() {
-        vpnListViewContent.clear();
-        activeVpnItem = null;
-
-        String activeProfileId = repository.getActiveProfileId();
-        for (VpnProfile vpnProfile : repository.getAllVpnProfiles()) {
-            addToVpnListView(activeProfileId, vpnProfile);
-        }
-    }
-
-    private void addToVpnListView(final String activeProfileId, final VpnProfile vpnProfile) {
-        if (vpnProfile == null)
-            return;
-
-        VpnViewItem item = makeVpnViewItem(activeProfileId, vpnProfile);
-
-        Map<String, VpnViewItem> row = new HashMap<String, VpnViewItem>();
-        row.put(ROWITEM_KEY, item);
-
-        vpnListViewContent.add(row);
-    }
-
-    private VpnViewItem makeVpnViewItem(final String activeProfileId, final VpnProfile vpnProfile) {
-        VpnViewItem item = new VpnViewItem();
-        item.profile = vpnProfile;
-
-        if (vpnProfile.id.equals(activeProfileId)) {
-            item.isActive = true;
-            activeVpnItem = item;
-        }
-        return item;
-    }
-
-    @Override
-    public void onCreateContextMenu(final ContextMenu menu, final View v, final ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.vpn_list_context_menu, menu);
-
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-        VpnViewItem selectedVpnItem = getVpnViewItemAt(info.position);
-        VpnProfile p = selectedVpnItem.profile;
-
-        menu.setHeaderTitle(p.name);
-
-        // profile can edit only when disconnected
-        boolean isIdle = p.state == VpnState.IDLE;
-        menu.findItem(R.id.menu_edit_vpn).setEnabled(isIdle);
-        menu.findItem(R.id.menu_del_vpn).setEnabled(isIdle);
-    }
-
-    @SuppressWarnings("unchecked")
-    private VpnViewItem getVpnViewItemAt(final int pos) {
-        return ((Map<String, VpnViewItem>) vpnListAdapter.getItem(pos)).get(ROWITEM_KEY);
-    }
-
-    @Override
-    public boolean onContextItemSelected(final MenuItem item) {
-        boolean consumed = false;
-        int itemId = item.getItemId();
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-        VpnViewItem vpnItem = getVpnViewItemAt(info.position);
-
-        switch (itemId) {
-        case R.id.menu_del_vpn:
-            onDeleteVpn(vpnItem);
-            consumed = true;
-            break;
-        case R.id.menu_edit_vpn:
-            onEditVpn(vpnItem);
-            consumed = true;
-            break;
-        default:
-            consumed = super.onContextItemSelected(item);
-            break;
-        }
-
-        return consumed;
-    }
-
     private void onAddVpn() {
         startActivityForResult(new Intent(this, VpnTypeSelection.class), REQ_SELECT_VPN_TYPE);
     }
 
-    private void onDeleteVpn(final VpnViewItem vpnItem) {
+    private void onDeleteVpn() {
+        if (vpnListView.getCheckedItemCount() == 0)
+            return;
+
+        final SparseBooleanArray items = vpnListView.getCheckedItemPositions();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(android.R.string.dialog_alert_title).setMessage(R.string.del_vpn_confirm);
+        builder.setIcon(android.R.drawable.ic_dialog_alert).setTitle(android.R.string.dialog_alert_title)
+                .setMessage(R.string.del_vpn_confirm).setCancelable(true);
         builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(final DialogInterface dialog, final int which) {
-                repository.deleteVpnProfile(vpnItem.profile);
-                buildVpnListView();
+                for (int i = 0; i < items.size(); i++) {
+                    if (items.valueAt(i)) {
+                        VpnProfile p = vpnListAdapter.getItem(items.keyAt(i));
+                        repository.deleteVpnProfile(p);
+                    }
+                }
+
+                finishVpnAction();
+                vpnListAdapter.notifyDataSetChanged();
             }
         }).setNegativeButton(android.R.string.no, null).show();
     }
 
-    private void onEditVpn(final VpnViewItem vpnItem) {
-        Log.d(TAG, "onEditVpn"); //$NON-NLS-1$
+    private void onEditVpn() {
+        int cnt = vpnListView.getCheckedItemCount();
+        if (cnt > 1 || cnt == 0)
+            return;
+        
+        SparseBooleanArray items = vpnListView.getCheckedItemPositions();
+        VpnProfile p = null;
 
-        VpnProfile p = vpnItem.profile;
-        editVpn(p);
+        for (int i = 0; i < items.size(); i++) {
+            if (items.valueAt(i)) {
+                p = vpnListAdapter.getItem(items.keyAt(i));
+                break;
+            }
+        }
+
+        if (p != null) {
+            finishVpnAction();
+            editVpn(p);
+        }
     }
 
     private void editVpn(final VpnProfile p) {
@@ -246,7 +237,7 @@ public class VpnSettings extends Activity {
 
         Class<? extends VpnProfileEditor> editorClass = type.getEditorClass();
         if (editorClass == null) {
-            Log.d(TAG, "editor class is null for " + type); //$NON-NLS-1$
+            Log.d(TAG, "editor class is null for " + type);
             return;
         }
 
@@ -291,6 +282,15 @@ public class VpnSettings extends Activity {
         int itemId = item.getItemId();
 
         switch (itemId) {
+        case R.id.menu_add:
+            onAddVpn();
+            break;
+        case R.id.menu_edit_vpn:
+            onEditVpn();
+            break;
+        case R.id.menu_del_vpn:
+            onDeleteVpn();
+            break;
         case R.id.menu_about:
             showDialog(DLG_ABOUT);
             break;
@@ -316,6 +316,7 @@ public class VpnSettings extends Activity {
 
         return consumed;
     }
+
 
     private void openSettings() {
         startActivity(new Intent(this, Settings.class));
@@ -388,7 +389,7 @@ public class VpnSettings extends Activity {
 
         try {
             repository.restore(getBackupDir());
-            buildVpnListView();
+            initVpnList();
 
             actor.disconnect();
             checkAllVpnStatus();
@@ -449,10 +450,6 @@ public class VpnSettings extends Activity {
 
     private void onVpnProfileAdded(final Intent data) {
         Log.i(TAG, "new vpn profile created"); //$NON-NLS-1$
-
-        String name = data.getStringExtra(KEY_VPN_PROFILE_NAME);
-        VpnProfile p = repository.getProfileByName(name);
-        addToVpnListView(repository.getActiveProfileId(), p);
         refreshVpnListView();
     }
 
@@ -507,14 +504,6 @@ public class VpnSettings extends Activity {
         refreshVpnListView();
     }
 
-    @Override
-    protected void onStop() {
-        save();
-        // unregisterReceivers();
-
-        super.onDestroy();
-    }
-
     private void save() {
         repository.save();
     }
@@ -525,22 +514,17 @@ public class VpnSettings extends Activity {
         }
     }
 
-    private void vpnItemActivated(final VpnViewItem activatedItem) {
-        if (activeVpnItem == activatedItem)
-            return;
-
-        if (activeVpnItem != null) {
-            activeVpnItem.isActive = false;
+    protected void onActiveVpnChanged(final String id) {
+        Assert.notNull(id);
+        if (!id.equals(repository.getActiveProfileId())) {
+            repository.setActiveProfileId(id);
+            vpnListAdapter.notifyDataSetChanged();
         }
-
-        activeVpnItem = activatedItem;
-        actor.activate(activeVpnItem.profile);
-        refreshVpnListView();
+        finishVpnAction();
     }
 
     private void refreshVpnListView() {
         runOnUiThread(new Runnable() {
-
             @Override
             public void run() {
                 vpnListAdapter.notifyDataSetChanged();
@@ -601,15 +585,13 @@ public class VpnSettings extends Activity {
         startActivity(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    protected void toggleVpn(final VpnProfile p) {
+        Assert.isTrue(p.state.isStable());
 
-        Log.d(TAG, "onResume, check and run resume action");
-        if (resumeAction != null) {
-            Runnable action = resumeAction;
-            resumeAction = null;
-            runOnUiThread(action);
+        if (p.state == VpnState.IDLE) {
+            connect(p);
+        } else {
+            disconnect();
         }
     }
 
@@ -638,109 +620,5 @@ public class VpnSettings extends Activity {
 
     private void disconnect() {
         actor.disconnect();
-    }
-
-    final class VpnViewBinder implements ViewBinder {
-
-        @Override
-        public boolean setViewValue(final View view, final Object data, final String textRepresentation) {
-            if (!(data instanceof VpnViewItem))
-                return false;
-
-            VpnViewItem item = (VpnViewItem) data;
-            boolean bound = true;
-
-            if (view instanceof RadioButton) {
-                bindVpnItem((RadioButton) view, item);
-            } else if (view instanceof ToggleButton) {
-                bindVpnState((ToggleButton) view, item);
-            } else if (view instanceof TextView) {
-                bindVpnStateMsg(((TextView) view), item);
-            } else {
-                bound = false;
-                Log.d(TAG, "unknown view, not bound: v=" + view + ", data=" + textRepresentation); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-
-            return bound;
-        }
-
-        private void bindVpnItem(final RadioButton view, final VpnViewItem item) {
-            view.setOnCheckedChangeListener(null);
-
-            view.setText(item.profile.name);
-            view.setChecked(item.isActive);
-
-            view.setOnCheckedChangeListener(item);
-        }
-
-        private void bindVpnState(final ToggleButton view, final VpnViewItem item) {
-            view.setOnCheckedChangeListener(null);
-
-            VpnState state = item.profile.state;
-            view.setChecked(state == VpnState.CONNECTED);
-            view.setEnabled(state.isStable());
-
-            view.setOnCheckedChangeListener(item);
-        }
-
-        private void bindVpnStateMsg(final TextView textView, final VpnViewItem item) {
-            VpnState state = item.profile.state;
-            String txt = getStateText(state);
-            textView.setVisibility(TextUtils.isEmpty(txt) ? View.INVISIBLE : View.VISIBLE);
-            textView.setText(txt);
-        }
-
-        private String getStateText(final VpnState state) {
-            String txt = ""; //$NON-NLS-1$
-            switch (state) {
-            case CONNECTING:
-                txt = getString(R.string.connecting);
-                break;
-            case DISCONNECTING:
-                txt = getString(R.string.disconnecting);
-                break;
-            }
-
-            return txt;
-        }
-    }
-
-    final class VpnViewItem implements OnCheckedChangeListener {
-        VpnProfile profile;
-        boolean isActive;
-
-        @Override
-        public void onCheckedChanged(final CompoundButton button, final boolean isChecked) {
-
-            if (button instanceof RadioButton) {
-                onActivationChanged(isChecked);
-            } else if (button instanceof ToggleButton) {
-                toggleState(isChecked);
-            }
-        }
-
-        private void onActivationChanged(final boolean isChecked) {
-            if (isActive == isChecked)
-                return;
-
-            isActive = isChecked;
-
-            if (isActive) {
-                vpnItemActivated(this);
-            }
-        }
-
-        private void toggleState(final boolean isChecked) {
-            if (isChecked) {
-                connect(profile);
-            } else {
-                disconnect();
-            }
-        }
-
-        @Override
-        public String toString() {
-            return profile.name;
-        }
     }
 }

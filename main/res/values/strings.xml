@@ -76,4 +76,8 @@
     <string name="pref_crash_conn_broken_title">Report connect problems</string>
     <string name="pref_crash_conn_broken_threshold_title">Connect problems threshold</string>
     <string name="pref_crash_conn_broken_threshold_sum">Reports error after %s connection failures detected</string>
+
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="title_select_vpn_count">%1$d selected</string>
 </resources>

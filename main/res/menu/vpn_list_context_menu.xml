@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="@string/edit" android:id="@+id/menu_edit_vpn"></item><item android:id="@+id/menu_del_vpn" android:title="@string/del"></item>
+  xmlns:android="http://schemas.android.com/apk/res/android"><item android:title="@string/edit" android:id="@+id/menu_edit_vpn" android:showAsAction="ifRoom" android:icon="@drawable/act_edit"></item><item android:id="@+id/menu_del_vpn" android:title="@string/del" android:showAsAction="ifRoom" android:icon="@drawable/act_delete"></item>
+    
+    
     
 </menu>

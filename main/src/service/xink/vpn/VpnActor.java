@@ -89,11 +89,6 @@ public class VpnActor {
         return repository;
     }
 
-    public void activate(final VpnProfile p) {
-        getRepository().setActiveProfile(p);
-        broadcastConnectivity(p.name, p.state, VPN_ERROR_NO_ERROR);
-    }
-
     public void broadcastConnectivity(final String profileName, final VpnState s, final int error) {
         Intent intent = new Intent(ACTION_VPN_CONNECTIVITY);
         intent.putExtra(BROADCAST_PROFILE_NAME, profileName);
