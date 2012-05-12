@@ -23,7 +23,6 @@ import java.util.Date;
 
 import xink.vpn.editor.EditAction;
 import xink.vpn.editor.VpnProfileEditor;
-import xink.vpn.wrapper.KeyStore;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -41,7 +40,6 @@ import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,23 +52,20 @@ public class VpnSettings extends Activity {
 
     private static final String TAG = "xink"; //$NON-NLS-1$
 
-    private VpnProfileRepository repository;
+    private VpnProfileRepository repo;
     private ListView vpnListView;
     private VpnListAdapter vpnListAdapter;
     private ActionMode vpnActMode;
     private VpnActor actor;
     private BroadcastReceiver stateBroadcastReceiver;
-    private KeyStore keyStore;
-    private Runnable resumeAction;
 
     /** Called when the activity is first created. */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        repository = VpnProfileRepository.i();
+        repo = VpnProfileRepository.i();
         actor = new VpnActor(getApplicationContext());
-        keyStore = new KeyStore(getApplicationContext());
 
         setTitle(R.string.selectVpn);
         setContentView(R.layout.vpn_list);
@@ -132,7 +127,7 @@ public class VpnSettings extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-    
+
         // registerReceivers();
         checkAllVpnStatus();
         checkHack(false);
@@ -146,19 +141,7 @@ public class VpnSettings extends Activity {
         super.onStop();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-    
-        Log.d(TAG, "onResume, check and run resume action");
-        if (resumeAction != null) {
-            Runnable action = resumeAction;
-            resumeAction = null;
-            runOnUiThread(action);
-        }
-    }
-
-    protected void finishVpnAction() {
+    private void finishVpnAction() {
         if (vpnActMode == null)
             return;
 
@@ -183,7 +166,7 @@ public class VpnSettings extends Activity {
     }
 
     private void onAddVpn() {
-        startActivityForResult(new Intent(this, VpnTypeSelection.class), REQ_SELECT_VPN_TYPE);
+        startActivityForResult(new Intent(getApplicationContext(), VpnTypeSelection.class), REQ_SELECT_VPN_TYPE);
     }
 
     private void onDeleteVpn() {
@@ -201,7 +184,7 @@ public class VpnSettings extends Activity {
                 for (int i = 0; i < items.size(); i++) {
                     if (items.valueAt(i)) {
                         VpnProfile p = vpnListAdapter.getItem(items.keyAt(i));
-                        repository.deleteVpnProfile(p);
+                        repo.deleteVpnProfile(p);
                     }
                 }
 
@@ -241,7 +224,7 @@ public class VpnSettings extends Activity {
             return;
         }
 
-        Intent intent = new Intent(this, editorClass);
+        Intent intent = new Intent(getApplicationContext(), editorClass);
         intent.setAction(EditAction.EDIT.toString());
         intent.putExtra(KEY_VPN_PROFILE_NAME, p.name);
         startActivityForResult(intent, REQ_EDIT_VPN);
@@ -249,28 +232,20 @@ public class VpnSettings extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.vpn_list_menu, menu);
-
-        menu.findItem(R.id.menu_about).setIcon(android.R.drawable.ic_menu_info_details);
-        menu.findItem(R.id.menu_help).setIcon(android.R.drawable.ic_menu_help);
-        menu.findItem(R.id.menu_exp).setIcon(android.R.drawable.ic_menu_save);
-        menu.findItem(R.id.menu_imp).setIcon(android.R.drawable.ic_menu_set_as);
-        menu.findItem(R.id.menu_diag).setIcon(android.R.drawable.ic_menu_manage);
-        menu.findItem(R.id.menu_settings).setIcon(android.R.drawable.ic_menu_preferences);
+        getMenuInflater().inflate(R.menu.vpn_list_menu, menu);
         return true;
     }
 
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
-        menu.findItem(R.id.menu_exp).setEnabled(!repository.getAllVpnProfiles().isEmpty());
+        menu.findItem(R.id.menu_exp).setEnabled(!repo.isEmpty());
         menu.findItem(R.id.menu_imp).setEnabled(checkLastBackup());
 
         return true;
     }
 
     private boolean checkLastBackup() {
-        return repository.checkLastBackup(getBackupDir()) != null;
+        return repo.checkLastBackup(getBackupDir()) != null;
     }
 
     /**
@@ -319,7 +294,7 @@ public class VpnSettings extends Activity {
 
 
     private void openSettings() {
-        startActivity(new Intent(this, Settings.class));
+        startActivity(new Intent(getApplicationContext(), Settings.class));
     }
 
     private AlertDialog createBackupDlg() {
@@ -347,7 +322,7 @@ public class VpnSettings extends Activity {
         Log.d(TAG, "doBackup");
 
         try {
-            repository.backup(getBackupDir());
+            repo.backup(getBackupDir());
             Toast.makeText(this, R.string.i_exp_done, Toast.LENGTH_SHORT).show();
         } catch (AppException e) {
             Log.e(TAG, "doBackup failed", e);
@@ -379,7 +354,7 @@ public class VpnSettings extends Activity {
     }
 
     private String makeLastBackupText() {
-        Date lastBackup = repository.checkLastBackup(getBackupDir());
+        Date lastBackup = repo.checkLastBackup(getBackupDir());
         SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         return f.format(lastBackup);
     }
@@ -388,7 +363,7 @@ public class VpnSettings extends Activity {
         Log.d(TAG, "doRestore");
 
         try {
-            repository.restore(getBackupDir());
+            repo.restore(getBackupDir());
             initVpnList();
 
             actor.disconnect();
@@ -443,7 +418,7 @@ public class VpnSettings extends Activity {
             return;
         }
 
-        Intent intent = new Intent(this, editorClass);
+        Intent intent = new Intent(getApplicationContext(), editorClass);
         intent.setAction(EditAction.CREATE.toString());
         startActivityForResult(intent, REQ_ADD_VPN);
     }
@@ -493,7 +468,7 @@ public class VpnSettings extends Activity {
 
     private void stateChanged(final String profileName, final VpnState state, final int errCode) {
         //Log.d(TAG, "stateChanged, '" + profileName + "', state: " + state + ", errCode=" + errCode); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        VpnProfile p = repository.getProfileByName(profileName);
+        VpnProfile p = repo.getProfileByName(profileName);
 
         if (p == null) {
             Log.w(TAG, profileName + " NOT found"); //$NON-NLS-1$
@@ -505,7 +480,7 @@ public class VpnSettings extends Activity {
     }
 
     private void save() {
-        repository.save();
+        repo.save();
     }
 
     private void unregisterReceivers() {
@@ -516,8 +491,8 @@ public class VpnSettings extends Activity {
 
     protected void onActiveVpnChanged(final String id) {
         Assert.notNull(id);
-        if (!id.equals(repository.getActiveProfileId())) {
-            repository.setActiveProfileId(id);
+        if (!id.equals(repo.getActiveProfileId())) {
+            repo.setActiveProfileId(id);
             vpnListAdapter.notifyDataSetChanged();
         }
         finishVpnAction();
@@ -587,38 +562,6 @@ public class VpnSettings extends Activity {
 
     protected void toggleVpn(final VpnProfile p) {
         Assert.isTrue(p.state.isStable());
-
-        if (p.state == VpnState.IDLE) {
-            connect(p);
-        } else {
-            disconnect();
-        }
-    }
-
-    private void connect(final VpnProfile p) {
-        if (unlockKeyStoreIfNeeded(p)) {
-            actor.connect(p);
-        }
-    }
-
-    private boolean unlockKeyStoreIfNeeded(final VpnProfile p) {
-        if (!p.needKeyStoreToConnect() || keyStore.isUnlocked())
-            return true;
-
-        Log.i(TAG, "keystore is locked, unlock it now and reconnect later.");
-        resumeAction = new Runnable() {
-            @Override
-            public void run() {
-                // redo this after unlock activity return
-                connect(p);
-            }
-        };
-
-        keyStore.unlock(this);
-        return false;
-    }
-
-    private void disconnect() {
-        actor.disconnect();
+        startActivity(new Intent(getApplicationContext(), ToggleVpn.class));
     }
 }

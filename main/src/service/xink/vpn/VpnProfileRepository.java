@@ -167,6 +167,13 @@ public final class VpnProfileRepository {
         return Collections.unmodifiableList(new ArrayList<VpnProfile>(store.getProfileCollection()));
     }
 
+    /**
+     * Wheter the repo is empty
+     */
+    public boolean isEmpty() {
+        return store == null || store.isEmpty();
+    }
+
     public synchronized void addVpnProfile(final VpnProfile p) {
         p.postConstruct();
         store.add(p);
