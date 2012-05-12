@@ -49,7 +49,7 @@ public class KeepAliveTest extends AndroidTestCase {
         repository = VpnProfileRepository.i();
         activeProfile = repository.getProfileByName(activeVpnName);
         assertNotNull(activeProfile);
-        repository.setActiveProfile(activeProfile);
+        repository.setActiveProfileId(activeProfile.id);
         prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 

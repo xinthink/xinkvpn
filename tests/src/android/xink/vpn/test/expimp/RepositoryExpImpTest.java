@@ -23,6 +23,7 @@ import xink.vpn.L2tpProfile;
 import xink.vpn.VpnProfile;
 import xink.vpn.VpnProfileRepository;
 import xink.vpn.test.helper.RepositoryHelper;
+import android.os.Environment;
 import android.test.AndroidTestCase;
 
 /**
@@ -32,9 +33,8 @@ import android.test.AndroidTestCase;
  */
 public class RepositoryExpImpTest extends AndroidTestCase {
 
-    private static final String EXP_PATH = "/sdcard/XinkVpn/test";
-    private static final String ACTIVE_ID_FILE = "active_profile_id";
-    private static final String PROFILES_FILE = "profiles";
+    private static final String EXP_PATH = Environment.getExternalStorageDirectory() + "/XinkVpn/test";
+    private static final File BAK_STORE_FILE = new File(EXP_PATH, VpnProfileRepository.REPO_STORE_FILE);
 
     private VpnProfileRepository repository;
     private RepositoryHelper helper;
@@ -60,11 +60,7 @@ public class RepositoryExpImpTest extends AndroidTestCase {
         // export
         repository.backup(EXP_PATH);
 
-        File file = new File(EXP_PATH, ACTIVE_ID_FILE);
-        assertFalse("should NOT produce an active id file", file.exists());
-
-        file = new File(EXP_PATH, PROFILES_FILE);
-        assertFalse("should NOT produce profiles file", file.exists());
+        assertFalse("should NOT produce repo store file", BAK_STORE_FILE.exists());
 
         // import
         try {
@@ -83,17 +79,12 @@ public class RepositoryExpImpTest extends AndroidTestCase {
         helper.populateRepository();
 
         repository.backup(EXP_PATH);
-
-        File file = new File(EXP_PATH, ACTIVE_ID_FILE);
-        assertTrue("should produce an active id file", file.exists());
-
-        file = new File(EXP_PATH, PROFILES_FILE);
-        assertTrue("should produce profiles file", file.exists());
+        assertTrue("should produce repo store file", BAK_STORE_FILE.exists());
 
         // import
         // make some changes
         VpnProfile p = repository.getAllVpnProfiles().get(0);
-        repository.setActiveProfile(p);
+        repository.setActiveProfileId(p.id);
         p = repository.getAllVpnProfiles().get(1);
         repository.deleteVpnProfile(p);
         p = makeL2tp();

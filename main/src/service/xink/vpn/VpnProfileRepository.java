@@ -50,9 +50,9 @@ import android.text.TextUtils;
  */
 public final class VpnProfileRepository {
 
-    private static final Logger LOG = LoggerFactory.getLogger("xink.vpnrepo");
+    public static final String REPO_STORE_FILE = "profiles_store";
 
-    private static final String FILE_PROFILES = "profiles_store";
+    private static final Logger LOG = LoggerFactory.getLogger("xink.vpnrepo");
 
     private static VpnProfileRepository instance;
 
@@ -200,7 +200,7 @@ public final class VpnProfileRepository {
         File dir = ensureDir(path);
 
         try {
-            doBackup(dir, FILE_PROFILES);
+            doBackup(dir, REPO_STORE_FILE);
         } catch (Exception e) {
             throw new AppException("backup failed", e, R.string.err_exp_failed);
         }
@@ -223,7 +223,7 @@ public final class VpnProfileRepository {
         checkExternalData(dir);
 
         try {
-            doRestore(dir, FILE_PROFILES);
+            doRestore(dir, REPO_STORE_FILE);
 
             clean();
             load();
@@ -247,8 +247,8 @@ public final class VpnProfileRepository {
      * verify data files in external storage.
      */
     private void checkExternalData(final String path) {
-        File id = new File(path, FILE_PROFILES);
-        File profiles = new File(path, FILE_PROFILES);
+        File id = new File(path, REPO_STORE_FILE);
+        File profiles = new File(path, REPO_STORE_FILE);
 
         if (!(verifyDataFile(id) && verifyDataFile(profiles)))
             throw new AppException("no valid data found in: " + path, R.string.err_imp_nodata);
@@ -264,7 +264,7 @@ public final class VpnProfileRepository {
      * @return timestamp of last backup, null for no backup.
      */
     public Date checkLastBackup(final String path) {
-        File id = new File(path, FILE_PROFILES);
+        File id = new File(path, REPO_STORE_FILE);
 
         if (!verifyDataFile(id))
             return null;
@@ -288,7 +288,7 @@ public final class VpnProfileRepository {
 
             InputStream is = null;
             try {
-                is = XinkVpnApp.i().openFileInput(FILE_PROFILES);
+                is = XinkVpnApp.i().openFileInput(REPO_STORE_FILE);
                 i = load(is);
             } catch (FileNotFoundException e) {
                 LOG.info("store file not found, init an empty store");
@@ -341,7 +341,7 @@ public final class VpnProfileRepository {
             OutputStream os = null;
 
             try {
-                os = XinkVpnApp.i().openFileOutput(FILE_PROFILES, Context.MODE_PRIVATE);
+                os = XinkVpnApp.i().openFileOutput(REPO_STORE_FILE, Context.MODE_PRIVATE);
                 os.write(AesCrypto.encrypt(toJson()));
                 isDirty = false;
             } finally {
