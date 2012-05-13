@@ -59,14 +59,26 @@ struct daemon {
 #define SVC_STATE_STOPPED       "stopped"
 #define SVC_STATE_CMD_PREFIX    "init.svc."
 
-#define SVC_RETRY               5
+#define SVC_RETRY               10
 #define SVC_RETRY_INTV          1
-#define SVC_ARGS_END            0xFF
+#define SVC_ARGS_END            0xFFFF
 
 int start_daemon(const struct daemon *d);
 int get_svc_sock(const struct daemon *d);
 int stop_daemon(const struct daemon *d);
 int wait_svc_state(const char *daemon, const char *expectedState);
+
+// -----------------------------------------------------------------------
+// socket utils
+//
+int send_int16(const int so, const int i)
+{
+    unsigned char hi = i >> 8;
+    unsigned char lo = i;
+
+    if (send(so, &hi, 1, 0) != 1 || send(so, &lo, 1, 0) != 1) return -1;
+    return 2; // sent 2 bytes
+}
 
 // -----------------------------------------------------------------------
 // log utils

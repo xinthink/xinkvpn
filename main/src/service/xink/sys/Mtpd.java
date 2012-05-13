@@ -56,8 +56,15 @@ public final class Mtpd {
     /**
      * Start PPTP service.
      */
-    public static void startPptp(final String server, final String user, final String passwd, final boolean encrypted) {
-        String[] args = { "pptp", server, "1723", "", "linkname", "vpn", "name", user, "password", passwd,
+    public static void startPptp(final String intf, final String server, final String user, final String passwd,
+            final boolean encrypted) {
+        /*
+         * interfaze, "pptp", profile.server, "1723", "name", profile.username, "password", profile.password, "linkname", "vpn",
+         * "refuse-eap", "nodefaultroute", "usepeerdns", "idle", "1800", "mtu", "1400", "mru", "1400", (profile.mppe ? "+mppe" :
+         * "nomppe"),
+         */
+
+        String[] args = { intf, "pptp", server, "1723", "name", user, "password", passwd, "linkname", "vpn",
                 "refuse-eap", "nodefaultroute", "usepeerdns", "idle", "1800", "mtu", "1400", "mru", "1400",
                 encrypted ? "+mppe" : "nomppe" };
         start(args);

@@ -79,7 +79,7 @@ void read_args(const int conn, int *argc, char ***argv)
     int i;
     for (i = 0;; ++i) {
         unsigned char len;
-        if (recv(conn, &len, 1, 0) != 1 || SVC_ARGS_END == len) break;
+        if (recv(conn, &len, 1, 0) != 1 || 0xFF == len) break; // TODO allow max len 0xFFFF
         
         char *buf = malloc(len + 1);
         int offset = 0;
@@ -103,7 +103,7 @@ void read_args(const int conn, int *argc, char ***argv)
 
 int do_start(const int argc, const char **argv)
 {
-    log_i("start %s ...", argv[0]);
+    log_i("start %s on %s ...", argv[1], argv[0]);
 
     int svc;
     if ((svc = start_daemon(&mtpd)) < 0) {
@@ -112,28 +112,15 @@ int do_start(const int argc, const char **argv)
     }
 
     // send args to daemon
-    unsigned char len;
     int i;
     for (i = 0; i < argc; ++i) {
-        // log_d("#%d '%s'", i, argv[i]);
+        log_d("send arg #%d '%s'", i, argv[i]);
 
-        len = strlen(argv[i]);
-        send(svc, &len, 1, 0);
+        int len = strlen(argv[i]);
+        send_int16(svc, len);
         send(svc, argv[i], len, 0);
     }
-    len = SVC_ARGS_END;
-    send(svc, &len, 1, 0);
-
-    // confirms
-    if (recv(svc, &len, 1, 0) < 0) {
-        log_e("error recv confirm from svc");
-        return -1;
-    }
-
-    if (len != argc) {
-        log_e("socket error, expected: %d, actual: %d", argc, len);
-        return -1;
-    }
+    send_int16(svc, SVC_ARGS_END);
 
     return 0;
 }
@@ -199,6 +186,16 @@ int main(int argc, char **argv)
 // -----------------------------------------------------------------------
 // daemon mgmt
 //
+int get_svc_state(const char *daemon, char **state)
+{
+    char key[PROPERTY_KEY_MAX];
+    strlcpy(key, SVC_STATE_CMD_PREFIX, PROPERTY_KEY_MAX);
+    strlcat(key, daemon, PROPERTY_KEY_MAX);
+
+    *state = malloc(PROPERTY_VALUE_MAX);
+    return property_get(key, *state, "");
+}
+
 int wait_svc_state(const char *daemon, const char *expectedState)
 {
     char key[PROPERTY_KEY_MAX];
@@ -225,10 +222,21 @@ int wait_svc_state(const char *daemon, const char *expectedState)
 
 int start_daemon(const struct daemon *d)
 {
+    // check state of the mtpd service
+    char *state;
+    if (get_svc_state(d->name, &state) > 0) {
+        if (strcmp(SVC_STATE_RUNNING, state) == 0) {
+            log_i("deamn %s is running, stop it first\n", d->name);
+            if (stop_daemon(d) < 0) return -1;
+        }
+    }
+
+    // start it
     if (property_set(SVC_START_CMD, d->name) < 0) return -1;
     if (!wait_svc_state(d->name, SVC_STATE_RUNNING)) return -1;
+    sleep(SVC_RETRY_INTV * 2); // wait daemon start up completely
 
-    // get control socket
+    // open control socket
     int svc = get_svc_sock(d);
     if (svc < 0) return -1;
 

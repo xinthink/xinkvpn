@@ -17,6 +17,11 @@
 package xink.vpn;
 
 import static xink.vpn.Constants.*;
+
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
+
 import xink.sys.Mtpd;
 import android.content.Context;
 import android.content.Intent;
@@ -48,7 +53,29 @@ public class VpnActor {
         p.preConnect();
         final VpnProfile cp = p.clone4Connect(); // connect using a clone, so the secret key can be replace
 
-        Mtpd.startPptp(cp.server, cp.username, cp.password, ((PptpProfile) cp).encrypted);
+        String intf = null;
+        try {
+
+            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
+            while (ifs.hasMoreElements()) {
+                NetworkInterface i = ifs.nextElement();
+                Log.d(TAG, "---intf: " + i);
+                Log.d(TAG, i.getName() + ", " + i.getDisplayName());
+                Log.d(TAG, "isUp? " + i.isUp() + ", isLoopback? " + i.isLoopback());
+
+                if (i.isUp() && !i.isLoopback()) {
+                    intf = i.getName();
+                    break;
+                }
+            }
+
+        } catch (SocketException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        Assert.notNull(intf);
+        Mtpd.startPptp(intf, cp.server, cp.username, cp.password, ((PptpProfile) cp).encrypted);
     }
 
     public void disconnect() {
