@@ -80,6 +80,12 @@ int send_int16(const int so, const int i)
     return 2; // sent 2 bytes
 }
 
+int send_byte(const int so, const int i)
+{
+    unsigned char b = i;
+    return send(so, &b, 1, 0);
+}
+
 // -----------------------------------------------------------------------
 // log utils
 //

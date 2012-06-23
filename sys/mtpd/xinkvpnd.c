@@ -117,10 +117,12 @@ int do_start(const int argc, const char **argv)
         log_d("send arg #%d '%s'", i, argv[i]);
 
         int len = strlen(argv[i]);
-        send_int16(svc, len);
+        send_byte(svc, len);
+        // send_int16(svc, len);
         send(svc, argv[i], len, 0);
     }
-    send_int16(svc, SVC_ARGS_END);
+    // send_int16(svc, SVC_ARGS_END);
+    send_byte(svc, SVC_ARGS_END);
 
     return 0;
 }

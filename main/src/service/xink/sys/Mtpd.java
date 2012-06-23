@@ -64,7 +64,10 @@ public final class Mtpd {
          * "nomppe"),
          */
 
-        String[] args = { intf, "pptp", server, "1723", "name", user, "password", passwd, "linkname", "vpn",
+        // String[] args = { intf, "pptp", server, "1723", "name", user, "password", passwd, "linkname", "vpn",
+        //         "refuse-eap", "nodefaultroute", "usepeerdns", "idle", "1800", "mtu", "1400", "mru", "1400",
+        //         encrypted ? "+mppe" : "nomppe" };
+        String[] args = { "pptp", server, "1723", "", "linkname", "vpn", "name", user, "password", passwd,
                 "refuse-eap", "nodefaultroute", "usepeerdns", "idle", "1800", "mtu", "1400", "mru", "1400",
                 encrypted ? "+mppe" : "nomppe" };
         start(args);
