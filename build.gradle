@@ -1,6 +1,6 @@
 
 task wrap(type: Wrapper) {
-    gradleVersion = '1.0-rc-3'
+    gradleVersion = '1.0'
     scriptFile = 'g'
 }
 
@@ -9,6 +9,7 @@ buildscript {
     repositories {
         //mavenLocal()
         mavenCentral()
+        mavenRepo url: 'https://raw.github.com/xinthink/repo/master'
 
         add(new org.apache.ivy.plugins.resolver.URLResolver()) {
             name = 'GitHub'
@@ -17,10 +18,8 @@ buildscript {
     }
 
     dependencies {
-        //classpath 'org.gradle.api.plugins:gradle-android-plugin:1.1.0'
-        //classpath 'xink.gradle:gradle-android-plugin:1.1.1-SNAPSHOT'
-        classpath 'xinthink:gradle-android-plugin:1.1.1-SNAPSHOT'
-        classpath 'xinthink:gradle-ecj:1.0-Beta'
+        classpath 'xink.gradle:gradle-android-plugin:1.1.1-SNAPSHOT'
+        classpath 'xink.gradle:gradle-ecj:1.0-BETA'
     }
 }
 
@@ -37,11 +36,7 @@ subprojects {
     repositories {
         //mavenLocal()
         mavenCentral()
-
-        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-            name = 'GitHub'
-            addArtifactPattern githubArtifactPattern
-        }
+        mavenRepo url: 'https://raw.github.com/xinthink/repo/master'
     }
 
     task initSrcDirs << {
