@@ -2,6 +2,7 @@ libs/
 gen/
 bin/
 build/
+.gradle/
 
 local.properties
 local_config.xml
