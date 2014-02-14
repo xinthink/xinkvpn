@@ -12,3 +12,7 @@ Imported from [xinkvpn](http://code.google.com/p/xinkvpn) googlecode project.
 * XinkVpn doesn't work on Android 4 and later，and will not get new commits. I'm sorry about that
 * If you're finding a way to build your own VPN apps on Android 4.x, please check [VpnService](http://developer.android.com/reference/android/net/VpnService.html)
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/xinthink/xinkvpn/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
